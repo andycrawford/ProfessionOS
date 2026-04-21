@@ -1,0 +1,275 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  padding: 10px var(--space-3);
+  height: var(--widget-row-height);
+  min-width: 160px;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--easing-default),
+    background-color var(--duration-fast) var(--easing-default);
+}
+
+/* ── States ── */
+
+.card:hover,
+.card.hover {
+  border-color: var(--color-accent-chart);
+  background-color: var(--color-bg-raised);
+}
+
+.card.warning {
+  border-color: var(--color-alert-warning);
+}
+
+.card.warning::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--color-alert-warning);
+  border-radius: var(--radius-default) 0 0 var(--radius-default);
+}
+
+.card.critical {
+  border-color: var(--color-alert-critical);
+  background-color: #1A1418;
+  animation: alert-pulse 2s ease-in-out infinite;
+}
+
+.card.critical::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--color-alert-critical);
+  border-radius: var(--radius-default) 0 0 var(--radius-default);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.critical {
+    animation: none;
+    box-shadow: 0 0 0 1px var(--color-alert-critical);
+  }
+}
+
+.card.loading {
+  border-color: var(--color-border-default);
+  cursor: default;
+}
+
+.card.empty {
+  border: 1px dashed var(--color-border-default);
+  cursor: default;
+}
+
+/* ── Header ── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.serviceIcon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.serviceLabel {
+  font-size: var(--text-label-caps-size);
+  font-weight: var(--text-label-caps-weight);
+  letter-spacing: var(--text-label-caps-spacing);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.alertBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+.alertBadge.critical {
+  background: var(--color-alert-critical);
+}
+
+.alertBadge.warning {
+  background: var(--color-alert-warning);
+}
+
+/* ── Divider ── */
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
+/* ── Metric ── */
+
+.metric {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 0;
+}
+
+.primaryMetric {
+  font-size: var(--text-metric-xl-size);
+  font-weight: var(--text-metric-xl-weight);
+  letter-spacing: var(--text-metric-xl-spacing);
+  color: var(--color-text-primary);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.secondaryLabel {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+}
+
+/* ── Footer ── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.delta {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-body-sm-size);
+  font-variant-numeric: tabular-nums;
+}
+
+.delta.positive {
+  color: var(--color-alert-info);
+}
+
+.delta.negative {
+  color: var(--color-alert-critical);
+}
+
+.delta.neutral {
+  color: var(--color-text-secondary);
+}
+
+.viewAll {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-accent-brand);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.viewAll:hover {
+  text-decoration: underline;
+}
+
+/* ── Sparkline ── */
+
+.sparklineWrapper {
+  height: 40px;
+  width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sparklineSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Skeleton / Loading ── */
+
+.skeleton {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-surface) 25%,
+    var(--color-bg-raised) 50%,
+    var(--color-bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--color-bg-raised);
+  }
+}
+
+.skeletonMetric {
+  height: 36px;
+  width: 80px;
+}
+
+.skeletonLabel {
+  height: 12px;
+  width: 60%;
+  margin-top: 4px;
+}
+
+.skeletonFooter {
+  height: 12px;
+  width: 40%;
+}
+
+/* ── Empty state ── */
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-disabled);
+  font-size: var(--text-body-sm-size);
+}

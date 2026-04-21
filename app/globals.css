@@ -1,26 +1,176 @@
 @import "tailwindcss";
 
+/* ─── Design Token System — Profession OS Command Center ─── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --color-bg-base: #0D0F12;
+  --color-bg-surface: #161A1F;
+  --color-bg-raised: #1E2329;
+  --color-bg-overlay: #252D38;
+
+  /* Borders */
+  --color-border-default: #2A3140;
+  --color-border-subtle: #1E2633;
+  --color-border-focus: #3D7EFF;
+
+  /* Text */
+  --color-text-primary: #E8ECF0;
+  --color-text-secondary: #8B96A8;
+  --color-text-disabled: #4A5568;
+
+  /* Accent */
+  --color-accent-brand: #00C9A7;
+  --color-accent-chart: #3D7EFF;
+
+  /* Alerts */
+  --color-alert-critical: #FF4757;
+  --color-alert-warning: #FFA502;
+  --color-alert-info: #2ED573;
+  --color-alert-neutral: #6B778C;
+
+  /* Typography */
+  --font-ui: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), 'Cascadia Code', monospace;
+
+  /* Type Scale */
+  --text-wordmark-size: 13px;
+  --text-wordmark-weight: 500;
+  --text-wordmark-spacing: 0.12em;
+
+  --text-label-caps-size: 11px;
+  --text-label-caps-weight: 600;
+  --text-label-caps-spacing: 0.08em;
+
+  --text-metric-xl-size: 36px;
+  --text-metric-xl-weight: 700;
+  --text-metric-xl-spacing: -0.02em;
+
+  --text-metric-lg-size: 28px;
+  --text-metric-lg-weight: 700;
+  --text-metric-lg-spacing: -0.01em;
+
+  --text-heading-sm-size: 14px;
+  --text-heading-sm-weight: 600;
+
+  --text-body-base-size: 13px;
+  --text-body-base-weight: 400;
+
+  --text-body-sm-size: 12px;
+  --text-body-sm-weight: 400;
+
+  --text-timestamp-size: 11px;
+  --text-timestamp-weight: 400;
+
+  --text-tag-size: 11px;
+  --text-tag-weight: 500;
+  --text-tag-spacing: 0.04em;
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Border radius */
+  --radius-sm: 2px;
+  --radius-default: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Elevation */
+  --elevation-card: none;
+  --elevation-modal: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  /* Motion */
+  --duration-fast: 100ms;
+  --duration-default: 200ms;
+  --duration-slow: 300ms;
+  --easing-default: ease-out;
+  --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layout dimensions */
+  --topbar-height: 48px;
+  --nav-rail-width: 48px;
+  --nav-rail-expanded-width: 200px;
+  --alert-bar-height: 40px;
+  --widget-row-height: 120px;
+  --ai-panel-width: 320px;
+  --ai-panel-min-width: 240px;
+  --ai-panel-max-width: 480px;
+  --ai-panel-collapsed-width: 40px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ─── Global Reset & Base ─── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-body-base-size);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Focus visible ─── */
+
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ─── Scrollbar styling ─── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-disabled);
+}
+
+/* ─── Alert pulse keyframe ─── */
+
+@keyframes alert-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px var(--color-alert-critical);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes alert-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 1px var(--color-alert-critical);
+    }
+  }
 }

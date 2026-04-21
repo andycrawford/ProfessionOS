@@ -1,0 +1,54 @@
+/* Full-height dashboard shell — fixed topbar + nav, scrollable content */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Main area below topbar */
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  margin-top: var(--topbar-height);
+}
+
+/* Content area to the right of nav rail */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-left: var(--nav-rail-width);
+  transition: margin-left var(--duration-default) var(--easing-default);
+}
+
+/* Main panel: widget row + bottom row */
+.mainPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Bottom row: activity timeline + AI panel */
+.bottomRow {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Responsive overrides */
+
+/* Below 768px: no nav rail margin, single column */
+@media (max-width: 767px) {
+  .content {
+    margin-left: 0;
+  }
+
+  .bottomRow {
+    flex-direction: column;
+  }
+}

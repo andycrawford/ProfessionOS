@@ -1,0 +1,133 @@
+.alertBar {
+  height: var(--alert-bar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  gap: var(--space-3);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: height var(--duration-default) var(--easing-default);
+}
+
+.alertBar[data-severity="critical"] {
+  background-color: var(--color-alert-critical);
+}
+
+.alertBar[data-severity="warning"] {
+  background-color: var(--color-alert-warning);
+}
+
+.alertBar[data-severity="info"] {
+  background-color: var(--color-alert-info);
+}
+
+.hidden {
+  height: 0;
+  padding: 0;
+}
+
+.severityIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 9px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.marqueeWrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.marqueeContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  color: #fff;
+  font-size: var(--text-body-sm-size);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.marqueeContent.scrolling {
+  animation: marquee 12s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeContent.scrolling {
+    animation: none;
+  }
+}
+
+.alertSummary {
+  color: #fff;
+}
+
+.alertSummary + .alertSummary::before {
+  content: "·";
+  margin-right: var(--space-6);
+  opacity: 0.6;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.viewAllButton {
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: var(--radius-default);
+  color: #fff;
+  font-size: var(--text-body-sm-size);
+  font-weight: 500;
+  padding: 2px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--duration-fast) var(--easing-default);
+}
+
+.viewAllButton:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dismissButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-default);
+}
+
+.dismissButton:hover {
+  color: #fff;
+}

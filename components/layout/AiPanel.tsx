@@ -1,0 +1,123 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import styles from "./AiPanel.module.css";
+
+export interface ChatMessage {
+  id: string;
+  role: "ai" | "user";
+  content: string;
+}
+
+export interface Suggestion {
+  id: string;
+  body: string;
+  actions?: string[];
+}
+
+interface AiPanelProps {
+  suggestion?: Suggestion;
+  messages?: ChatMessage[];
+  onSuggestionAction?: (suggestionId: string, action: string) => void;
+  onSendMessage?: (content: string) => void;
+}
+
+export default function AiPanel({
+  suggestion,
+  messages = [],
+  onSuggestionAction,
+  onSendMessage,
+}: AiPanelProps) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && draft.trim()) {
+      onSendMessage?.(draft.trim());
+      setDraft("");
+    }
+  };
+
+  return (
+    <aside
+      className={`${styles.panel}${collapsed ? ` ${styles.collapsed}` : ""}`}
+      aria-label="AI Assistant"
+    >
+      <div className={styles.header}>
+        {!collapsed && <span className={styles.title}>AI Assistant</span>}
+        <button
+          className={styles.collapseButton}
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? "Expand AI panel" : "Collapse AI panel"}
+        >
+          {collapsed ? (
+            <ChevronLeft size={14} aria-hidden="true" />
+          ) : (
+            <ChevronRight size={14} aria-hidden="true" />
+          )}
+        </button>
+      </div>
+
+      {!collapsed && (
+        <>
+          {suggestion && (
+            <div className={styles.suggestionCard} role="complementary" aria-label="Proactive suggestion">
+              <div className={styles.suggestionLabel}>Suggestion</div>
+              <p className={styles.suggestionBody}>{suggestion.body}</p>
+              <div className={styles.suggestionActions}>
+                {(suggestion.actions ?? ["Resolve", "Snooze"]).map((action) => (
+                  <button
+                    key={action}
+                    className={`${styles.actionButton}${action === "Resolve" ? ` ${styles.primary}` : ""}`}
+                    onClick={() => onSuggestionAction?.(suggestion.id, action)}
+                  >
+                    {action}
+                  </button>
+                ))}
+                <button
+                  className={styles.actionButton}
+                  onClick={() => onSuggestionAction?.(suggestion.id, "dismiss")}
+                  aria-label="Dismiss suggestion"
+                >
+                  <X size={10} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className={styles.conversation} role="log" aria-live="polite" aria-label="AI conversation">
+            {messages.length === 0 && (
+              <div style={{ color: "var(--color-text-disabled)", fontSize: "var(--text-body-sm-size)", textAlign: "center", padding: "var(--space-8) 0" }}>
+                Ask AI anything about your workflow…
+              </div>
+            )}
+            {messages.map((msg) => (
+              <div key={msg.id} className={`${styles.message} ${styles[msg.role]}`}>
+                <span className={styles.messageSender}>
+                  {msg.role === "ai" ? "AI:" : "You:"}
+                </span>
+                <div className={styles.messageBubble}>{msg.content}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.inputArea}>
+            <div className={styles.inputRow}>
+              <textarea
+                className={styles.chatInput}
+                placeholder="Ask AI…"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={handleKeyDown}
+                rows={1}
+                aria-label="Chat input"
+              />
+            </div>
+            <p className={styles.sendHint}>⌘↵ to send</p>
+          </div>
+        </>
+      )}
+    </aside>
+  );
+}
