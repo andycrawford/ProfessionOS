@@ -1,0 +1,434 @@
+/**
+ * Profession OS — Design System Page Styles
+ * Component library / style guide for engineering handoff (DVI-51)
+ */
+
+/* ── Page shell ─────────────────────────────────────────────────── */
+
+.page {
+  min-height: 100vh;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-body-base-size);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border-default);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.headerTitle {
+  font-family:    var(--font-mono);
+  font-size:      var(--text-wordmark-size);
+  font-weight:    500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color:          var(--color-text-primary);
+}
+
+.headerSubtitle {
+  font-size:  var(--text-body-sm-size);
+  color:      var(--color-text-secondary);
+}
+
+.headerBadge {
+  margin-left:   auto;
+  padding:       2px var(--space-2);
+  background:    rgba(0, 201, 167, 0.1);
+  border:        1px solid var(--color-accent-brand);
+  border-radius: var(--radius-sm);
+  font-size:     var(--text-tag-size);
+  font-weight:   500;
+  color:         var(--color-accent-brand);
+}
+
+/* ── Navigation (side TOC) ──────────────────────────────────────── */
+
+.layout {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-8);
+  gap: var(--space-8);
+}
+
+.toc {
+  flex-shrink: 0;
+  width: 180px;
+  position: sticky;
+  top: 72px;
+  align-self: flex-start;
+}
+.tocTitle {
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+  margin-bottom:  var(--space-2);
+}
+.tocItem {
+  display:         block;
+  padding:         var(--space-1) 0;
+  font-size:       var(--text-body-sm-size);
+  color:           var(--color-text-secondary);
+  text-decoration: none;
+  transition:      color var(--duration-fast);
+}
+.tocItem:hover { color: var(--color-text-primary); }
+
+/* ── Main content ───────────────────────────────────────────────── */
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* Section */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionHeader {
+  display:     flex;
+  align-items: baseline;
+  gap:         var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom:  1px solid var(--color-border-default);
+}
+.sectionTitle {
+  font-size:      var(--text-heading-sm-size);
+  font-weight:    600;
+  color:          var(--color-text-primary);
+}
+.sectionSubtitle {
+  font-size: var(--text-body-sm-size);
+  color:     var(--color-text-secondary);
+}
+.specRef {
+  margin-left:   auto;
+  font-family:   var(--font-mono);
+  font-size:     var(--text-tag-size);
+  color:         var(--color-text-disabled);
+}
+
+/* State label */
+.stateLabel {
+  display:        block;
+  font-size:      var(--text-tag-size);
+  font-weight:    600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+  margin-bottom:  var(--space-1);
+}
+
+/* Annotation block — WCAG and interaction notes */
+.annotation {
+  padding:       var(--space-3);
+  background:    var(--color-bg-surface);
+  border:        1px solid var(--color-border-subtle);
+  border-left:   3px solid var(--color-accent-chart);
+  border-radius: 0 var(--radius-default) var(--radius-default) 0;
+  font-size:     var(--text-body-sm-size);
+  color:         var(--color-text-secondary);
+  line-height:   1.5;
+}
+.annotation strong { color: var(--color-text-primary); }
+.annotationTitle {
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-accent-chart);
+  margin-bottom:  var(--space-1);
+}
+
+/* ── Widget card showcase ───────────────────────────────────────── */
+
+.widgetGrid {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.widgetItem {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-1);
+  width:          200px;
+  flex-shrink:    0;
+}
+
+/* ── Alert bar showcase ─────────────────────────────────────────── */
+
+.alertVariants {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-3);
+}
+
+.alertVariantRow {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-1);
+}
+
+/* ── Alert hierarchy (P0–P3 feed items) ────────────────────────── */
+
+.alertHierarchy {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-2);
+  border:         1px solid var(--color-border-default);
+  border-radius:  var(--radius-default);
+  overflow:       hidden;
+}
+
+.alertHierarchyItem {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-3);
+  padding:     var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size:   var(--text-body-sm-size);
+}
+.alertHierarchyItem:last-child { border-bottom: none; }
+.alertHierarchyItem[data-priority="P0"] { background: rgba(255, 71, 87, 0.06); }
+
+.priorityTag {
+  flex-shrink:    0;
+  width:          32px;
+  font-family:    var(--font-mono);
+  font-size:      var(--text-tag-size);
+  font-weight:    700;
+  color:          var(--color-text-secondary);
+}
+.severityDot {
+  flex-shrink:   0;
+  width:         10px;
+  height:        10px;
+  border-radius: 50%;
+}
+.dotCritical { background: var(--color-alert-critical); }
+.dotWarning  { background: var(--color-alert-warning); }
+.dotInfo     { background: var(--color-alert-info); }
+.dotNeutral  { background: var(--color-alert-neutral); }
+
+.alertItemTitle {
+  flex: 1;
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-primary);
+}
+.alertItemTitle.urgent { font-weight: 600; }
+
+.alertItemBehavior {
+  font-size:   var(--text-body-sm-size);
+  color:       var(--color-text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ── Color palette ──────────────────────────────────────────────── */
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-2);
+}
+
+.colorSwatch {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-1);
+}
+
+.colorChip {
+  height:        40px;
+  border-radius: var(--radius-default);
+  border:        1px solid var(--color-border-default);
+}
+
+.colorMeta {
+  font-size: var(--text-body-sm-size);
+  color:     var(--color-text-secondary);
+}
+.colorName  { color: var(--color-text-primary); font-weight: 500; }
+.colorToken {
+  font-family: var(--font-mono);
+  font-size:   var(--text-tag-size);
+  color:       var(--color-text-disabled);
+}
+
+/* ── Typography scale ───────────────────────────────────────────── */
+
+.typeRows {
+  display:        flex;
+  flex-direction: column;
+  gap:            0;
+}
+
+.typeRow {
+  display:       grid;
+  grid-template-columns: 180px 1fr 160px;
+  align-items:   center;
+  gap:           var(--space-4);
+  padding:       var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.typeRow:last-child { border-bottom: none; }
+
+.typeMeta {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+.typeTokenName {
+  font-family:   var(--font-mono);
+  font-size:     var(--text-tag-size);
+  color:         var(--color-accent-chart);
+}
+.typeSpec {
+  font-size: var(--text-tag-size);
+  color:     var(--color-text-disabled);
+}
+
+/* ── Spacing tokens ─────────────────────────────────────────────── */
+
+.spacingRows {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-2);
+}
+.spacingRow {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-3);
+}
+.spacingBar {
+  background:    var(--color-accent-brand);
+  height:        16px;
+  border-radius: var(--radius-sm);
+  opacity:       0.6;
+}
+.spacingLabel {
+  font-family:  var(--font-mono);
+  font-size:    var(--text-tag-size);
+  color:        var(--color-text-secondary);
+  white-space:  nowrap;
+}
+
+/* ── Motion spec ────────────────────────────────────────────────── */
+
+.motionTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm-size);
+}
+.motionTable th {
+  text-align:     left;
+  padding:        var(--space-2) var(--space-3);
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+  border-bottom:  1px solid var(--color-border-default);
+}
+.motionTable td {
+  padding:       var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+  color:         var(--color-text-secondary);
+}
+.motionTable td:first-child { color: var(--color-text-primary); font-weight: 500; }
+.motionTable td code {
+  font-family: var(--font-mono);
+  font-size:   var(--text-tag-size);
+  color:       var(--color-accent-chart);
+  background:  var(--color-bg-raised);
+  padding:     1px 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Keyboard shortcuts ─────────────────────────────────────────── */
+
+.kbdTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm-size);
+}
+.kbdTable th {
+  text-align:     left;
+  padding:        var(--space-2) var(--space-3);
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+  border-bottom:  1px solid var(--color-border-default);
+}
+.kbdTable td {
+  padding:       var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+  color:         var(--color-text-secondary);
+}
+.kbdTable td:last-child { color: var(--color-text-primary); }
+.kbdKey {
+  font-family:   var(--font-mono);
+  font-size:     var(--text-body-sm-size);
+  padding:       2px var(--space-2);
+  background:    var(--color-bg-raised);
+  border:        1px solid var(--color-border-default);
+  border-bottom: 2px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color:         var(--color-text-primary);
+}
+
+/* ── Component previews ─────────────────────────────────────────── */
+
+.previewBox {
+  padding:       var(--space-4);
+  background:    var(--color-bg-surface);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  overflow:      hidden;
+}
+
+.previewBoxDark {
+  background: var(--color-bg-base);
+}
+
+/* Narrow container for Topbar/NavRail preview */
+.previewConstrained {
+  width:    100%;
+  height:   48px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Side-by-side two-col layout for component previews */
+.previewGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .previewGrid2 { grid-template-columns: 1fr; }
+  .toc { display: none; }
+  .layout { padding: var(--space-4); }
+}

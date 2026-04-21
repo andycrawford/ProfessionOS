@@ -1,54 +1,942 @@
-/* Full-height dashboard shell — fixed topbar + nav, scrollable content */
+/**
+ * Profession OS — Command Center Dashboard Layout
+ * Spec: DVI-49 §2 Layout Architecture
+ *
+ * Fixed-grid shell: no layout shifts, no reflow on data updates.
+ *
+ * Grid zones:
+ *   topbar  (48px, z-index:100)
+ *   nav     (48px wide, hover-expands to 200px, z-index:90)
+ *   content (alert bar + widget row + main panel stack)
+ */
+
+/* ── Shell ────────────────────────────────────────────────────────── */
+/*
+ * Topbar and NavRail are position:fixed (see their own CSS modules).
+ * Shell + body + content + mainPanel + bottomRow handle the
+ * offset-and-fill layout so scrollable zones don't overlap fixed elements.
+ */
 
 .shell {
-  display: flex;
+  display:        flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  height:         100vh;
+  height:         100dvh;
+  overflow:       hidden;
+  background:     var(--color-bg-base);
 }
 
-/* Main area below topbar */
+/* Area below the fixed topbar */
 .body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+  display:    flex;
+  flex:       1;
+  overflow:   hidden;
   margin-top: var(--topbar-height);
 }
 
-/* Content area to the right of nav rail */
+/* Content area to the right of the fixed nav rail */
 .content {
-  flex: 1;
-  display: flex;
+  flex:          1;
+  display:       flex;
   flex-direction: column;
-  overflow: hidden;
-  margin-left: var(--nav-rail-width);
-  transition: margin-left var(--duration-default) var(--easing-default);
+  overflow:      hidden;
+  margin-left:   var(--nav-rail-width);
+  transition:    margin-left var(--duration-default) var(--easing-default);
 }
 
-/* Main panel: widget row + bottom row */
+/* Widget row + bottom split */
 .mainPanel {
-  flex: 1;
-  display: flex;
+  flex:           1;
+  display:        flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow:       hidden;
 }
 
-/* Bottom row: activity timeline + AI panel */
+/* Timeline + AI panel side by side */
 .bottomRow {
-  flex: 1;
-  display: flex;
+  flex:     1;
+  display:  flex;
   overflow: hidden;
+  min-height: 0;
 }
 
-/* Responsive overrides */
+/* ── Topbar ───────────────────────────────────────────────────────── */
+/* Spec §2.2: 48px, z-index 100 */
 
-/* Below 768px: no nav rail margin, single column */
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  height: var(--topbar-height);
+  background: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border-default);
+  z-index: 100;
+}
+
+.topbarLeft  { flex: 0 0 auto; }
+.topbarCenter { flex: 1; display: flex; justify-content: center; }
+.topbarRight  { flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-2); }
+
+.wordmark {
+  font-family:    var(--font-mono);
+  font-size:      var(--text-wordmark-size);
+  font-weight:    500;
+  letter-spacing: 0.12em;
+  color:          var(--color-text-primary);
+  user-select:    none;
+}
+
+.searchTrigger {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-2);
+  width:         280px;
+  padding:       5px var(--space-3);
+  background:    var(--color-bg-surface);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  color:         var(--color-text-secondary);
+  font-size:     var(--text-body-sm-size);
+  font-family:   var(--font-ui);
+  text-align:    left;
+  cursor:        pointer;
+  transition:    border-color var(--duration-fast) var(--easing-default);
+}
+.searchTrigger:hover { border-color: var(--color-border-focus); }
+.searchTrigger > span { flex: 1; }
+.searchKbd {
+  font-family:   var(--font-mono);
+  font-size:     10px;
+  padding:       1px 5px;
+  background:    var(--color-bg-raised);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color:         var(--color-text-disabled);
+}
+
+.alertBadge {
+  position:        relative;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  width:           32px;
+  height:          32px;
+  background:      none;
+  border:          none;
+  cursor:          pointer;
+  color:           var(--color-text-secondary);
+  border-radius:   var(--radius-default);
+  transition:      background var(--duration-fast);
+}
+.alertBadge:hover { background: var(--color-bg-raised); }
+
+.badgePill {
+  position:        absolute;
+  top:             2px;
+  right:           2px;
+  min-width:       16px;
+  height:          16px;
+  padding:         0 3px;
+  background:      var(--color-alert-critical);
+  border-radius:   8px;
+  font-size:       9px;
+  font-weight:     700;
+  color:           #fff;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  line-height:     1;
+}
+
+.aiToggle {
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-1);
+  padding:       4px var(--space-2);
+  background:    rgba(0, 201, 167, 0.1);
+  border:        1px solid var(--color-accent-brand);
+  border-radius: var(--radius-default);
+  color:         var(--color-accent-brand);
+  font-size:     var(--text-body-sm-size);
+  font-weight:   500;
+  font-family:   var(--font-ui);
+  cursor:        pointer;
+  transition:    background var(--duration-fast);
+}
+.aiToggle:hover { background: rgba(0, 201, 167, 0.18); }
+
+.userAvatar {
+  position:        relative;
+  width:           32px;
+  height:          32px;
+  border-radius:   50%;
+  background:      var(--color-bg-raised);
+  border:          1px solid var(--color-border-default);
+  cursor:          pointer;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  flex-shrink:     0;
+}
+.avatarInitials {
+  font-size:   10px;
+  font-weight: 600;
+  color:       var(--color-text-secondary);
+  line-height: 1;
+}
+.statusDot {
+  position:      absolute;
+  bottom:        0;
+  right:         0;
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  background:    var(--color-alert-info);
+  border:        1.5px solid var(--color-bg-base);
+}
+
+/* ── Navigation Rail ──────────────────────────────────────────────── */
+/* Spec §2.2: 48px icon-only, expands to 200px on hover (150ms ease-out) */
+
+.navRail {
+  grid-area:      nav;
+  display:        flex;
+  flex-direction: column;
+  width:          var(--nav-rail-width);
+  height:         100%;
+  background:     var(--color-bg-base);
+  border-right:   1px solid var(--color-border-default);
+  z-index:        90;
+  overflow:       hidden;
+  transition:     width var(--duration-default) var(--easing-default);
+}
+.navRail:hover { width: var(--nav-rail-expanded-width); }
+
+.navRailTop {
+  flex:           1;
+  display:        flex;
+  flex-direction: column;
+  padding:        var(--space-2) 0;
+  gap:            var(--space-1);
+  overflow:       hidden;
+}
+.navRailBottom {
+  display:        flex;
+  flex-direction: column;
+  padding:        var(--space-2) 0;
+  gap:            var(--space-1);
+  overflow:       hidden;
+}
+.navRailDivider {
+  flex-shrink: 0;
+  height:      1px;
+  margin:      var(--space-1) var(--space-2);
+  background:  var(--color-border-default);
+}
+
+.navItem {
+  display:        flex;
+  align-items:    center;
+  gap:            var(--space-3);
+  padding:        var(--space-2) var(--space-3);
+  width:          100%;
+  /* min-width ensures icon never clips when nav is narrow */
+  min-width:      var(--nav-rail-expanded-width);
+  background:     none;
+  border:         none;
+  cursor:         pointer;
+  color:          var(--color-text-secondary);
+  font-size:      var(--text-body-sm-size);
+  font-weight:    500;
+  font-family:    var(--font-ui);
+  text-align:     left;
+  white-space:    nowrap;
+  position:       relative;
+  transition:     color var(--duration-fast), background var(--duration-fast);
+}
+.navItem:hover {
+  color:      var(--color-text-primary);
+  background: var(--color-bg-surface);
+}
+/* Active: 3px left accent bar in --color-accent-brand (teal) */
+.navItemActive { color: var(--color-accent-brand); }
+.navItemActive::before {
+  content:       '';
+  position:      absolute;
+  left:          0;
+  top:           6px;
+  bottom:        6px;
+  width:         3px;
+  background:    var(--color-accent-brand);
+  border-radius: 0 2px 2px 0;
+}
+.navIcon  { flex-shrink: 0; }
+.navLabel {
+  opacity:       0;
+  transition:    opacity var(--duration-fast) var(--easing-default);
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+.navRail:hover .navLabel { opacity: 1; }
+
+/* ── Content Area ─────────────────────────────────────────────────── */
+
+.content {
+  grid-area:      content;
+  display:        flex;
+  flex-direction: column;
+  overflow:       hidden;
+  height:         100%;
+  min-width:      0;
+}
+
+/* ── Alert Bar ────────────────────────────────────────────────────── */
+/* Spec §6.2: 40px, mounts below topbar when P0/P1 alerts exist */
+
+.alertBar {
+  flex-shrink:   0;
+  height:        var(--alert-bar-height);
+  background:    rgba(255, 71, 87, 0.1);
+  border-bottom: 1px solid var(--color-alert-critical);
+  display:       flex;
+  align-items:   center;
+  overflow:      hidden;
+}
+.alertBarInner {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-2);
+  padding:     0 var(--space-4);
+  width:       100%;
+  overflow:    hidden;
+}
+.alertIcon { flex-shrink: 0; color: var(--color-alert-critical); }
+.alertSeverityBadge {
+  flex-shrink:    0;
+  padding:        2px var(--space-2);
+  background:     var(--color-alert-critical);
+  color:          #fff;
+  font-size:      var(--text-tag-size);
+  font-weight:    700;
+  letter-spacing: 0.04em;
+  border-radius:  var(--radius-sm);
+}
+.alertText {
+  flex:        1;
+  overflow:    hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size:   var(--text-body-sm-size);
+  color:       var(--color-text-secondary);
+}
+.alertViewAll {
+  flex-shrink:     0;
+  color:           var(--color-accent-brand);
+  font-size:       var(--text-body-sm-size);
+  text-decoration: none;
+  white-space:     nowrap;
+  transition:      opacity var(--duration-fast);
+}
+.alertViewAll:hover { opacity: 0.8; }
+.alertDismiss {
+  flex-shrink:   0;
+  width:         20px;
+  height:        20px;
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  background:    none;
+  border:        none;
+  cursor:        pointer;
+  color:         var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  transition:    background var(--duration-fast);
+}
+.alertDismiss:hover { background: var(--color-bg-raised); color: var(--color-text-primary); }
+
+/* ── Widget Row ───────────────────────────────────────────────────── */
+/* Spec §2.2: 120px, horizontal scroll if >6 widgets, drag-reorderable */
+
+.widgetRow {
+  flex-shrink:  0;
+  display:      flex;
+  gap:          var(--space-2);
+  padding:      var(--space-2) var(--space-4);
+  height:       calc(var(--widget-row-height) + (var(--space-2) * 2));
+  overflow-x:   auto;
+  overflow-y:   hidden;
+  border-bottom: 1px solid var(--color-border-default);
+  scrollbar-width: thin;
+}
+
+/* Widget Card — Spec §5 */
+.widgetCard {
+  flex:          1 0 160px;
+  max-width:     260px;
+  height:        var(--widget-row-height);
+  background:    var(--color-bg-surface);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  padding:       10px var(--space-3);
+  display:       flex;
+  flex-direction: column;
+  gap:           2px;
+  cursor:        pointer;
+  position:      relative;
+  overflow:      hidden;
+  transition:    border-color var(--duration-fast) var(--easing-default),
+                 background   var(--duration-fast) var(--easing-default);
+}
+/* Hover: border → chart-blue, bg → raised */
+.widgetCard:hover {
+  border-color: var(--color-accent-chart);
+  background:   var(--color-bg-raised);
+}
+
+/* Warning state — amber left 4px bar */
+.widgetCardWarning { border-left: 4px solid var(--color-alert-warning); }
+
+/* Critical state — red left 4px bar + pulse */
+.widgetCardCritical {
+  border-left: 4px solid var(--color-alert-critical);
+  animation:   alert-pulse 2000ms ease-in-out infinite;
+}
+
+/* Loading — shimmer overlay */
+.widgetCardLoading::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 100%
+  );
+  animation:  shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Empty — dashed border, "No data" label centered */
+.widgetCardEmpty { border-style: dashed; }
+
+/* Card anatomy sub-elements */
+.widgetHeader {
+  display:     flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.widgetServiceLabel {
+  display:        flex;
+  align-items:    center;
+  gap:            var(--space-1);
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+}
+.widgetAlertDot {
+  width:         6px;
+  height:        6px;
+  border-radius: 50%;
+  background:    var(--color-alert-critical);
+  flex-shrink:   0;
+}
+.widgetMetric {
+  font-size:      var(--text-metric-xl-size);
+  font-weight:    700;
+  line-height:    1;
+  letter-spacing: -0.02em;
+  color:          var(--color-text-primary);
+  margin-top:     var(--space-1);
+}
+.widgetMetricLabel {
+  font-size: var(--text-body-sm-size);
+  color:     var(--color-text-secondary);
+}
+.widgetFooter {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-top:      auto;
+}
+.widgetDelta {
+  display:     flex;
+  align-items: center;
+  gap:         2px;
+  font-size:   var(--text-body-sm-size);
+}
+.deltaUp   { color: var(--color-alert-info); }
+.deltaDown { color: var(--color-alert-critical); }
+.deltaFlat { color: var(--color-text-secondary); }
+.widgetLink {
+  font-size:       var(--text-body-sm-size);
+  color:           var(--color-accent-brand);
+  text-decoration: none;
+}
+.widgetLink:hover { text-decoration: underline; }
+
+/* Skeleton blocks for loading state */
+.skeleton   { background: var(--color-bg-raised); border-radius: var(--radius-sm); height: 10px; width: 60%; }
+.skeletonLg { background: var(--color-bg-raised); border-radius: var(--radius-sm); height: 28px; width: 40%; margin-top: var(--space-1); }
+
+/* Empty card label */
+.emptyLabel {
+  color:      var(--color-text-disabled);
+  font-size:  var(--text-body-sm-size);
+  margin:     auto;
+  text-align: center;
+}
+
+/* ── Main Panel ───────────────────────────────────────────────────── */
+
+.mainPanel {
+  flex:       1;
+  display:    flex;
+  overflow:   hidden;
+  min-height: 0;
+}
+
+/* ── Activity Timeline ────────────────────────────────────────────── */
+/* Spec §7: flex-grow, 65% of available width, AI-urgency sorted */
+
+.timeline {
+  flex:           1;
+  display:        flex;
+  flex-direction: column;
+  overflow:       hidden;
+  border-right:   1px solid var(--color-border-default);
+  min-width:      0;
+}
+.timelineHeader {
+  flex-shrink:   0;
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-4);
+  padding:       var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+  background:    var(--color-bg-base);
+}
+
+.sectionLabel {
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+  white-space:    nowrap;
+  flex-shrink:    0;
+}
+
+.filterChips {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-1);
+  flex:        1;
+  overflow:    hidden;
+}
+.filterChip {
+  padding:       2px var(--space-2);
+  background:    none;
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color:         var(--color-text-secondary);
+  font-size:     var(--text-tag-size);
+  font-weight:   500;
+  font-family:   var(--font-ui);
+  cursor:        pointer;
+  white-space:   nowrap;
+  transition:    all var(--duration-fast);
+}
+.filterChip:hover { border-color: var(--color-text-secondary); color: var(--color-text-primary); }
+.filterChipActive {
+  background:   var(--color-accent-brand);
+  border-color: var(--color-accent-brand);
+  color:        var(--color-bg-base);
+}
+.feedSearch {
+  margin-left:   auto;
+  flex-shrink:   0;
+  width:         140px;
+  padding:       2px var(--space-2);
+  background:    var(--color-bg-surface);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color:         var(--color-text-secondary);
+  font-size:     var(--text-body-sm-size);
+  font-family:   var(--font-ui);
+}
+.feedSearch:focus { outline: none; border-color: var(--color-border-focus); }
+.feedSearch::placeholder { color: var(--color-text-disabled); }
+
+.feedList {
+  flex:       1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Date separator row */
+.feedDateSep {
+  padding:        var(--space-1) var(--space-4);
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-disabled);
+  background:     var(--color-bg-base);
+  position:       sticky;
+  top:            0;
+  z-index:        1;
+  border-bottom:  1px solid var(--color-border-subtle);
+}
+
+/* Feed item */
+.feedItem {
+  display:    flex;
+  align-items: flex-start;
+  gap:        var(--space-2);
+  padding:    var(--space-2) var(--space-4);
+  cursor:     pointer;
+  transition: background var(--duration-fast);
+}
+.feedItem:hover { background: var(--color-bg-surface); }
+.feedItemCritical { background: rgba(255, 71, 87, 0.06); }
+.feedItemCritical:hover { background: rgba(255, 71, 87, 0.1); }
+
+/* Severity dot: col 1 */
+.feedDot {
+  flex-shrink:   0;
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  margin-top:    4px;
+}
+.dotCritical { background: var(--color-alert-critical); }
+.dotWarning  { background: var(--color-alert-warning); }
+.dotInfo     { background: var(--color-alert-info); }
+.dotNeutral  { background: var(--color-alert-neutral); }
+
+/* Body: col 2 */
+.feedBody {
+  flex:      1;
+  min-width: 0;
+}
+.feedTitle {
+  font-size:     var(--text-body-base-size);
+  color:         var(--color-text-primary);
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+.feedTitleUrgent { font-weight: 600; }
+.feedService {
+  color:       var(--color-text-secondary);
+  font-size:   var(--text-tag-size);
+  font-weight: 500;
+  margin-right: var(--space-1);
+}
+.feedSub {
+  font-size:     var(--text-body-sm-size);
+  color:         var(--color-text-secondary);
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  margin-top:    1px;
+}
+
+/* Meta: col 3 (timestamp + hover-reveal actions) */
+.feedMeta {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-1);
+  flex-shrink: 0;
+}
+.feedTime {
+  font-family: var(--font-mono);
+  font-size:   var(--text-timestamp-size);
+  color:       var(--color-text-secondary);
+  white-space: nowrap;
+}
+.feedActions { display: none; gap: var(--space-1); }
+.feedItem:hover .feedActions { display: flex; }
+.feedAction {
+  width:           20px;
+  height:          20px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      none;
+  border:          1px solid var(--color-border-default);
+  border-radius:   var(--radius-sm);
+  color:           var(--color-text-secondary);
+  cursor:          pointer;
+  font-size:       10px;
+  transition:      background var(--duration-fast);
+}
+.feedAction:hover { background: var(--color-bg-raised); color: var(--color-text-primary); }
+
+/* ── AI Assistant Panel ───────────────────────────────────────────── */
+/* Spec §8: 320px, collapsible, min 240px, max 480px */
+
+.aiPanel {
+  flex-shrink:    0;
+  width:          var(--ai-panel-width);
+  min-width:      var(--ai-panel-min-width);
+  max-width:      var(--ai-panel-max-width);
+  display:        flex;
+  flex-direction: column;
+  background:     var(--color-bg-surface);
+  overflow:       hidden;
+}
+
+.aiPanelHeader {
+  flex-shrink:    0;
+  display:        flex;
+  align-items:    center;
+  gap:            var(--space-2);
+  padding:        0 var(--space-3);
+  height:         36px;
+  border-bottom:  1px solid var(--color-border-default);
+  font-size:      var(--text-label-caps-size);
+  font-weight:    600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color:          var(--color-text-secondary);
+}
+.aiPanelHeaderIcon { color: var(--color-accent-brand); }
+.collapseBtn {
+  margin-left:   auto;
+  width:         24px;
+  height:        24px;
+  display:       flex;
+  align-items:   center;
+  justify-content: center;
+  background:    none;
+  border:        none;
+  cursor:        pointer;
+  color:         var(--color-text-secondary);
+  font-size:     10px;
+  border-radius: var(--radius-sm);
+  transition:    background var(--duration-fast);
+}
+.collapseBtn:hover { background: var(--color-bg-raised); color: var(--color-text-primary); }
+
+/* Proactive suggestion card — Spec §8.2 */
+.suggestionCard {
+  flex-shrink:   0;
+  margin:        var(--space-2) var(--space-3);
+  padding:       var(--space-3);
+  background:    var(--color-bg-raised);
+  border-left:   2px solid var(--color-accent-brand);
+  border-radius: 0 var(--radius-default) var(--radius-default) 0;
+}
+.suggestionText {
+  font-size:   var(--text-body-sm-size);
+  color:       var(--color-text-primary);
+  line-height: 1.45;
+  margin:      0 0 var(--space-2) 0;
+}
+.suggestionActions {
+  display:     flex;
+  align-items: center;
+  gap:         var(--space-2);
+}
+.suggestionPrimary {
+  padding:       2px var(--space-2);
+  font-size:     var(--text-tag-size);
+  font-weight:   500;
+  font-family:   var(--font-ui);
+  background:    rgba(0, 201, 167, 0.15);
+  border:        1px solid var(--color-accent-brand);
+  border-radius: var(--radius-sm);
+  color:         var(--color-accent-brand);
+  cursor:        pointer;
+  transition:    background var(--duration-fast);
+}
+.suggestionPrimary:hover { background: rgba(0, 201, 167, 0.25); }
+.suggestionSecondary {
+  padding:       2px var(--space-2);
+  font-size:     var(--text-tag-size);
+  font-weight:   500;
+  font-family:   var(--font-ui);
+  background:    none;
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color:         var(--color-text-secondary);
+  cursor:        pointer;
+  transition:    border-color var(--duration-fast);
+}
+.suggestionSecondary:hover { border-color: var(--color-text-secondary); color: var(--color-text-primary); }
+.suggestionDismiss {
+  margin-left:   auto;
+  background:    none;
+  border:        none;
+  cursor:        pointer;
+  color:         var(--color-text-disabled);
+  display:       flex;
+  align-items:   center;
+  transition:    color var(--duration-fast);
+}
+.suggestionDismiss:hover { color: var(--color-text-secondary); }
+
+/* Chat thread — Spec §8.3 */
+.chatThread {
+  flex:           1;
+  overflow-y:     auto;
+  overflow-x:     hidden;
+  padding:        var(--space-2) var(--space-3);
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--space-3);
+}
+
+/* AI message: left-aligned, teal "AI:" prefix in IBM Plex Mono */
+.aiMessage {
+  font-size:   var(--text-body-sm-size);
+  color:       var(--color-text-primary);
+  line-height: 1.5;
+}
+.aiPrefix {
+  font-family:  var(--font-mono);
+  font-size:    var(--text-body-sm-size);
+  font-weight:  600;
+  color:        var(--color-accent-brand);
+  margin-right: var(--space-1);
+}
+
+/* User message: right-aligned bubble */
+.userMessage {
+  align-self:    flex-end;
+  max-width:     85%;
+  padding:       var(--space-2) var(--space-3);
+  background:    var(--color-bg-raised);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-md) 0 var(--radius-md) var(--radius-md);
+  font-size:     var(--text-body-sm-size);
+  color:         var(--color-text-primary);
+  line-height:   1.5;
+}
+
+/* AI thinking: monospace animated ellipsis in --color-text-secondary */
+.aiThinking {
+  font-family: var(--font-mono);
+  font-size:   var(--text-body-sm-size);
+  color:       var(--color-text-secondary);
+}
+.thinkingDots {
+  animation: thinking 1.5s ease-in-out infinite;
+  display:   inline-block;
+}
+@keyframes thinking {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}
+
+/* Chat input row */
+.chatInputRow {
+  flex-shrink:   0;
+  display:       flex;
+  align-items:   center;
+  gap:           var(--space-2);
+  padding:       var(--space-2) var(--space-3);
+  border-top:    1px solid var(--color-border-default);
+}
+.chatInput {
+  flex:          1;
+  height:        32px;
+  padding:       0 var(--space-2);
+  background:    var(--color-bg-raised);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  color:         var(--color-text-primary);
+  font-size:     var(--text-body-sm-size);
+  font-family:   var(--font-ui);
+  transition:    border-color var(--duration-fast);
+}
+.chatInput:focus { outline: none; border-color: var(--color-border-focus); }
+.chatInput::placeholder { color: var(--color-text-disabled); }
+.submitKbd {
+  flex-shrink:   0;
+  font-family:   var(--font-mono);
+  font-size:     10px;
+  padding:       2px var(--space-1);
+  background:    var(--color-bg-raised);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color:         var(--color-text-disabled);
+}
+
+/* ── Connection banner ────────────────────────────────────────────── */
+
+.connectionBanner {
+  position:      fixed;
+  bottom:        var(--space-4);
+  left:          50%;
+  transform:     translateX(-50%);
+  padding:       var(--space-2) var(--space-4);
+  background:    var(--color-bg-overlay);
+  border:        1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  font-family:   var(--font-mono);
+  font-size:     var(--text-body-sm-size);
+  color:         var(--color-text-secondary);
+  z-index:       200;
+  pointer-events: none;
+}
+
+/* ── Responsive Breakpoints ── Spec §9.3 ─────────────────────────── */
+
+/* 1280–1439px: AI panel collapsed to 40px icon-only rail */
+@media (max-width: 1439px) and (min-width: 1280px) {
+  .aiPanel {
+    width:     40px;
+    min-width: 40px;
+    overflow:  hidden;
+  }
+  .suggestionCard,
+  .chatThread,
+  .chatInputRow    { display: none; }
+  .aiPanelHeader span,
+  .aiPanelHeader .collapseBtn { display: none; }
+}
+
+/* 1024–1279px: AI panel hidden; widget row horizontal scrolls */
+@media (max-width: 1279px) and (min-width: 1024px) {
+  .aiPanel    { display: none; }
+  .timeline   { border-right: none; }
+}
+
+/* 768–1023px: Single column, nav rail + AI panel hidden */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "topbar"
+      "content";
+  }
+  .navRail   { display: none; }
+  .aiPanel   { display: none; }
+  .timeline  { border-right: none; }
+  .searchTrigger { width: 200px; }
+}
+
+/* <768px: Mobile — single column, compact topbar */
 @media (max-width: 767px) {
-  .content {
-    margin-left: 0;
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "topbar"
+      "content";
   }
-
-  .bottomRow {
-    flex-direction: column;
-  }
+  .navRail   { display: none; }
+  .aiPanel   { display: none; }
+  .timeline  { border-right: none; }
+  .searchTrigger { width: 160px; }
+  .wordmark  { font-size: 11px; }
 }
