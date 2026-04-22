@@ -1,0 +1,186 @@
+<!-- Concept B: "Meridian" — Clean Professional Hero/Header Mockup -->
+<!-- 1200×630 viewport · Light · Clean SaaS aesthetic -->
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Profession OS — Hero Concept B: Meridian</title>
+  <defs>
+    <!-- Light hero background gradient -->
+    <linearGradient id="heroBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0F4FF"/>
+    </linearGradient>
+    <!-- Navy card background -->
+    <linearGradient id="navyCard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0A1628"/>
+      <stop offset="100%" stop-color="#0D1F3C"/>
+    </linearGradient>
+    <!-- Teal CTA gradient -->
+    <linearGradient id="ctaGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00C9A7"/>
+      <stop offset="100%" stop-color="#00B89A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ─── BACKGROUND ─── -->
+  <rect width="1200" height="630" fill="url(#heroBg)"/>
+
+  <!-- Decorative navy wave (bottom-right area) -->
+  <path d="M 800 630 Q 900 500 1200 480 L 1200 630 Z" fill="#F0F4FF" opacity="0.6"/>
+  <path d="M 650 630 Q 850 560 1200 520 L 1200 630 Z" fill="#E8EDF8" opacity="0.5"/>
+
+  <!-- ─── NAVIGATION BAR ─── -->
+  <rect width="1200" height="64" fill="white"/>
+  <line x1="0" y1="64" x2="1200" y2="64" stroke="#E2E8F0" stroke-width="1"/>
+
+  <!-- Logo mark (compass) in nav -->
+  <circle cx="64" cy="32" r="18" fill="white" stroke="#D1D9E6" stroke-width="1"/>
+  <line x1="64" y1="16" x2="64" y2="48" stroke="#0A1628" stroke-width="1" opacity="0.15"/>
+  <line x1="46" y1="32" x2="82" y2="32" stroke="#0A1628" stroke-width="1" opacity="0.15"/>
+  <path d="M61 24 L64 16 L67 24" fill="#00C9A7"/>
+  <circle cx="64" cy="32" r="2.5" fill="#0A1628"/>
+  <circle cx="64" cy="32" r="1.2" fill="#00C9A7"/>
+
+  <!-- Wordmark in nav (navy) -->
+  <text x="90" y="37" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="700" letter-spacing="-0.02em">
+    <tspan fill="#0A1628">Profession</tspan><tspan fill="#00C9A7"> OS</tspan>
+  </text>
+
+  <!-- Nav links -->
+  <text x="312" y="37" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#64748B">Features</text>
+  <text x="404" y="37" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#64748B">Pricing</text>
+  <text x="484" y="37" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#64748B">Docs</text>
+  <text x="550" y="37" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#64748B">Blog</text>
+
+  <!-- Sign in -->
+  <text x="1036" y="37" font-family="Inter, system-ui, sans-serif" font-size="14" fill="#0A1628" font-weight="500">Sign in</text>
+
+  <!-- CTA button (navy) -->
+  <rect x="1092" y="16" width="108" height="32" rx="6" fill="#0A1628"/>
+  <text x="1146" y="36" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600" fill="white" text-anchor="middle">Get Started →</text>
+
+  <!-- ─── HERO CONTENT AREA ─── -->
+  <!-- Eyebrow badge -->
+  <rect x="48" y="98" width="192" height="28" rx="14" fill="#F0FDF9" stroke="#00C9A7" stroke-width="1"/>
+  <circle cx="66" cy="112" r="5" fill="#00C9A7"/>
+  <text x="76" y="117" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#00C9A7" letter-spacing="0.04em">NEW — AI Command Center</text>
+
+  <!-- Main headline (navy, bold, clean) -->
+  <text x="48" y="178" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="800" letter-spacing="-0.035em" fill="#0A1628">Navigate your</text>
+  <text x="48" y="244" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="800" letter-spacing="-0.035em" fill="#0A1628">professional world</text>
+  <!-- Teal underline accent under "world" -->
+  <rect x="48" y="252" width="420" height="4" rx="2" fill="#00C9A7" opacity="0.3"/>
+  <text x="48" y="312" font-family="Inter, system-ui, sans-serif" font-size="56" font-weight="800" letter-spacing="-0.035em" fill="#0A1628">with one OS.</text>
+
+  <!-- Sub-headline -->
+  <text x="48" y="355" font-family="Inter, system-ui, sans-serif" font-size="17" fill="#64748B" letter-spacing="-0.01em">Connect email, calendar, code repos, and your CRM.</text>
+  <text x="48" y="379" font-family="Inter, system-ui, sans-serif" font-size="17" fill="#64748B" letter-spacing="-0.01em">AI surfaces what matters. You act at speed.</text>
+
+  <!-- CTA row -->
+  <rect x="48" y="416" width="176" height="48" rx="6" fill="url(#ctaGrad)"/>
+  <text x="136" y="445" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="700" fill="white" text-anchor="middle">Start free →</text>
+
+  <rect x="240" y="416" width="156" height="48" rx="6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="318" y="445" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="600" fill="#0A1628" text-anchor="middle">View live demo</text>
+
+  <!-- Social proof strip -->
+  <text x="48" y="500" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#94A3B8">Trusted by senior professionals at</text>
+  <rect x="48" y="514" width="68" height="10" rx="3" fill="#CBD5E1" opacity="0.6"/>
+  <rect x="128" y="514" width="52" height="10" rx="3" fill="#CBD5E1" opacity="0.6"/>
+  <rect x="192" y="514" width="80" height="10" rx="3" fill="#CBD5E1" opacity="0.6"/>
+  <rect x="284" y="514" width="60" height="10" rx="3" fill="#CBD5E1" opacity="0.6"/>
+
+  <!-- ─── RIGHT COLUMN: UI PREVIEW (navy-bordered dark card) ─── -->
+  <!-- Card outer shadow/border effect -->
+  <rect x="646" y="84" width="510" height="500" rx="12" fill="#0A1628" opacity="0.08"/>
+  <rect x="640" y="78" width="510" height="500" rx="12" fill="url(#navyCard)" stroke="#1E3A5F" stroke-width="1"/>
+
+  <!-- Card titlebar -->
+  <rect x="640" y="78" width="510" height="40" rx="12" fill="#0D1F3C"/>
+  <rect x="640" y="106" width="510" height="12" fill="#0D1F3C"/>
+  <line x1="640" y1="118" x2="1150" y2="118" stroke="#1E3A5F" stroke-width="1"/>
+  <circle cx="664" cy="98" r="5" fill="#FF6B6B" opacity="0.7"/>
+  <circle cx="680" cy="98" r="5" fill="#FFD93D" opacity="0.7"/>
+  <circle cx="696" cy="98" r="5" fill="#6BCB77" opacity="0.7"/>
+  <text x="895" y="103" font-family="Inter, sans-serif" font-size="10" fill="#4A6080" text-anchor="middle">app.professionos.com</text>
+
+  <!-- Top nav area within UI -->
+  <rect x="640" y="118" width="510" height="32" fill="#0D1F3C"/>
+  <rect x="652" y="126" width="60" height="16" rx="3" fill="#1E3A5F"/>
+  <rect x="1092" y="126" width="48" height="16" rx="3" fill="#00C9A7" opacity="0.3"/>
+  <line x1="640" y1="150" x2="1150" y2="150" stroke="#1E3A5F" stroke-width="1"/>
+
+  <!-- Alert bar (teal) -->
+  <rect x="640" y="150" width="510" height="20" fill="#0D2A4A"/>
+  <rect x="652" y="156" width="5" height="8" rx="1" fill="#FFA502"/>
+  <rect x="664" y="158" width="180" height="4" rx="2" fill="#1E3A5F"/>
+  <line x1="640" y1="170" x2="1150" y2="170" stroke="#1E3A5F" stroke-width="1"/>
+
+  <!-- Left nav rail -->
+  <rect x="640" y="170" width="36" height="408" fill="#0D1F3C"/>
+  <line x1="676" y1="170" x2="676" y2="578" stroke="#1E3A5F" stroke-width="1"/>
+  <!-- Nav icons -->
+  <rect x="650" y="184" width="16" height="16" rx="3" fill="#00C9A7" opacity="0.25"/>
+  <rect x="652" y="186" width="12" height="12" rx="2" fill="#00C9A7"/>
+  <rect x="650" y="212" width="16" height="16" rx="3" fill="#1E3A5F"/>
+  <rect x="650" y="240" width="16" height="16" rx="3" fill="#1E3A5F"/>
+  <rect x="650" y="268" width="16" height="16" rx="3" fill="#1E3A5F"/>
+
+  <!-- Widget row (metric cards in navy card) -->
+  <rect x="684" y="178" width="82" height="60" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="692" y="194" font-family="monospace" font-size="7" fill="#4A6080" letter-spacing="0.04em">EMAIL</text>
+  <text x="692" y="218" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#E8ECF0">124</text>
+  <text x="692" y="231" font-family="Inter, sans-serif" font-size="7" fill="#00C9A7">↑ 18%</text>
+
+  <rect x="774" y="178" width="82" height="60" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="782" y="194" font-family="monospace" font-size="7" fill="#4A6080" letter-spacing="0.04em">CALENDAR</text>
+  <text x="782" y="218" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#E8ECF0">12</text>
+  <text x="782" y="231" font-family="Inter, sans-serif" font-size="7" fill="#FFA502">⚠ 3</text>
+
+  <rect x="864" y="178" width="82" height="60" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="872" y="194" font-family="monospace" font-size="7" fill="#4A6080" letter-spacing="0.04em">SLACK</text>
+  <text x="872" y="218" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#E8ECF0">248</text>
+  <text x="872" y="231" font-family="Inter, sans-serif" font-size="7" fill="#FF4757">↓ 5%</text>
+
+  <rect x="954" y="178" width="66" height="60" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="962" y="194" font-family="monospace" font-size="7" fill="#4A6080" letter-spacing="0.04em">CODE</text>
+  <text x="962" y="218" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#E8ECF0">11</text>
+  <text x="962" y="231" font-family="Inter, sans-serif" font-size="7" fill="#00C9A7">↑ 22%</text>
+
+  <rect x="1028" y="178" width="114" height="60" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="1036" y="194" font-family="monospace" font-size="7" fill="#4A6080" letter-spacing="0.04em">CRM</text>
+  <text x="1036" y="218" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#E8ECF0">5</text>
+  <text x="1036" y="231" font-family="Inter, sans-serif" font-size="7" fill="#4A6080">–</text>
+
+  <!-- Timeline and AI panels (bottom) -->
+  <rect x="684" y="250" width="270" height="316" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="696" y="268" font-family="monospace" font-size="7" fill="#4A6080" letter-spacing="0.06em">ACTIVITY</text>
+  <line x1="684" y1="276" x2="954" y2="276" stroke="#1E3A5F" stroke-width="1"/>
+  <!-- Feed items -->
+  <rect x="696" y="286" width="8" height="8" rx="2" fill="#FFA502"/>
+  <rect x="712" y="287" width="110" height="5" rx="2" fill="#1E3A5F"/>
+  <rect x="712" y="298" width="70" height="4" rx="2" fill="#0D2A4A"/>
+  <line x1="696" y1="314" x2="946" y2="314" stroke="#1E3A5F" stroke-width="0.5"/>
+  <rect x="696" y="322" width="8" height="8" rx="2" fill="#6BCB77"/>
+  <rect x="712" y="323" width="90" height="5" rx="2" fill="#1E3A5F"/>
+  <rect x="712" y="334" width="130" height="4" rx="2" fill="#0D2A4A"/>
+  <line x1="696" y1="350" x2="946" y2="350" stroke="#1E3A5F" stroke-width="0.5"/>
+  <rect x="696" y="358" width="8" height="8" rx="2" fill="#4A6080"/>
+  <rect x="712" y="359" width="120" height="5" rx="2" fill="#1E3A5F"/>
+  <rect x="712" y="370" width="80" height="4" rx="2" fill="#0D2A4A"/>
+
+  <rect x="962" y="250" width="180" height="316" rx="4" fill="#0D2A4A" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="974" y="268" font-family="monospace" font-size="7" fill="#00C9A7" letter-spacing="0.06em">AI ASSISTANT</text>
+  <circle cx="1132" cy="263" r="4" fill="#00C9A7" opacity="0.4"/>
+  <line x1="962" y1="276" x2="1142" y2="276" stroke="#1E3A5F" stroke-width="1"/>
+  <rect x="974" y="288" width="156" height="52" rx="4" fill="#0D1F3C" stroke="#1E3A5F" stroke-width="1"/>
+  <rect x="982" y="296" width="90" height="4" rx="2" fill="#1E3A5F"/>
+  <rect x="982" y="306" width="120" height="4" rx="2" fill="#1E3A5F"/>
+  <rect x="982" y="316" width="72" height="4" rx="2" fill="#1E3A5F"/>
+  <!-- Action pills -->
+  <rect x="974" y="350" width="52" height="18" rx="9" fill="#00C9A7" opacity="0.15" stroke="#00C9A7" stroke-width="1"/>
+  <text x="1000" y="363" font-family="Inter, sans-serif" font-size="7" fill="#00C9A7" text-anchor="middle">Resolve</text>
+  <rect x="1034" y="350" width="44" height="18" rx="9" fill="#1E3A5F" stroke="#1E3A5F" stroke-width="1"/>
+  <text x="1056" y="363" font-family="Inter, sans-serif" font-size="7" fill="#4A6080" text-anchor="middle">Snooze</text>
+
+  <!-- Teal accent border on card left edge -->
+  <rect x="640" y="78" width="3" height="500" rx="1.5" fill="#00C9A7" opacity="0.5"/>
+</svg>

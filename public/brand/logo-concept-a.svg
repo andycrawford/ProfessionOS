@@ -1,0 +1,21 @@
+<!-- Concept A: "Command" — Terminal Heritage -->
+<!-- Logo Mark: Terminal prompt block with >_ symbol -->
+<!-- Wordmark: "Profession OS" with monospace teal OS suffix -->
+<svg width="280" height="56" viewBox="0 0 280 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Profession OS — Concept A: Command</title>
+
+  <!-- MARK: near-black rounded square (terminal block) -->
+  <rect x="0" y="4" width="48" height="48" rx="7" fill="#0D0F12"/>
+  <rect x="0.5" y="4.5" width="47" height="47" rx="6.5" stroke="#2A3140" stroke-width="1"/>
+
+  <!-- > chevron prompt -->
+  <path d="M14 24 L23 28 L14 32" stroke="#00C9A7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- _ cursor bar -->
+  <rect x="25" y="31" width="10" height="2" rx="1" fill="#00C9A7" opacity="0.9"/>
+
+  <!-- WORDMARK -->
+  <text x="62" y="33" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" letter-spacing="-0.015em">
+    <tspan fill="#E8ECF0">Profession</tspan><tspan fill="#00C9A7" font-family="'IBM Plex Mono', 'Cascadia Code', monospace" font-weight="500"> OS</tspan>
+  </text>
+</svg>

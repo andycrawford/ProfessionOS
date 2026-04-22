@@ -1,0 +1,31 @@
+<!-- Concept B: "Meridian" — Clean Professional -->
+<!-- Logo Mark: Four-point compass rose in navy + teal -->
+<!-- Wordmark: Clean navy sans-serif, teal accent on OS -->
+<svg width="280" height="56" viewBox="0 0 280 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Profession OS — Concept B: Meridian</title>
+
+  <!-- MARK: white/light circle with compass geometry -->
+  <circle cx="24" cy="28" r="22" fill="#F7F9FC"/>
+  <circle cx="24" cy="28" r="21.5" stroke="#D1D9E6" stroke-width="1"/>
+
+  <!-- Compass cross lines (thin navy) -->
+  <line x1="24" y1="10" x2="24" y2="46" stroke="#0A1628" stroke-width="1" opacity="0.2"/>
+  <line x1="6" y1="28" x2="42" y2="28" stroke="#0A1628" stroke-width="1" opacity="0.2"/>
+
+  <!-- North point chevron (teal — the active/aspirational direction) -->
+  <path d="M20 21 L24 11 L28 21" fill="#00C9A7"/>
+
+  <!-- East, South, West points (navy — structural, grounded) -->
+  <path d="M31 24 L41 28 L31 32" fill="#0A1628" opacity="0.5"/>
+  <path d="M28 35 L24 45 L20 35" fill="#0A1628" opacity="0.3"/>
+  <path d="M17 32 L7 28 L17 24" fill="#0A1628" opacity="0.5"/>
+
+  <!-- Center dot -->
+  <circle cx="24" cy="28" r="3" fill="#0A1628"/>
+  <circle cx="24" cy="28" r="1.5" fill="#00C9A7"/>
+
+  <!-- WORDMARK (navy, clean) -->
+  <text x="56" y="33" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" letter-spacing="-0.015em">
+    <tspan fill="#0A1628">Profession</tspan><tspan fill="#00C9A7"> OS</tspan>
+  </text>
+</svg>

@@ -1,0 +1,24 @@
+<!-- Concept B: "Meridian" — Full lockup, dark-mode adaptation (280×56) -->
+<!-- Dark-mode version of the Meridian concept for docs, GitHub, dark backgrounds -->
+<svg width="280" height="56" viewBox="0 0 280 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Profession OS — Concept B: Meridian (Dark)</title>
+  <!-- MARK: dark circle with compass geometry -->
+  <circle cx="24" cy="28" r="22" fill="#161A1F"/>
+  <circle cx="24" cy="28" r="21.5" stroke="#2A3140" stroke-width="1"/>
+  <!-- Compass cross lines (subtle) -->
+  <line x1="24" y1="10" x2="24" y2="46" stroke="#E8ECF0" stroke-width="0.75" opacity="0.12"/>
+  <line x1="6" y1="28" x2="42" y2="28" stroke="#E8ECF0" stroke-width="0.75" opacity="0.12"/>
+  <!-- North point teal -->
+  <path d="M21 21 L24 11 L27 21" fill="#00C9A7"/>
+  <!-- E/S/W points muted -->
+  <path d="M31 25 L41 28 L31 31" fill="#8B96A8" opacity="0.5"/>
+  <path d="M27 35 L24 45 L21 35" fill="#8B96A8" opacity="0.3"/>
+  <path d="M17 31 L7 28 L17 25" fill="#8B96A8" opacity="0.5"/>
+  <!-- Center hub -->
+  <circle cx="24" cy="28" r="3.5" fill="#161A1F" stroke="#2A3140" stroke-width="0.75"/>
+  <circle cx="24" cy="28" r="1.75" fill="#00C9A7"/>
+  <!-- WORDMARK (light, for dark backgrounds) -->
+  <text x="56" y="33" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="17" font-weight="600" letter-spacing="-0.015em">
+    <tspan fill="#E8ECF0">Profession</tspan><tspan fill="#00C9A7"> OS</tspan>
+  </text>
+</svg>

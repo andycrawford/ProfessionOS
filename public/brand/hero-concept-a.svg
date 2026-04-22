@@ -1,0 +1,196 @@
+<!-- Concept A: "Command" — Terminal Heritage Hero/Header Mockup -->
+<!-- 1200×630 viewport · Dark · Bloomberg-meets-SaaS aesthetic -->
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Profession OS — Hero Concept A: Command</title>
+  <defs>
+    <!-- Subtle teal glow for accent elements -->
+    <radialGradient id="bgGlow" cx="70%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#00C9A7" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#0D0F12" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Grid line pattern -->
+    <pattern id="gridPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E2633" stroke-width="0.5"/>
+    </pattern>
+    <!-- Scan line gradient for UI card -->
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161A1F"/>
+      <stop offset="100%" stop-color="#0D0F12"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ─── BACKGROUND ─── -->
+  <rect width="1200" height="630" fill="#0D0F12"/>
+  <!-- Subtle grid overlay -->
+  <rect width="1200" height="630" fill="url(#gridPattern)" opacity="0.4"/>
+  <!-- Teal ambient glow (right side, where UI preview lives) -->
+  <rect width="1200" height="630" fill="url(#bgGlow)"/>
+
+  <!-- ─── NAVIGATION BAR ─── -->
+  <rect width="1200" height="56" fill="#0D0F12"/>
+  <line x1="0" y1="56" x2="1200" y2="56" stroke="#2A3140" stroke-width="1"/>
+
+  <!-- Logo mark in nav -->
+  <rect x="48" y="12" width="32" height="32" rx="5" fill="#161A1F"/>
+  <rect x="48.5" y="12.5" width="31" height="31" rx="4.5" stroke="#2A3140" stroke-width="1"/>
+  <path d="M57 24 L64 28 L57 32" stroke="#00C9A7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="66" y="31" width="6" height="1.5" rx="0.75" fill="#00C9A7"/>
+  <!-- Wordmark in nav -->
+  <text x="90" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600" letter-spacing="-0.01em">
+    <tspan fill="#E8ECF0">Profession</tspan><tspan fill="#00C9A7" font-family="monospace"> OS</tspan>
+  </text>
+
+  <!-- Nav links -->
+  <text x="320" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#8B96A8">Features</text>
+  <text x="408" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#8B96A8">Pricing</text>
+  <text x="488" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#8B96A8">Docs</text>
+  <text x="554" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#8B96A8">Blog</text>
+
+  <!-- Sign in link -->
+  <text x="1036" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#8B96A8">Sign in</text>
+
+  <!-- CTA Button -->
+  <rect x="1100" y="14" width="100" height="28" rx="4" fill="#00C9A7"/>
+  <text x="1150" y="32" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#0D0F12" text-anchor="middle">Get Started</text>
+
+  <!-- ─── HERO CONTENT AREA ─── -->
+  <!-- Left column: copy -->
+  <!-- Eyebrow label -->
+  <rect x="48" y="96" width="170" height="22" rx="11" fill="#161A1F" stroke="#2A3140" stroke-width="1"/>
+  <text x="58" y="111" font-family="'IBM Plex Mono', monospace" font-size="10" font-weight="500" fill="#00C9A7" letter-spacing="0.06em">YOUR COMMAND CENTER</text>
+
+  <!-- Headline: 3 lines of large type -->
+  <text x="48" y="175" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" letter-spacing="-0.03em" fill="#E8ECF0">One OS for your</text>
+  <text x="48" y="235" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" letter-spacing="-0.03em" fill="#E8ECF0">entire professional</text>
+  <!-- "life." with teal terminal cursor -->
+  <text x="48" y="295" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="700" letter-spacing="-0.03em" fill="#00C9A7">life.</text>
+  <!-- Blinking cursor after "life." -->
+  <rect x="177" y="263" width="4" height="38" rx="2" fill="#00C9A7" opacity="0.8"/>
+
+  <!-- Sub-headline -->
+  <text x="48" y="338" font-family="Inter, system-ui, sans-serif" font-size="16" fill="#8B96A8" letter-spacing="-0.005em">Mail · Calendar · Code · CRM — monitored by AI,</text>
+  <text x="48" y="360" font-family="Inter, system-ui, sans-serif" font-size="16" fill="#8B96A8" letter-spacing="-0.005em">surfaced in one agentic command center.</text>
+
+  <!-- CTA Buttons -->
+  <rect x="48" y="396" width="160" height="44" rx="5" fill="#00C9A7"/>
+  <text x="128" y="423" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#0D0F12" text-anchor="middle">Start free →</text>
+
+  <rect x="224" y="396" width="140" height="44" rx="5" fill="none" stroke="#2A3140" stroke-width="1"/>
+  <text x="294" y="423" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="500" fill="#8B96A8" text-anchor="middle">View demo</text>
+
+  <!-- Social proof -->
+  <text x="48" y="474" font-family="Inter, system-ui, sans-serif" font-size="12" fill="#4A5568">Used by professionals at</text>
+  <!-- Brand logos placeholder row -->
+  <rect x="48" y="486" width="60" height="12" rx="3" fill="#1E2329"/>
+  <rect x="120" y="486" width="48" height="12" rx="3" fill="#1E2329"/>
+  <rect x="180" y="486" width="72" height="12" rx="3" fill="#1E2329"/>
+  <rect x="264" y="486" width="52" height="12" rx="3" fill="#1E2329"/>
+
+  <!-- ─── RIGHT COLUMN: UI PREVIEW ─── -->
+  <!-- Dashboard card mockup — right 520px -->
+  <rect x="640" y="72" width="520" height="500" rx="8" fill="url(#cardGrad)" stroke="#2A3140" stroke-width="1"/>
+
+  <!-- Card titlebar with window controls -->
+  <rect x="640" y="72" width="520" height="36" rx="8" fill="#161A1F"/>
+  <rect x="640" y="96" width="520" height="12" fill="#161A1F"/>
+  <line x1="640" y1="108" x2="1160" y2="108" stroke="#2A3140" stroke-width="1"/>
+  <circle cx="664" cy="90" r="5" fill="#FF4757" opacity="0.6"/>
+  <circle cx="680" cy="90" r="5" fill="#FFA502" opacity="0.6"/>
+  <circle cx="696" cy="90" r="5" fill="#2ED573" opacity="0.6"/>
+  <text x="760" y="95" font-family="'IBM Plex Mono', monospace" font-size="11" fill="#4A5568" text-anchor="middle">app.professionos.com — Command Center</text>
+
+  <!-- Top bar inside UI -->
+  <rect x="640" y="108" width="520" height="32" fill="#161A1F"/>
+  <line x1="640" y1="140" x2="1160" y2="140" stroke="#2A3140" stroke-width="1"/>
+  <!-- Topbar elements -->
+  <rect x="652" y="117" width="80" height="14" rx="3" fill="#1E2329"/>
+  <rect x="1100" y="117" width="48" height="14" rx="3" fill="#00C9A7" opacity="0.3"/>
+
+  <!-- Alert bar (teal/warning) -->
+  <rect x="640" y="140" width="520" height="24" fill="#1E2329"/>
+  <rect x="652" y="148" width="6" height="8" rx="1" fill="#FFA502"/>
+  <rect x="664" y="150" width="200" height="4" rx="2" fill="#4A5568"/>
+  <line x1="640" y1="164" x2="1160" y2="164" stroke="#2A3140" stroke-width="1"/>
+
+  <!-- Nav rail + content -->
+  <!-- Nav rail (left strip) -->
+  <rect x="640" y="164" width="40" height="408" fill="#161A1F"/>
+  <line x1="680" y1="164" x2="680" y2="572" stroke="#2A3140" stroke-width="1"/>
+  <!-- Nav icons (simplified) -->
+  <rect x="652" y="180" width="16" height="16" rx="3" fill="#00C9A7" opacity="0.2"/>
+  <rect x="654" y="182" width="12" height="12" rx="2" fill="#00C9A7"/>
+  <rect x="652" y="210" width="16" height="16" rx="3" fill="#1E2329"/>
+  <rect x="652" y="240" width="16" height="16" rx="3" fill="#1E2329"/>
+  <rect x="652" y="270" width="16" height="16" rx="3" fill="#1E2329"/>
+  <rect x="652" y="300" width="16" height="16" rx="3" fill="#1E2329"/>
+
+  <!-- Widget row (5 metric cards) -->
+  <rect x="688" y="172" width="96" height="68" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="698" y="190" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#8B96A8" letter-spacing="0.04em">EMAIL</text>
+  <text x="698" y="215" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#E8ECF0">124</text>
+  <text x="698" y="230" font-family="Inter, sans-serif" font-size="8" fill="#2ED573">↑ 18%</text>
+
+  <rect x="792" y="172" width="96" height="68" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="802" y="190" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#8B96A8" letter-spacing="0.04em">CALENDAR</text>
+  <text x="802" y="215" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#E8ECF0">12</text>
+  <text x="802" y="230" font-family="Inter, sans-serif" font-size="8" fill="#FFA502">⚠ 3 conflicts</text>
+
+  <rect x="896" y="172" width="96" height="68" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="906" y="190" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#8B96A8" letter-spacing="0.04em">SLACK</text>
+  <text x="906" y="215" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#E8ECF0">248</text>
+  <text x="906" y="230" font-family="Inter, sans-serif" font-size="8" fill="#FF4757">↓ 5%</text>
+
+  <rect x="1000" y="172" width="80" height="68" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="1010" y="190" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#8B96A8" letter-spacing="0.04em">CODE</text>
+  <text x="1010" y="215" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#E8ECF0">11</text>
+  <text x="1010" y="230" font-family="Inter, sans-serif" font-size="8" fill="#2ED573">↑ 22%</text>
+
+  <rect x="1088" y="172" width="64" height="68" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="1098" y="190" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#8B96A8" letter-spacing="0.04em">CRM</text>
+  <text x="1098" y="215" font-family="Inter, sans-serif" font-size="22" font-weight="700" fill="#E8ECF0">5</text>
+  <text x="1098" y="230" font-family="Inter, sans-serif" font-size="8" fill="#8B96A8">–</text>
+
+  <!-- Activity timeline (left panel) -->
+  <rect x="688" y="252" width="280" height="308" rx="4" fill="#161A1F" stroke="#2A3140" stroke-width="1"/>
+  <text x="700" y="272" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#8B96A8" letter-spacing="0.06em">ACTIVITY TIMELINE</text>
+  <line x1="688" y1="280" x2="968" y2="280" stroke="#2A3140" stroke-width="1"/>
+  <!-- Feed items -->
+  <rect x="700" y="290" width="8" height="8" rx="2" fill="#FFA502"/>
+  <rect x="716" y="291" width="120" height="6" rx="2" fill="#2A3140"/>
+  <rect x="716" y="302" width="80" height="4" rx="2" fill="#1E2329"/>
+  <line x1="700" y1="318" x2="960" y2="318" stroke="#1E2633" stroke-width="1"/>
+  <rect x="700" y="326" width="8" height="8" rx="2" fill="#2ED573"/>
+  <rect x="716" y="327" width="100" height="6" rx="2" fill="#2A3140"/>
+  <rect x="716" y="338" width="140" height="4" rx="2" fill="#1E2329"/>
+  <line x1="700" y1="354" x2="960" y2="354" stroke="#1E2633" stroke-width="1"/>
+  <rect x="700" y="362" width="8" height="8" rx="2" fill="#4A5568"/>
+  <rect x="716" y="363" width="140" height="6" rx="2" fill="#2A3140"/>
+  <rect x="716" y="374" width="90" height="4" rx="2" fill="#1E2329"/>
+  <line x1="700" y1="390" x2="960" y2="390" stroke="#1E2633" stroke-width="1"/>
+  <rect x="700" y="398" width="8" height="8" rx="2" fill="#3D7EFF"/>
+  <rect x="716" y="399" width="110" height="6" rx="2" fill="#2A3140"/>
+  <rect x="716" y="410" width="130" height="4" rx="2" fill="#1E2329"/>
+
+  <!-- AI Panel (right panel) -->
+  <rect x="976" y="252" width="176" height="308" rx="4" fill="#161A1F" stroke="#2A3140" stroke-width="1"/>
+  <text x="988" y="272" font-family="'IBM Plex Mono', monospace" font-size="8" fill="#00C9A7" letter-spacing="0.06em">AI ASSISTANT</text>
+  <rect x="984" y="278" width="6" height="6" rx="3" fill="#00C9A7"/>
+  <line x1="976" y1="280" x2="1152" y2="280" stroke="#2A3140" stroke-width="1"/>
+  <!-- AI suggestion bubble -->
+  <rect x="988" y="292" width="152" height="48" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <rect x="996" y="300" width="96" height="4" rx="2" fill="#4A5568"/>
+  <rect x="996" y="310" width="120" height="4" rx="2" fill="#4A5568"/>
+  <rect x="996" y="320" width="80" height="4" rx="2" fill="#4A5568"/>
+  <!-- Action pills -->
+  <rect x="988" y="348" width="52" height="16" rx="8" fill="#00C9A7" opacity="0.15" stroke="#00C9A7" stroke-width="1"/>
+  <text x="1014" y="360" font-family="Inter, sans-serif" font-size="7" fill="#00C9A7" text-anchor="middle">Resolve</text>
+  <rect x="1048" y="348" width="44" height="16" rx="8" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="1070" y="360" font-family="Inter, sans-serif" font-size="7" fill="#8B96A8" text-anchor="middle">Snooze</text>
+  <!-- Chat input -->
+  <rect x="984" y="524" width="160" height="24" rx="4" fill="#1E2329" stroke="#2A3140" stroke-width="1"/>
+  <text x="996" y="540" font-family="Inter, sans-serif" font-size="8" fill="#4A5568">Ask anything…</text>
+  <rect x="1120" y="527" width="18" height="18" rx="9" fill="#00C9A7" opacity="0.2"/>
+
+  <!-- Teal accent line — left edge of card -->
+  <rect x="640" y="164" width="2" height="408" fill="#00C9A7" opacity="0.4"/>
+</svg>

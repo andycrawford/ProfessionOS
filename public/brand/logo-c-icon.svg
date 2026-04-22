@@ -1,0 +1,26 @@
+<!-- Concept C: "Apex" — Icon-only mark (48×48) -->
+<!-- Use for: premium brand touch-points, social avatar, app icon -->
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Profession OS — Icon (Apex)</title>
+  <defs>
+    <linearGradient id="apexIconGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00C9A7"/>
+      <stop offset="100%" stop-color="#3D7EFF"/>
+    </linearGradient>
+    <filter id="apexIconGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur"/>
+      <feFlood flood-color="#00C9A7" flood-opacity="0.45" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Gradient circle with glow -->
+  <circle cx="24" cy="24" r="23" fill="url(#apexIconGrad)" filter="url(#apexIconGlow)"/>
+  <!-- Abstract geometric P mark in white -->
+  <!-- Vertical stem -->
+  <rect x="16" y="13" width="3.5" height="22" rx="1.75" fill="white"/>
+  <!-- Upper bowl arc of "P" -->
+  <path d="M19.5 13 Q32 13 32 20 Q32 27 19.5 27" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Apex arrow (upward momentum symbol) -->
+  <path d="M28 38 L33 30 L38 38" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/>
+</svg>
