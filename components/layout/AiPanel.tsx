@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
 import styles from "./AiPanel.module.css";
 
 export interface ChatMessage {
@@ -45,6 +45,7 @@ export default function AiPanel({
       aria-label="AI Assistant"
     >
       <div className={styles.header}>
+        <Bot size={14} className={styles.botIcon} aria-hidden="true" />
         {!collapsed && <span className={styles.title}>AI Assistant</span>}
         <button
           className={styles.collapseButton}
@@ -63,7 +64,10 @@ export default function AiPanel({
         <>
           {suggestion && (
             <div className={styles.suggestionCard} role="complementary" aria-label="Proactive suggestion">
-              <div className={styles.suggestionLabel}>Suggestion</div>
+              <div className={styles.suggestionLabel}>
+                <Sparkles size={10} className={styles.sparklesIcon} aria-hidden="true" />
+                Suggestion
+              </div>
               <p className={styles.suggestionBody}>{suggestion.body}</p>
               <div className={styles.suggestionActions}>
                 {(suggestion.actions ?? ["Resolve", "Snooze"]).map((action) => (
@@ -88,7 +92,7 @@ export default function AiPanel({
 
           <div className={styles.conversation} role="log" aria-live="polite" aria-label="AI conversation">
             {messages.length === 0 && (
-              <div style={{ color: "var(--color-text-disabled)", fontSize: "var(--text-body-sm-size)", textAlign: "center", padding: "var(--space-8) 0" }}>
+              <div className={styles.emptyState}>
                 Ask AI anything about your workflow…
               </div>
             )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Calendar, MessageSquare, Code2 } from "lucide-react";
+import { Mail, Calendar, MessageSquare, Code2, Users } from "lucide-react";
 import styles from "./ActivityTimeline.module.css";
 
 export type FeedItemSeverity = "critical" | "warning" | "info" | "neutral";
@@ -37,6 +37,7 @@ const serviceIcon: Partial<Record<FeedService, React.ReactNode>> = {
   calendar: <Calendar size={14} aria-hidden="true" />,
   slack: <MessageSquare size={14} aria-hidden="true" />,
   code: <Code2 size={14} aria-hidden="true" />,
+  crm: <Users size={14} aria-hidden="true" />,
 };
 
 export default function ActivityTimeline({
@@ -51,7 +52,10 @@ export default function ActivityTimeline({
 
   return (
     <main className={styles.panel} aria-label="Activity timeline">
-      {/* Filter bar */}
+      {/* Header: section label + filter chips */}
+      <div className={styles.header}>
+        <span className={styles.sectionLabel}>Activity</span>
+      </div>
       <div className={styles.filterBar} role="toolbar" aria-label="Filter by service">
         {SERVICE_FILTERS.map((f) => (
           <button

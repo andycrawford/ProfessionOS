@@ -207,12 +207,21 @@
 }
 
 /* ── Sparkline ── */
+/*
+ * Absolutely positioned so it overlays the card bottom as a background
+ * data visualization — does not displace the metric or footer content.
+ * Opacity kept low so text remains legible above the chart.
+ */
 
 .sparklineWrapper {
-  height: 40px;
-  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
   overflow: hidden;
-  flex-shrink: 0;
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 .sparklineSvg {

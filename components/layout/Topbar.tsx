@@ -7,11 +7,13 @@ import styles from "./Topbar.module.css";
 interface TopbarProps {
   alertCount?: number;
   onCommandPaletteOpen?: () => void;
+  userInitials?: string;
 }
 
 export default function Topbar({
   alertCount = 0,
   onCommandPaletteOpen,
+  userInitials,
 }: TopbarProps) {
   return (
     <header className={styles.topbar} role="banner">
@@ -56,6 +58,11 @@ export default function Topbar({
         </button>
 
         <div className={styles.avatar} role="button" aria-label="User menu" tabIndex={0}>
+          {userInitials && (
+            <span className={styles.avatarInitials} aria-hidden="true">
+              {userInitials}
+            </span>
+          )}
           <span className={styles.statusDot} aria-hidden="true" />
         </div>
       </div>

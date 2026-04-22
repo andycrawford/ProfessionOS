@@ -39,49 +39,49 @@ import styles from "./dashboard.module.css";
 type ServiceKey = "mail" | "calendar" | "slack" | "code" | "crm";
 
 interface WidgetData {
-  metric: number;
+  primaryMetric: number;
   secondaryLabel: string;
   deltaPercent: number;
-  sparkline: number[];
+  sparklineData: number[];
   state: WidgetState;
   alertCount?: number;
 }
 
 const INITIAL_WIDGETS: Record<ServiceKey, WidgetData> = {
   mail: {
-    metric: 124,
+    primaryMetric: 124,
     secondaryLabel: "new messages",
     deltaPercent: 18,
-    sparkline: [42, 58, 51, 73, 60, 88, 95, 112, 124],
+    sparklineData: [42, 58, 51, 73, 60, 88, 95, 112, 124],
     state: "default",
   },
   calendar: {
-    metric: 12,
+    primaryMetric: 12,
     secondaryLabel: "events today",
     deltaPercent: 0,
-    sparkline: [8, 6, 9, 7, 10, 8, 11, 9, 12],
+    sparklineData: [8, 6, 9, 7, 10, 8, 11, 9, 12],
     state: "warning",
     alertCount: 3,
   },
   slack: {
-    metric: 248,
+    primaryMetric: 248,
     secondaryLabel: "unread messages",
     deltaPercent: -5,
-    sparkline: [210, 190, 225, 205, 230, 215, 240, 220, 248],
+    sparklineData: [210, 190, 225, 205, 230, 215, 240, 220, 248],
     state: "default",
   },
   code: {
-    metric: 11,
+    primaryMetric: 11,
     secondaryLabel: "open PRs",
     deltaPercent: 22,
-    sparkline: [3, 5, 4, 7, 6, 8, 5, 9, 11],
+    sparklineData: [3, 5, 4, 7, 6, 8, 5, 9, 11],
     state: "default",
   },
   crm: {
-    metric: 5,
+    primaryMetric: 5,
     secondaryLabel: "follow-ups due",
     deltaPercent: -2,
-    sparkline: [2, 3, 2, 4, 3, 5, 4, 6, 5],
+    sparklineData: [2, 3, 2, 4, 3, 5, 4, 6, 5],
     state: "default",
   },
 };
@@ -177,10 +177,10 @@ export default function DashboardPage() {
       setWidgets((prev) => ({
         ...prev,
         [key]: {
-          metric: update.metric,
+          primaryMetric: update.metric,
           secondaryLabel: update.secondaryLabel,
           deltaPercent: update.deltaPercent,
-          sparkline: update.sparkline,
+          sparklineData: update.sparkline,
           state: update.state,
           alertCount: update.alertCount,
         },
@@ -386,6 +386,7 @@ export default function DashboardPage() {
         <Topbar
           alertCount={alerts.length}
           onCommandPaletteOpen={() => setPaletteOpen(true)}
+          userInitials="AC"
         />
 
         <div className={styles.body}>

@@ -7,6 +7,24 @@
   border-right: 1px solid var(--color-border-default);
 }
 
+/* ── Section header ── */
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+  flex-shrink: 0;
+}
+
+.sectionLabel {
+  font-size: var(--text-label-caps-size);
+  font-weight: var(--text-label-caps-weight);
+  letter-spacing: var(--text-label-caps-spacing);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
 /* ── Filter bar ── */
 
 .filterBar {

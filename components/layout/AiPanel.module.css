@@ -21,14 +21,20 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-2);
   height: 36px;
   padding: 0 var(--space-3);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
+.botIcon {
+  color: var(--color-accent-brand);
+  flex-shrink: 0;
+}
+
 .title {
+  flex: 1;
   font-size: var(--text-label-caps-size);
   font-weight: var(--text-label-caps-weight);
   letter-spacing: var(--text-label-caps-spacing);
@@ -71,12 +77,19 @@
 }
 
 .suggestionLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: var(--text-label-caps-size);
   font-weight: var(--text-label-caps-weight);
   letter-spacing: var(--text-label-caps-spacing);
   text-transform: uppercase;
   color: var(--color-accent-brand);
   margin-bottom: var(--space-1);
+}
+
+.sparklesIcon {
+  flex-shrink: 0;
 }
 
 .suggestionBody {
@@ -172,6 +185,15 @@
   color: var(--color-text-primary);
   text-align: right;
   border-radius: var(--radius-md) 0 var(--radius-md) var(--radius-md);
+}
+
+/* ── Empty state ── */
+
+.emptyState {
+  color: var(--color-text-disabled);
+  font-size: var(--text-body-sm-size);
+  text-align: center;
+  padding: var(--space-8) 0;
 }
 
 /* ── Input ── */
