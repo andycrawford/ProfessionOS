@@ -181,7 +181,7 @@ export default function WidgetCard({
 
       <div className={styles.footer}>
         {deltaPercent !== undefined && (
-          <span className={`${styles.delta} ${deltaClass}`} aria-label={`${Math.abs(deltaPercent)}% ${deltaPercent >= 0 ? "increase" : "decrease"} vs yesterday`}>
+          <span className={`${styles.delta} ${deltaClass}`} aria-label={`${deltaPercent === 0 ? "no change" : `${Math.abs(deltaPercent)}% ${deltaPercent > 0 ? "increase" : "decrease"}`} vs yesterday`}>
             {deltaPercent > 0 ? (
               <TrendingUp size={12} aria-hidden="true" />
             ) : deltaPercent < 0 ? (
