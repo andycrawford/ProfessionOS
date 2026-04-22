@@ -42,12 +42,21 @@
   <rect x="0" y="0" width="1200" height="3" fill="url(#headlineGrad)"/>
 
   <!-- ─── LOGO MARK (centered, large) ─── -->
-  <!-- Terminal block mark — 96×96 centered -->
-  <rect x="552" y="120" width="96" height="96" rx="14" fill="#161A1F"/>
-  <rect x="552.5" y="120.5" width="95" height="95" rx="13.5" stroke="#2A3140" stroke-width="1"/>
-  <!-- >_ symbol at mark scale -->
-  <path d="M572 162 L589 170 L572 178" stroke="#00C9A7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="592" y="175" width="20" height="4" rx="2" fill="#00C9A7" opacity="0.9"/>
+  <!-- Meridian compass mark — 96×96 circle, centered at 600,168 -->
+  <circle cx="600" cy="168" r="48" fill="#161A1F"/>
+  <circle cx="600" cy="168" r="47.5" stroke="#2A3140" stroke-width="1"/>
+  <!-- Cardinal cross (subtle) -->
+  <line x1="600" y1="124" x2="600" y2="212" stroke="#E8ECF0" stroke-width="1" opacity="0.10"/>
+  <line x1="556" y1="168" x2="644" y2="168" stroke="#E8ECF0" stroke-width="1" opacity="0.10"/>
+  <!-- North point — teal -->
+  <path d="M594 155 L600 124 L606 155" fill="#00C9A7"/>
+  <!-- E/S/W — muted -->
+  <path d="M613 162 L644 168 L613 174" fill="#8B96A8" opacity="0.45"/>
+  <path d="M606 181 L600 212 L594 181" fill="#8B96A8" opacity="0.28"/>
+  <path d="M587 174 L556 168 L587 162" fill="#8B96A8" opacity="0.45"/>
+  <!-- Center hub -->
+  <circle cx="600" cy="168" r="9" fill="#161A1F" stroke="#2A3140" stroke-width="1"/>
+  <circle cx="600" cy="168" r="4.5" fill="#00C9A7"/>
 
   <!-- ─── WORDMARK ─── -->
   <!-- "PROFESSION OS" — IBM Plex Mono, uppercase, teal accent -->

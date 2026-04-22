@@ -30,14 +30,20 @@
   <rect width="1200" height="56" fill="#0D0F12"/>
   <line x1="0" y1="56" x2="1200" y2="56" stroke="#2A3140" stroke-width="1"/>
 
-  <!-- Logo mark in nav -->
-  <rect x="48" y="12" width="32" height="32" rx="5" fill="#161A1F"/>
-  <rect x="48.5" y="12.5" width="31" height="31" rx="4.5" stroke="#2A3140" stroke-width="1"/>
-  <path d="M57 24 L64 28 L57 32" stroke="#00C9A7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="66" y="31" width="6" height="1.5" rx="0.75" fill="#00C9A7"/>
+  <!-- Logo mark in nav — Meridian compass (board-approved icon) -->
+  <circle cx="64" cy="28" r="16" fill="#161A1F"/>
+  <circle cx="64" cy="28" r="15.5" stroke="#2A3140" stroke-width="1"/>
+  <line x1="64" y1="15" x2="64" y2="41" stroke="#E8ECF0" stroke-width="0.5" opacity="0.12"/>
+  <line x1="51" y1="28" x2="77" y2="28" stroke="#E8ECF0" stroke-width="0.5" opacity="0.12"/>
+  <path d="M62 23 L64 15 L66 23" fill="#00C9A7"/>
+  <path d="M67 25 L75 28 L67 31" fill="#8B96A8" opacity="0.45"/>
+  <path d="M66 33 L64 41 L62 33" fill="#8B96A8" opacity="0.28"/>
+  <path d="M61 31 L53 28 L61 25" fill="#8B96A8" opacity="0.45"/>
+  <circle cx="64" cy="28" r="2.5" fill="#161A1F" stroke="#2A3140" stroke-width="0.5"/>
+  <circle cx="64" cy="28" r="1.25" fill="#00C9A7"/>
   <!-- Wordmark in nav -->
   <text x="90" y="33" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600" letter-spacing="-0.01em">
-    <tspan fill="#E8ECF0">Profession</tspan><tspan fill="#00C9A7" font-family="monospace"> OS</tspan>
+    <tspan fill="#E8ECF0">Profession</tspan><tspan fill="#00C9A7" font-family="'IBM Plex Mono', monospace" font-weight="500"> OS</tspan>
   </text>
 
   <!-- Nav links -->
