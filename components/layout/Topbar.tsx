@@ -17,14 +17,12 @@ export default function Topbar({
     <header className={styles.topbar} role="banner">
       <div className={styles.brand}>
         <Image
-          src="/brand/logo-icon.svg"
-          alt=""
-          width={24}
-          height={24}
-          aria-hidden="true"
+          src="/brand/logo.svg"
+          alt="Profession OS"
+          width={140}
+          height={28}
           priority
         />
-        <span className={styles.wordmark}>Profession OS</span>
       </div>
 
       <div className={styles.searchTrigger}>
