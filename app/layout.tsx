@@ -16,6 +16,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://app.professionos.com"),
   title: "Profession OS",
   description:
     "Professional dashboard for monitoring services, mailboxes, calendars, and alerts with an agentic AI assistant.",
