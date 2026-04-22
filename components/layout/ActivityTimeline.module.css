@@ -18,9 +18,10 @@
 }
 
 .sectionLabel {
+  font-family: var(--font-mono);
   font-size: var(--text-label-caps-size);
-  font-weight: var(--text-label-caps-weight);
-  letter-spacing: var(--text-label-caps-spacing);
+  font-weight: 500; /* Concept A eyebrow: IBM Plex Mono 500 — structural marker, not content */
+  letter-spacing: 0.06em; /* Concept A eyebrow: +6% tracking */
   text-transform: uppercase;
   color: var(--color-text-secondary);
 }
