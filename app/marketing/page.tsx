@@ -3,9 +3,9 @@ import Image from "next/image";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Profession OS — One OS for your professional life",
+  title: "Profession OS — Every signal. One surface.",
   description:
-    "Mail · Calendar · Code · CRM — monitored by AI, surfaced in one agentic command center.",
+    "AI-powered command center for high-output professionals. Mail · Calendar · Code · CRM — monitored by AI, surfaced in one agentic command center.",
 };
 
 export default function MarketingPage() {
