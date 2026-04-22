@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Bell, Bot, Search } from "lucide-react";
 import styles from "./Topbar.module.css";
 
@@ -14,7 +15,17 @@ export default function Topbar({
 }: TopbarProps) {
   return (
     <header className={styles.topbar} role="banner">
-      <span className={styles.wordmark}>Profession OS</span>
+      <div className={styles.brand}>
+        <Image
+          src="/brand/logo-icon.svg"
+          alt=""
+          width={24}
+          height={24}
+          aria-hidden="true"
+          priority
+        />
+        <span className={styles.wordmark}>Profession OS</span>
+      </div>
 
       <div className={styles.searchTrigger}>
         <button
