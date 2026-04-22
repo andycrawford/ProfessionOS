@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profession OS — Every signal. One surface.</title>
+  <meta name="description" content="AI-powered command center for high-output professionals. Mail · Calendar · Code · CRM — monitored by AI, surfaced in one agentic command center.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Profession OS">
+  <meta property="og:description" content="One OS for your entire professional life. Mail · Calendar · Code · CRM — monitored by AI, surfaced in one agentic command center.">
+  <meta property="og:url" content="https://professionos.com">
+  <meta property="og:site_name" content="Profession OS">
+  <meta property="og:image" content="https://professionos.com/brand/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Profession OS — Command Center">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Profession OS">
+  <meta name="twitter:description" content="One OS for your entire professional life. Mail · Calendar · Code · CRM — monitored by AI.">
+  <meta name="twitter:image" content="https://professionos.com/brand/og-card.png">
+
+  <!-- Favicon -->
+  <link rel="icon" href="/brand/logo-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/brand/logo-icon-96.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────────────────── */
+    :root {
+      --color-bg-base: #0D0F12;
+      --color-bg-surface: #161A1F;
+      --color-bg-raised: #1E2329;
+      --color-border-default: #2A3140;
+      --color-text-primary: #E8ECF0;
+      --color-text-secondary: #8B96A8;
+      --color-accent-teal: #00C9A7;
+      --font-ui: 'Inter', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', 'Cascadia Code', monospace;
+      --space-2: 8px;
+      --space-4: 16px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --radius-default: 4px;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      background-color: var(--color-bg-base);
+      color: var(--color-text-primary);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :focus-visible {
+      outline: 2px solid #3D7EFF;
+      outline-offset: 2px;
+    }
+
+    /* ── Page ───────────────────────────────────────────────────────────── */
+    .page {
+      min-height: 100vh;
+      background-color: var(--color-bg-base);
+      background-image:
+        linear-gradient(var(--color-border-default) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-border-default) 1px, transparent 1px);
+      background-size: 40px 40px;
+      position: relative;
+    }
+
+    .page::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 60%;
+      height: 100%;
+      background: radial-gradient(ellipse at 70% 50%, rgba(0, 201, 167, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Nav ────────────────────────────────────────────────────────────── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background-color: var(--color-bg-base);
+      border-bottom: 1px solid var(--color-border-default);
+      height: 56px;
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 var(--space-6);
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    .nav-brand {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+
+    .nav-link:hover { color: var(--color-text-primary); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-left: auto;
+    }
+
+    .nav-link-secondary {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+
+    .nav-link-secondary:hover { color: var(--color-text-primary); }
+
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 14px;
+      background-color: var(--color-accent-teal);
+      color: #0D0F12;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-default);
+      text-decoration: none;
+      transition: opacity 120ms ease;
+    }
+
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* ── Hero ───────────────────────────────────────────────────────────── */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px var(--space-6) 80px;
+      display: grid;
+      grid-template-columns: 1fr 520px;
+      gap: 64px;
+      align-items: center;
+      min-height: calc(100vh - 56px);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Hero Left ──────────────────────────────────────────────────────── */
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-6);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 12px;
+      border: 1px solid var(--color-border-default);
+      border-radius: 11px;
+      background-color: var(--color-bg-surface);
+    }
+
+    .eyebrow-text {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-accent-teal);
+    }
+
+    .headline {
+      font-family: var(--font-ui);
+      font-size: clamp(36px, 4.5vw, 52px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--color-text-primary);
+    }
+
+    .headline-accent {
+      color: var(--color-accent-teal);
+      white-space: nowrap;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 4px;
+      height: 0.75em;
+      background-color: var(--color-accent-teal);
+      border-radius: 2px;
+      margin-left: 2px;
+      vertical-align: middle;
+      opacity: 0.8;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 0; }
+    }
+
+    .subheadline {
+      font-size: 16px;
+      color: var(--color-text-secondary);
+      letter-spacing: -0.005em;
+      line-height: 1.6;
+    }
+
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .cta-primary {
+      display: inline-flex;
+      align-items: center;
+      height: 44px;
+      padding: 0 24px;
+      background-color: var(--color-accent-teal);
+      color: #0D0F12;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: opacity 120ms ease;
+    }
+
+    .cta-primary:hover { opacity: 0.88; }
+
+    .cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      height: 44px;
+      padding: 0 24px;
+      border: 1px solid var(--color-border-default);
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: border-color 120ms ease, color 120ms ease;
+    }
+
+    .cta-secondary:hover {
+      border-color: var(--color-text-secondary);
+      color: var(--color-text-primary);
+    }
+
+    .social-proof {
+      font-size: 12px;
+      color: #4A5568;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .logo-pill {
+      display: block;
+      height: 12px;
+      border-radius: 3px;
+      background-color: var(--color-bg-raised);
+    }
+
+    /* ── Hero Right — App Preview Mockup ────────────────────────────────── */
+    .hero-right { position: relative; }
+
+    .app-preview {
+      background: linear-gradient(to bottom, var(--color-bg-surface), var(--color-bg-base));
+      border: 1px solid var(--color-border-default);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow:
+        inset 3px 0 0 rgba(0, 201, 167, 0.4),
+        0 24px 64px rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-titlebar {
+      height: 36px;
+      background-color: var(--color-bg-surface);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+    }
+
+    .window-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-red    { background: rgba(255, 71, 87, 0.6); }
+    .dot-yellow { background: rgba(255, 165, 2, 0.6); }
+    .dot-green  { background: rgba(46, 213, 115, 0.6); }
+
+    .preview-url {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #4A5568;
+      margin: 0 auto;
+    }
+
+    .preview-topbar {
+      height: 32px;
+      background-color: var(--color-bg-surface);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+    }
+
+    .preview-logo-block {
+      width: 80px;
+      height: 14px;
+      border-radius: 3px;
+      background-color: var(--color-bg-raised);
+    }
+
+    .preview-cta-block {
+      width: 48px;
+      height: 14px;
+      border-radius: 3px;
+      background-color: rgba(0, 201, 167, 0.3);
+    }
+
+    .preview-alertbar {
+      height: 24px;
+      background-color: var(--color-bg-raised);
+      border-bottom: 1px solid var(--color-border-default);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0 16px;
+    }
+
+    .preview-alert-dot {
+      width: 6px;
+      height: 8px;
+      border-radius: 1px;
+      background: rgba(255, 165, 2, 0.8);
+      flex-shrink: 0;
+    }
+
+    .preview-alert-text {
+      width: 200px;
+      height: 4px;
+      border-radius: 2px;
+      background-color: #4A5568;
+    }
+
+    .preview-body {
+      display: flex;
+      height: 340px;
+    }
+
+    .preview-nav-rail {
+      width: 40px;
+      background-color: var(--color-bg-surface);
+      border-right: 1px solid var(--color-border-default);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .preview-nav-item {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      background-color: var(--color-bg-raised);
+    }
+
+    .preview-nav-item.active {
+      background-color: rgba(0, 201, 167, 0.15);
+      outline: 1px solid var(--color-accent-teal);
+    }
+
+    .preview-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 8px 8px;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    /* Widget row */
+    .preview-widgets {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .preview-widget {
+      flex: 1;
+      background-color: var(--color-bg-raised);
+      border: 1px solid var(--color-border-default);
+      border-radius: 4px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .widget-label {
+      font-family: var(--font-mono);
+      font-size: 7px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.06em;
+    }
+
+    .widget-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 1;
+    }
+
+    .widget-delta { font-size: 7px; }
+    .delta-up   { color: #2ED573; }
+    .delta-down { color: #FF4757; }
+    .delta-warn { color: #FFA502; }
+    .delta-neutral { color: #4A5568; }
+
+    /* Bottom panels */
+    .preview-bottom {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .preview-timeline,
+    .preview-ai {
+      background-color: var(--color-bg-surface);
+      border: 1px solid var(--color-border-default);
+      border-radius: 4px;
+      padding: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .preview-timeline { flex: 3; }
+    .preview-ai       { flex: 2; }
+
+    .panel-label {
+      font-family: var(--font-mono);
+      font-size: 7px;
+      color: var(--color-text-secondary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .panel-label-teal { color: var(--color-accent-teal); }
+
+    .feed-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .feed-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background-color: #FFA502;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .feed-item:nth-child(3) .feed-dot { background-color: #2ED573; }
+    .feed-item:nth-child(4) .feed-dot { background-color: #4A5568; }
+    .feed-item:nth-child(5) .feed-dot { background-color: #3D7EFF; }
+
+    .feed-line {
+      display: block;
+      width: 100px;
+      height: 5px;
+      border-radius: 2px;
+      background-color: var(--color-border-default);
+    }
+
+    .feed-line-sm {
+      display: block;
+      width: 70px;
+      height: 3px;
+      border-radius: 2px;
+      background-color: var(--color-bg-raised);
+      margin-top: 3px;
+    }
+
+    .ai-bubble {
+      background-color: var(--color-bg-raised);
+      border: 1px solid var(--color-border-default);
+      border-radius: 4px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ai-line {
+      display: block;
+      height: 4px;
+      border-radius: 2px;
+      background-color: #4A5568;
+      width: 100%;
+    }
+
+    .ai-line-80 { width: 80%; }
+    .ai-line-60 { width: 60%; }
+
+    .ai-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-pill {
+      font-size: 7px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border-default);
+      color: var(--color-text-secondary);
+      background-color: var(--color-bg-raised);
+    }
+
+    .action-pill-primary {
+      color: var(--color-accent-teal);
+      background-color: rgba(0, 201, 167, 0.15);
+      border-color: var(--color-accent-teal);
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 40px var(--space-6) 60px;
+        gap: 40px;
+      }
+
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .cta-row { flex-direction: column; align-items: stretch; }
+      .cta-primary, .cta-secondary { justify-content: center; }
+    }
+
+    /* ── Reduced Motion ─────────────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      .cursor { animation: none; opacity: 0.8; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ── Navigation ────────────────────────────────────────────────────── -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <a href="/" class="nav-brand" aria-label="Profession OS">
+          <img src="/brand/logo.svg" alt="Profession OS" width="140" height="28">
+        </a>
+
+        <ul class="nav-links" role="list">
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#pricing" class="nav-link">Pricing</a></li>
+          <li><a href="/docs" class="nav-link">Docs</a></li>
+          <li><a href="/blog" class="nav-link">Blog</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a href="https://app.professionos.com/sign-in" class="nav-link-secondary">Sign in</a>
+          <a href="https://app.professionos.com/sign-up" class="nav-cta">Get Started</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+    <main class="hero">
+
+      <!-- Left: copy -->
+      <div class="hero-left">
+        <div class="eyebrow">
+          <span class="eyebrow-text">Your Command Center</span>
+        </div>
+
+        <h1 class="headline">
+          One OS for your entire professional
+          <span class="headline-accent">
+            life.<span class="cursor" aria-hidden="true"></span>
+          </span>
+        </h1>
+
+        <p class="subheadline">
+          Mail · Calendar · Code · CRM — monitored by AI,<br>
+          surfaced in one agentic command center.
+        </p>
+
+        <div class="cta-row">
+          <a href="https://app.professionos.com/sign-up" class="cta-primary">Start free →</a>
+          <a href="https://app.professionos.com/demo" class="cta-secondary">View demo</a>
+        </div>
+
+        <p class="social-proof">Used by professionals at</p>
+        <div class="logo-row" aria-hidden="true">
+          <span class="logo-pill" style="width:60px"></span>
+          <span class="logo-pill" style="width:48px"></span>
+          <span class="logo-pill" style="width:72px"></span>
+          <span class="logo-pill" style="width:52px"></span>
+        </div>
+      </div>
+
+      <!-- Right: app preview mockup -->
+      <div class="hero-right">
+        <div class="app-preview" aria-hidden="true">
+
+          <!-- Browser chrome -->
+          <div class="preview-titlebar">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span class="preview-url">app.professionos.com — Command Center</span>
+          </div>
+
+          <!-- App topbar -->
+          <div class="preview-topbar">
+            <span class="preview-logo-block"></span>
+            <span class="preview-cta-block"></span>
+          </div>
+
+          <!-- Alert bar -->
+          <div class="preview-alertbar">
+            <span class="preview-alert-dot"></span>
+            <span class="preview-alert-text"></span>
+          </div>
+
+          <!-- App body -->
+          <div class="preview-body">
+
+            <!-- Left nav rail -->
+            <div class="preview-nav-rail">
+              <span class="preview-nav-item active"></span>
+              <span class="preview-nav-item"></span>
+              <span class="preview-nav-item"></span>
+              <span class="preview-nav-item"></span>
+            </div>
+
+            <!-- Main content -->
+            <div class="preview-content">
+
+              <!-- Widget row -->
+              <div class="preview-widgets">
+                <div class="preview-widget">
+                  <span class="widget-label">EMAIL</span>
+                  <span class="widget-value">124</span>
+                  <span class="widget-delta delta-up">↑ 18%</span>
+                </div>
+                <div class="preview-widget">
+                  <span class="widget-label">CALENDAR</span>
+                  <span class="widget-value">12</span>
+                  <span class="widget-delta delta-warn">⚠ 3</span>
+                </div>
+                <div class="preview-widget">
+                  <span class="widget-label">SLACK</span>
+                  <span class="widget-value">248</span>
+                  <span class="widget-delta delta-down">↓ 5%</span>
+                </div>
+                <div class="preview-widget">
+                  <span class="widget-label">CODE</span>
+                  <span class="widget-value">11</span>
+                  <span class="widget-delta delta-up">↑ 22%</span>
+                </div>
+                <div class="preview-widget">
+                  <span class="widget-label">CRM</span>
+                  <span class="widget-value">5</span>
+                  <span class="widget-delta delta-neutral">—</span>
+                </div>
+              </div>
+
+              <!-- Bottom panels -->
+              <div class="preview-bottom">
+
+                <!-- Activity Timeline -->
+                <div class="preview-timeline">
+                  <span class="panel-label">ACTIVITY TIMELINE</span>
+                  <div class="feed-item">
+                    <span class="feed-dot"></span>
+                    <div><span class="feed-line"></span><span class="feed-line-sm"></span></div>
+                  </div>
+                  <div class="feed-item">
+                    <span class="feed-dot"></span>
+                    <div><span class="feed-line"></span><span class="feed-line-sm"></span></div>
+                  </div>
+                  <div class="feed-item">
+                    <span class="feed-dot"></span>
+                    <div><span class="feed-line"></span><span class="feed-line-sm"></span></div>
+                  </div>
+                  <div class="feed-item">
+                    <span class="feed-dot"></span>
+                    <div><span class="feed-line"></span><span class="feed-line-sm"></span></div>
+                  </div>
+                </div>
+
+                <!-- AI Assistant -->
+                <div class="preview-ai">
+                  <span class="panel-label panel-label-teal">AI ASSISTANT</span>
+                  <div class="ai-bubble">
+                    <span class="ai-line"></span>
+                    <span class="ai-line ai-line-80"></span>
+                    <span class="ai-line ai-line-60"></span>
+                  </div>
+                  <div class="ai-actions">
+                    <span class="action-pill action-pill-primary">Resolve</span>
+                    <span class="action-pill">Snooze</span>
+                  </div>
+                </div>
+
+              </div><!-- /preview-bottom -->
+            </div><!-- /preview-content -->
+          </div><!-- /preview-body -->
+        </div><!-- /app-preview -->
+      </div><!-- /hero-right -->
+
+    </main>
+  </div><!-- /page -->
+</body>
+</html>
