@@ -1,9 +1,38 @@
 # Profession OS — Brand Style Guide
-## Three Concept Directions for professionos.com
 
-**Version:** 1.0 (Approval Draft)
-**Author:** Brand Designer (DVI-59)
-**Date:** 2026-04-21
+**Version:** 1.1 (Board Approved)
+**Author:** Brand Designer (DVI-59) · Updated: CMO (DVI-62)
+**Date:** 2026-04-22
+
+---
+
+## Board-Approved Direction (2026-04-22)
+
+| Element | Decision |
+|---|---|
+| **Icon mark** | Concept B "Meridian" — dark-circle compass, north point teal |
+| **Hero treatment** | Concept A "Command" — dark terminal aesthetic, grid background |
+| **Wordmark style** | Inter 600 + IBM Plex Mono teal " OS" |
+| **Tagline** | "Every signal. One surface." |
+| **Sub-copy** | "AI-powered command center for high-output professionals." |
+
+**Canonical assets** (ready for use):
+
+| File | Use |
+|---|---|
+| `logo.svg` | Primary brand logo — all marketing, social bios, email signatures, docs |
+| `logo-icon.svg` | 48×48 icon mark — social profiles, favicons, app icon, docs header |
+| `logo-concept-b.svg` | Light-mode logo — press kits, PDF documents, print-adjacent |
+| `og-card.svg` | Social sharing card (1200×630) — `<meta og:image>`, Twitter/LinkedIn |
+| `hero-concept-a.svg` | Marketing hero reference mockup |
+
+> All other concept assets remain in `public/brand/` as reference variants. For any new marketing touchpoint, use the canonical files above.
+
+---
+
+## Three Concept Directions (Reference)
+
+The three concept directions below are retained as reference. The board-approved hybrid (Concept B icon mark + Concept A hero/wordmark) was derived from this exploration.
 
 ---
 
@@ -140,18 +169,18 @@ All three concepts inherit the existing app design system tokens:
 
 ---
 
-## Recommendation
+## Recommendation (Superseded)
 
-**Primary recommendation: Concept A ("Command")** for the early adopter launch.
+> **Note:** The board approved a hybrid direction on 2026-04-22. See the [Board-Approved Direction](#board-approved-direction-2026-04-22) section at the top of this document. The original recommendation below is retained for reference only.
+
+**Original recommendation: Concept A ("Command")** for the early adopter launch.
 
 Rationale:
-1. Fully consistent with the existing `app.professionos.com` design system — customers switching from marketing site to app see zero visual discontinuity.
-2. The `>_` terminal metaphor creates strong memorability and positioning ("this is for people who are serious about their work").
+1. Fully consistent with the existing `app.professionos.com` design system.
+2. The `>_` terminal metaphor creates strong memorability and positioning.
 3. Cheapest to implement — tokens already exist, assets drop right in.
-4. Can evolve: a light mode/Meridian variant can be added after initial launch once we understand the actual customer profile.
 
-**If targeting a broader professional audience immediately:** Concept B ("Meridian") is safer.  
-**If budget for design craftsmanship and motion is available:** Concept C ("Apex") creates the strongest brand impression.
+**Board decision:** Hybrid — Concept B "Meridian" icon mark (broader appeal, navigation metaphor) + Concept A wordmark/hero style (consistent with app aesthetic). Best of both directions.
 
 ---
 
