@@ -1,9 +1,10 @@
 import NextAuth from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import Google from "next-auth/providers/google";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import Apple from "next-auth/providers/apple";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { users, accounts, sessions, verificationTokens } from "@/db/schema";
 
 /**
@@ -32,13 +33,31 @@ import { users, accounts, sessions, verificationTokens } from "@/db/schema";
  *               Apple requires HTTPS — does not work on http://localhost.
  *               Generate the P8 private key JWT with: npx auth add apple
  */
+// Build-time guard: DrizzleAdapter inspects the db object's prototype chain at
+// creation time (via drizzle-orm `is()`), so it cannot be constructed at module
+// evaluation when DATABASE_URL may be absent (e.g. during `next build`).
+// Wrapping each adapter method defers getDb() to the first request.
+let _adapter: Adapter | undefined;
+function lazyAdapter(): Adapter {
+  if (!_adapter) {
+    _adapter = DrizzleAdapter(getDb(), {
+      usersTable: users,
+      accountsTable: accounts,
+      sessionsTable: sessions,
+      verificationTokensTable: verificationTokens,
+    }) as Adapter;
+  }
+  return _adapter;
+}
+
+const adapter: Adapter = new Proxy({} as Adapter, {
+  get(_target, prop: string) {
+    return Reflect.get(lazyAdapter(), prop);
+  },
+});
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
+  adapter,
   session: {
     strategy: "database",
   },
