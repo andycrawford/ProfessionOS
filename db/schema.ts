@@ -146,6 +146,36 @@ export const priorityRules = pgTable("priority_rules", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+// ── AI chat tables ────────────────────────────────────────────────────────────
+
+// One row per chat session a user starts with the AI assistant.
+// title is auto-generated from the first message (max 80 chars).
+export const aiConversations = pgTable("ai_conversations", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// Individual messages within a conversation.
+// role: "user" | "assistant"
+export const aiMessages = pgTable("ai_messages", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  conversationId: text("conversation_id")
+    .notNull()
+    .references(() => aiConversations.id, { onDelete: "cascade" }),
+  role: text("role").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // Audit trail — records significant user and system actions.
 export const activityLog = pgTable("activity_log", {
   id: text("id")
@@ -171,4 +201,6 @@ export const schema = {
   activityItems,
   priorityRules,
   activityLog,
+  aiConversations,
+  aiMessages,
 };
