@@ -56,7 +56,7 @@ export const metadata = {
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const { callbackUrl } = await searchParams;
-  const redirectTo = callbackUrl ?? "/dashboard";
+  const redirectTo = callbackUrl ?? "/";
 
   return (
     <div style={styles.shell}>
