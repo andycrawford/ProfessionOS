@@ -42,33 +42,10 @@ import { loadAllSsoOrgs, lookupOrgByEmailDomain } from "@/lib/sso";
  *               Generate the P8 private key JWT with: npx auth add apple
  */
 
-// Build-time guard: DrizzleAdapter inspects the db object's prototype chain at
-// creation time (via drizzle-orm `is()`), so it cannot be constructed at module
-// evaluation when DATABASE_URL may be absent (e.g. during `next build`).
-// Wrapping each adapter method defers getDb() to the first request.
-let _adapter: Adapter | undefined;
-function lazyAdapter(): Adapter {
-  if (!_adapter) {
-    _adapter = DrizzleAdapter(getDb(), {
-      usersTable: users,
-      accountsTable: accounts,
-      sessionsTable: sessions,
-      verificationTokensTable: verificationTokens,
-    }) as Adapter;
-  }
-  return _adapter;
-}
-
-const adapter: Adapter = new Proxy({} as Adapter, {
-  // NextAuth's assertConfig uses `m in adapter` (not `adapter[m]`) to detect
-  // missing methods, so a `has` trap is required in addition to `get`.
-  get(_target, prop: string) {
-    return Reflect.get(lazyAdapter(), prop);
-  },
-  has(_target, prop: string) {
-    return prop in lazyAdapter();
-  },
-});
+// DrizzleAdapter is constructed inside the async NextAuth config callback (below),
+// which runs at request time rather than module evaluation. This defers getDb()
+// until DATABASE_URL is guaranteed to be available, avoiding the build-time
+// `is(db, PgDatabase)` check failure that a module-level adapter would trigger.
 
 // ── Per-org provider cache ────────────────────────────────────────────────────
 // Org SSO config rarely changes, so we cache the built providers for 5 minutes
@@ -141,19 +118,26 @@ async function upsertOrgMember(userId: string, orgId: string): Promise<void> {
 
 // ── NextAuth export ───────────────────────────────────────────────────────────
 
-// When DATABASE_URL is absent (e.g. demo deployments), fall back to JWT
-// sessions so NextAuth never calls the DB adapter on unauthenticated requests.
-// All authenticated features remain behind auth guards that already require
-// session.user.id to be present.
-const hasDatabase = !!process.env.DATABASE_URL;
-
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   const orgProviders = await getOrgProviders();
 
+  // Build the adapter here (request time), not at module evaluation, so that
+  // DrizzleAdapter's is(db, PgDatabase) check runs after DATABASE_URL is set.
+  // When DATABASE_URL is absent (e.g. demo deployments), fall back to JWT
+  // sessions so NextAuth never touches the DB adapter on unauthenticated requests.
+  const dbAdapter = process.env.DATABASE_URL
+    ? (DrizzleAdapter(getDb(), {
+        usersTable: users,
+        accountsTable: accounts,
+        sessionsTable: sessions,
+        verificationTokensTable: verificationTokens,
+      }) as Adapter)
+    : undefined;
+
   return {
-    adapter: hasDatabase ? adapter : undefined,
+    adapter: dbAdapter,
     session: {
-      strategy: hasDatabase ? "database" : "jwt",
+      strategy: dbAdapter ? "database" : "jwt",
     },
     providers: [
       // Auto-infers clientId from AUTH_GOOGLE_ID, clientSecret from AUTH_GOOGLE_SECRET
