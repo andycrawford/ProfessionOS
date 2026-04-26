@@ -618,6 +618,58 @@
     @media (prefers-reduced-motion: reduce) {
       .cursor { animation: none; opacity: 0.8; }
     }
+
+    /* ── Profession Cycler ──────────────────────────────────────────────── */
+    .cycler {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cycler-icon {
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+
+    .cycler-icon[data-visible="true"] { opacity: 1; }
+
+    .cycler-text {
+      display: flex;
+      align-items: baseline;
+      opacity: 0;
+    }
+
+    .cycler-text[data-visible="true"] { opacity: 1; }
+
+    .cycler-prefix {
+      font-family: var(--font-ui);
+      font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--color-text-primary);
+      animation: prefixFlicker 32ms ease-out;
+    }
+
+    @keyframes prefixFlicker {
+      0%   { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    .cycler-suffix {
+      font-family: var(--font-mono);
+      font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--color-accent-teal);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cycler-icon { transition: none; opacity: 1; }
+      .cycler-text { opacity: 1; }
+      .cycler-prefix { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -649,6 +701,16 @@
 
       <!-- Left: copy -->
       <div class="hero-left">
+        <!-- Brand reveal: cycles professions before landing on "Profession OS" -->
+        <div class="cycler" aria-label="Profession OS">
+          <div class="cycler-icon" id="cycler-icon" aria-hidden="true" data-visible="false">
+            <img src="/brand/logo-icon.svg" alt="" width="48" height="48">
+          </div>
+          <div class="cycler-text" id="cycler-text" data-visible="false" aria-live="off" aria-hidden="true">
+            <span id="cycler-prefix-wrap"><span class="cycler-prefix">Profession</span></span><span class="cycler-suffix">&nbsp;OS</span>
+          </div>
+        </div>
+
         <div class="eyebrow">
           <span class="eyebrow-text">Your Command Center</span>
         </div>
@@ -792,5 +854,66 @@
 
     </main>
   </div><!-- /page -->
+
+  <script>
+    (function () {
+      var PROFESSIONS = ['Doctor','Attorney','Architect','Engineer','Carpenter','Consultant','Journalist','Trader','Founder','Nurse','Designer','Profession'];
+      var HOLD_MS     = [100,100,100,100,100,100,100,100,100,130,180];
+      var SESSION_KEY = 'pos-animation-played';
+
+      function setPrefix(word) {
+        var wrap = document.getElementById('cycler-prefix-wrap');
+        if (!wrap) return;
+        // Replace the inner span to restart the CSS flicker animation
+        var span = document.createElement('span');
+        span.className = 'cycler-prefix';
+        span.textContent = word;
+        wrap.innerHTML = '';
+        wrap.appendChild(span);
+      }
+
+      function init() {
+        var icon   = document.getElementById('cycler-icon');
+        var textEl = document.getElementById('cycler-text');
+        if (!icon || !textEl) return;
+
+        var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var alreadyPlayed  = sessionStorage.getItem(SESSION_KEY) === '1';
+
+        if (prefersReduced || alreadyPlayed) {
+          setPrefix('Profession');
+          icon.setAttribute('data-visible', 'true');
+          textEl.setAttribute('data-visible', 'true');
+          return;
+        }
+
+        setPrefix(PROFESSIONS[0]);
+        icon.setAttribute('data-visible', 'true');
+
+        setTimeout(function () {
+          textEl.setAttribute('data-visible', 'true');
+          var i = 0;
+
+          function advance() {
+            i += 1;
+            setPrefix(PROFESSIONS[i]);
+            if (i < PROFESSIONS.length - 1) {
+              setTimeout(advance, HOLD_MS[i]);
+            } else {
+              sessionStorage.setItem(SESSION_KEY, '1');
+            }
+          }
+
+          setTimeout(advance, HOLD_MS[0]);
+        }, 300);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
 </body>
 </html>
