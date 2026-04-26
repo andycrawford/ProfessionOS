@@ -29,6 +29,8 @@ jobs:
           mkdir -p dist
           cp marketing-static/index.html dist/index.html
           cp -r public/brand dist/brand
+          cp -r marketing-static/docs dist/docs
+          cp -r marketing-static/blog dist/blog
           echo "professionos.com" > dist/CNAME
 
       - name: Upload Pages artifact

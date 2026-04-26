@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — Profession OS</title>
+  <meta name="description" content="Insights, updates, and deep dives from the Profession OS team.">
+  <link rel="canonical" href="https://professionos.com/blog">
+  <link rel="icon" href="/brand/logo-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/brand/logo-icon-96.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-bg-base: #0D0F12;
+      --color-bg-surface: #161A1F;
+      --color-bg-raised: #1E2329;
+      --color-border-default: #2A3140;
+      --color-text-primary: #E8ECF0;
+      --color-text-secondary: #8B96A8;
+      --color-accent-teal: #00C9A7;
+      --font-ui: 'Inter', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', 'Cascadia Code', monospace;
+      --space-2: 8px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --radius-default: 4px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-bg-base);
+      color: var(--color-text-primary);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        linear-gradient(var(--color-border-default) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-border-default) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background-color: var(--color-bg-base);
+      border-bottom: 1px solid var(--color-border-default);
+      height: 56px;
+      flex-shrink: 0;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 var(--space-6);
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+    .nav-brand { flex-shrink: 0; display: flex; align-items: center; text-decoration: none; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .nav-link {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+    .nav-link:hover, .nav-link-active { color: var(--color-text-primary); }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-left: auto;
+    }
+    .nav-link-secondary {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+    .nav-link-secondary:hover { color: var(--color-text-primary); }
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 14px;
+      background-color: var(--color-accent-teal);
+      color: #0D0F12;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-ui);
+      border-radius: var(--radius-default);
+      text-decoration: none;
+      transition: opacity 120ms ease;
+    }
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px var(--space-6);
+    }
+    .coming-soon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--space-5);
+      max-width: 520px;
+    }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-accent-teal);
+    }
+    h1 {
+      font-family: var(--font-ui);
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--color-text-primary);
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      margin: 0;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      height: 40px;
+      padding: 0 22px;
+      background-color: var(--color-accent-teal);
+      color: #0D0F12;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-ui);
+      border-radius: var(--radius-default);
+      text-decoration: none;
+      transition: opacity 120ms ease;
+      margin-top: 8px;
+    }
+    .cta:hover { opacity: 0.88; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--color-border-default);
+      padding: 32px 0;
+      flex-shrink: 0;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-6);
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 120ms ease;
+    }
+    .footer-brand:hover { opacity: 1; }
+    .footer-copy { font-size: 12px; color: #4A5568; margin: 0; }
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      margin-left: auto;
+    }
+    .footer-links a {
+      font-size: 12px;
+      color: #4A5568;
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+    .footer-links a:hover { color: var(--color-text-secondary); }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+    }
+    @media (max-width: 480px) {
+      .footer-inner { flex-wrap: wrap; gap: var(--space-4); }
+      .footer-links { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand" aria-label="Profession OS">
+        <img src="/brand/logo.svg" alt="Profession OS" width="140" height="28">
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="/#features" class="nav-link">Features</a></li>
+        <li><a href="/#pricing" class="nav-link">Pricing</a></li>
+        <li><a href="/docs" class="nav-link">Docs</a></li>
+        <li><a href="/blog" class="nav-link nav-link-active">Blog</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="https://app.professionos.com/sign-in" class="nav-link-secondary">Sign in</a>
+        <a href="https://app.professionos.com/sign-up" class="nav-cta">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="coming-soon">
+      <span class="eyebrow">Blog</span>
+      <h1>Stories coming soon.</h1>
+      <p class="subtitle">
+        Product updates, engineering deep dives, and productivity insights from the Profession OS team.<br>
+        Sign up to be the first to read.
+      </p>
+      <a href="https://app.professionos.com/sign-up" class="cta">Get notified →</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <a href="/" class="footer-brand" aria-label="Profession OS">
+        <img src="/brand/logo.svg" alt="Profession OS" width="110" height="22" loading="lazy">
+      </a>
+      <p class="footer-copy">© 2026 Profession OS. All rights reserved.</p>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="/#features">Features</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/docs">Docs</a>
+        <a href="/blog">Blog</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>
