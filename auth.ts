@@ -60,8 +60,13 @@ function lazyAdapter(): Adapter {
 }
 
 const adapter: Adapter = new Proxy({} as Adapter, {
+  // NextAuth's assertConfig uses `m in adapter` (not `adapter[m]`) to detect
+  // missing methods, so a `has` trap is required in addition to `get`.
   get(_target, prop: string) {
     return Reflect.get(lazyAdapter(), prop);
+  },
+  has(_target, prop: string) {
+    return prop in lazyAdapter();
   },
 });
 
