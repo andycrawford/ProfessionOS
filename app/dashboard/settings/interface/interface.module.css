@@ -1,0 +1,200 @@
+/* Interface settings page */
+
+.page {
+  padding: var(--space-8);
+  max-width: 640px;
+}
+
+.header {
+  margin-bottom: var(--space-8);
+}
+
+.heading {
+  font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.subheading {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* ── Section ──────────────────────────────────────────────────────────── */
+
+.section {
+  margin-bottom: var(--space-8);
+}
+
+.sectionTitle {
+  font-size: var(--text-body-base-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.sectionDesc {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Theme cards ──────────────────────────────────────────────────────── */
+
+.themeOptions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.themeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--easing-default),
+    background var(--duration-fast) var(--easing-default);
+  font-family: var(--font-ui);
+  width: 100px;
+}
+
+.themeCard:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.themeCard.themeCardActive {
+  border-color: var(--color-accent-brand);
+  background: var(--color-bg-raised);
+}
+
+.themePreview {
+  width: 64px;
+  height: 44px;
+  border-radius: var(--radius-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.themePreview[data-preview="dark"] {
+  background: #0D0F12;
+  color: #E8ECF0;
+}
+
+.themePreview[data-preview="light"] {
+  background: #F5F7FA;
+  color: #0D1117;
+}
+
+.themeLabel {
+  font-size: var(--text-body-sm-size);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.themeCardActive .themeLabel {
+  color: var(--color-accent-brand);
+}
+
+/* ── Accent presets ───────────────────────────────────────────────────── */
+
+.presets {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--swatch-color);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default);
+  outline: none;
+}
+
+.swatch:hover {
+  transform: scale(1.1);
+}
+
+.swatch:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.swatch.swatchActive {
+  border-color: var(--color-text-primary);
+  transform: scale(1.15);
+}
+
+/* ── Custom color row ─────────────────────────────────────────────────── */
+
+.customRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.customLabel {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.customInputWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.colorPicker {
+  width: 36px;
+  height: 28px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  background: var(--color-bg-raised);
+  cursor: pointer;
+  padding: 2px;
+  transition: border-color var(--duration-fast) var(--easing-default);
+}
+
+.colorPicker:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.colorPicker:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.hexInput {
+  width: 82px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  transition: border-color var(--duration-fast) var(--easing-default);
+}
+
+.hexInput:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.hexInput:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
