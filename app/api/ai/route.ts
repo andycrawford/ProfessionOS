@@ -1,12 +1,13 @@
 // AI chat endpoint — streams a real Claude response when the user has a claude-ai
 // connectedService configured; falls back to a simulated word-by-word response otherwise.
+// Persists conversations and messages to the DB when the user is authenticated.
 
 export const dynamic = "force-dynamic";
 
 import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/auth";
 import { getDb } from "@/db";
-import { connectedServices, activityItems } from "@/db/schema";
+import { connectedServices, activityItems, aiConversations, aiMessages } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 // ─── Fallback simulated responses ─────────────────────────────────────────────
@@ -111,9 +112,9 @@ function buildSystemPrompt(items: ActivityRow[]): string {
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const messages: { role: string; content: string }[] = body.messages ?? [];
+  const incomingConversationId: string | undefined = body.conversationId;
   const lastUser = messages.findLast((m) => m.role === "user");
 
-  // Attempt to load the user's claude-ai service config.
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -141,6 +142,26 @@ export async function POST(req: Request) {
         typeof limitRaw === "number" ? limitRaw : parseInt(String(limitRaw ?? "20")) || 20;
 
       if (apiKey) {
+        // Resolve or create the conversation record.
+        let conversationId = incomingConversationId;
+        if (!conversationId) {
+          const title = (lastUser?.content ?? "New conversation").slice(0, 80);
+          const [newConv] = await db
+            .insert(aiConversations)
+            .values({ userId, title })
+            .returning({ id: aiConversations.id });
+          conversationId = newConv.id;
+        }
+
+        // Persist the user message.
+        if (lastUser && conversationId) {
+          await db.insert(aiMessages).values({
+            conversationId,
+            role: "user",
+            content: lastUser.content,
+          });
+        }
+
         // Load the user's top activity items for context.
         const activityRows = await db
           .select({
@@ -156,10 +177,8 @@ export async function POST(req: Request) {
           .limit(contextItemLimit);
 
         const systemPrompt = buildSystemPrompt(activityRows);
-
         const client = new Anthropic({ apiKey });
 
-        // Stream real Anthropic response.
         const anthropicMessages = messages
           .filter((m) => m.role === "user" || m.role === "assistant")
           .map((m) => ({
@@ -168,6 +187,9 @@ export async function POST(req: Request) {
           }));
 
         const encoder = new TextEncoder();
+        const capturedConversationId = conversationId;
+        let assistantText = "";
+
         const stream = new ReadableStream({
           async start(controller) {
             const streamResponse = await client.messages.create({
@@ -183,9 +205,24 @@ export async function POST(req: Request) {
                 event.type === "content_block_delta" &&
                 event.delta.type === "text_delta"
               ) {
+                assistantText += event.delta.text;
                 controller.enqueue(encoder.encode(event.delta.text));
               }
             }
+
+            // Persist the assistant response and bump conversation updatedAt.
+            if (capturedConversationId && assistantText) {
+              await db.insert(aiMessages).values({
+                conversationId: capturedConversationId,
+                role: "assistant",
+                content: assistantText,
+              });
+              await db
+                .update(aiConversations)
+                .set({ updatedAt: new Date() })
+                .where(eq(aiConversations.id, capturedConversationId));
+            }
+
             controller.close();
           },
         });
@@ -195,6 +232,7 @@ export async function POST(req: Request) {
             "Content-Type": "text/plain; charset=utf-8",
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
+            "X-Conversation-Id": capturedConversationId ?? "",
           },
         });
       }
