@@ -1,0 +1,77 @@
+/* ── ProfessionCycler — page-load brand animation ──────────────────────────
+   Plays once per session (sessionStorage guard). Respects prefers-reduced-motion.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.cycler {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Icon mark ──────────────────────────────────────────────────────────── */
+
+.icon {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.icon[data-visible="true"] {
+  opacity: 1;
+}
+
+/* ── Text lockup ────────────────────────────────────────────────────────── */
+
+.text {
+  display: flex;
+  align-items: baseline;
+  opacity: 0;
+  /* No transition on text container — it snaps in */
+}
+
+.text[data-visible="true"] {
+  opacity: 1;
+}
+
+/* Prefix: profession name. Key-remount on each swap restarts the flicker. */
+.prefix {
+  font-family: var(--font-ui);
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+  /* 1-frame flicker: 0.6 → 1 on each word swap (terminal refresh aesthetic) */
+  animation: prefixFlicker 32ms ease-out;
+}
+
+@keyframes prefixFlicker {
+  0%   { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Suffix: " OS" — IBM Plex Mono teal, stays anchored throughout */
+.suffix {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-accent-teal);
+}
+
+/* ── Accessibility: skip animation for prefers-reduced-motion ───────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    transition: none;
+    opacity: 1;
+  }
+
+  .text {
+    opacity: 1;
+  }
+
+  .prefix {
+    animation: none;
+  }
+}

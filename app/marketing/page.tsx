@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import styles from "./page.module.css";
+import ProfessionCycler from "@/components/marketing/ProfessionCycler";
 
 export const metadata: Metadata = {
   title: "Profession OS — Every signal. One surface.",
@@ -41,6 +42,9 @@ export default function MarketingPage() {
       {/* ── Hero ───────────────────────────────────────────────────── */}
       <main className={styles.hero}>
         <div className={styles.heroLeft}>
+          {/* Brand reveal animation: cycles professions before landing on "Profession OS" */}
+          <ProfessionCycler />
+
           <div className={styles.eyebrow}>
             <span>Your Command Center</span>
           </div>
