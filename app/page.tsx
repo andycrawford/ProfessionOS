@@ -24,6 +24,7 @@ import ActivityTimeline, {
 import AiPanel, {
   type ChatMessage,
   type Suggestion,
+  type ConversationSummary,
 } from "@/components/layout/AiPanel";
 import WidgetCard, { type WidgetState } from "@/components/widgets/WidgetCard";
 import WidgetRow from "@/components/widgets/WidgetRow";
@@ -152,6 +153,8 @@ export default function DashboardPage() {
   const [feed, setFeed] = useState<FeedItem[]>(INITIAL_FEED);
   const [widgets, setWidgets] = useState<Record<ServiceKey, WidgetData>>(INITIAL_WIDGETS);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | undefined>(INITIAL_SUGGESTION);
 
   // ── UI state ────────────────────────────────────────────────────────────────
@@ -196,6 +199,46 @@ export default function DashboardPage() {
     setAlerts((prev) => prev.filter((a) => a.severity === "critical"));
   }, []);
 
+  // ── Conversation history ─────────────────────────────────────────────────────
+  const fetchConversations = useCallback(async () => {
+    try {
+      const res = await fetch("/api/ai/conversations");
+      if (!res.ok) return;
+      const data: ConversationSummary[] = await res.json();
+      setConversations(data);
+    } catch {
+      // Silently ignore — conversation history is non-critical
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  const handleNewChat = useCallback(() => {
+    setMessages([]);
+    setActiveConversationId(null);
+  }, []);
+
+  const handleSelectConversation = useCallback(async (conversationId: string) => {
+    try {
+      const res = await fetch(`/api/ai/conversations/${conversationId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const loadedMessages: ChatMessage[] = (data.messages ?? []).map(
+        (m: { id: string; role: string; content: string }) => ({
+          id: m.id,
+          role: m.role === "assistant" ? "ai" : "user",
+          content: m.content,
+        })
+      );
+      setMessages(loadedMessages);
+      setActiveConversationId(conversationId);
+    } catch {
+      // Silently ignore
+    }
+  }, []);
+
   // ── AI chat ─────────────────────────────────────────────────────────────────
   const handleSendMessage = useCallback(async (content: string) => {
     // Cancel any in-flight stream
@@ -221,11 +264,19 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [{ role: "user", content }],
+          conversationId: activeConversationId ?? undefined,
         }),
         signal: controller.signal,
       });
 
       if (!res.body) throw new Error("No response body");
+
+      // Capture the conversation ID from the response header so subsequent
+      // messages are appended to the same session.
+      const returnedConversationId = res.headers.get("X-Conversation-Id");
+      if (returnedConversationId) {
+        setActiveConversationId(returnedConversationId);
+      }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -240,6 +291,9 @@ export default function DashboardPage() {
           prev.map((m) => (m.id === aiMsgId ? { ...m, content: accumulated } : m))
         );
       }
+
+      // Refresh conversation list so the new/updated entry appears in history.
+      fetchConversations();
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
         setMessages((prev) =>
@@ -253,7 +307,7 @@ export default function DashboardPage() {
     } finally {
       setAiStreaming(false);
     }
-  }, []);
+  }, [activeConversationId, fetchConversations]);
 
   // Abort stream on unmount
   useEffect(() => {
@@ -449,7 +503,11 @@ export default function DashboardPage() {
                 <AiPanel
                   suggestion={suggestion}
                   messages={messages}
+                  conversations={conversations}
+                  activeConversationId={activeConversationId}
                   onSendMessage={handleSendMessage}
+                  onNewChat={handleNewChat}
+                  onSelectConversation={handleSelectConversation}
                   onSuggestionAction={(id, action) => {
                     if (action === "dismiss" || action === "Snooze") {
                       setSuggestion(undefined);

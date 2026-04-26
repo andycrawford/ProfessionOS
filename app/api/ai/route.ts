@@ -52,7 +52,7 @@ function pickResponse(userMessage: string): string {
   return RESPONSES.default;
 }
 
-function simulatedStream(text: string): Response {
+function simulatedStream(text: string, conversationId?: string): Response {
   const encoder = new TextEncoder();
   const words = text.split(" ");
   const stream = new ReadableStream({
@@ -64,13 +64,13 @@ function simulatedStream(text: string): Response {
       controller.close();
     },
   });
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-cache",
-      "X-Accel-Buffering": "no",
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Cache-Control": "no-cache",
+    "X-Accel-Buffering": "no",
+  };
+  if (conversationId) headers["X-Conversation-Id"] = conversationId;
+  return new Response(stream, { headers });
 }
 
 // ─── Context builder ───────────────────────────────────────────────────────────
@@ -120,6 +120,18 @@ export async function POST(req: Request) {
 
   if (userId) {
     const db = getDb();
+
+    // Resolve or create conversation for all authenticated users.
+    let conversationId = incomingConversationId;
+    if (!conversationId) {
+      const title = (lastUser?.content ?? "New conversation").slice(0, 80);
+      const [newConv] = await db
+        .insert(aiConversations)
+        .values({ userId, title })
+        .returning({ id: aiConversations.id });
+      conversationId = newConv.id;
+    }
+
     const [service] = await db
       .select()
       .from(connectedServices)
@@ -142,19 +154,8 @@ export async function POST(req: Request) {
         typeof limitRaw === "number" ? limitRaw : parseInt(String(limitRaw ?? "20")) || 20;
 
       if (apiKey) {
-        // Resolve or create the conversation record.
-        let conversationId = incomingConversationId;
-        if (!conversationId) {
-          const title = (lastUser?.content ?? "New conversation").slice(0, 80);
-          const [newConv] = await db
-            .insert(aiConversations)
-            .values({ userId, title })
-            .returning({ id: aiConversations.id });
-          conversationId = newConv.id;
-        }
-
-        // Persist the user message.
-        if (lastUser && conversationId) {
+        // Persist the user message before streaming.
+        if (lastUser) {
           await db.insert(aiMessages).values({
             conversationId,
             role: "user",
@@ -211,7 +212,7 @@ export async function POST(req: Request) {
             }
 
             // Persist the assistant response and bump conversation updatedAt.
-            if (capturedConversationId && assistantText) {
+            if (assistantText) {
               await db.insert(aiMessages).values({
                 conversationId: capturedConversationId,
                 role: "assistant",
@@ -232,14 +233,35 @@ export async function POST(req: Request) {
             "Content-Type": "text/plain; charset=utf-8",
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
-            "X-Conversation-Id": capturedConversationId ?? "",
+            "X-Conversation-Id": capturedConversationId,
           },
         });
       }
     }
+
+    // Authenticated but no claude-ai plugin — use simulated response and persist it.
+    const responseText = pickResponse(lastUser?.content ?? "");
+    const capturedConversationId = conversationId;
+    const userContent = lastUser?.content ?? "";
+
+    if (userContent) {
+      await db.insert(aiMessages).values({ conversationId: capturedConversationId, role: "user", content: userContent });
+    }
+    // Persist assistant response after the simulated stream would finish.
+    const estimatedDelay = responseText.split(" ").length * 45 + 200;
+    setTimeout(() => {
+      db.insert(aiMessages)
+        .values({ conversationId: capturedConversationId, role: "assistant", content: responseText })
+        .then(() =>
+          db.update(aiConversations).set({ updatedAt: new Date() }).where(eq(aiConversations.id, capturedConversationId))
+        )
+        .catch(console.error);
+    }, estimatedDelay);
+
+    return simulatedStream(responseText, capturedConversationId);
   }
 
-  // Fallback: simulated response for unauthenticated users or those without a claude-ai plugin.
+  // Fallback: unauthenticated users — no persistence.
   const responseText = pickResponse(lastUser?.content ?? "");
   return simulatedStream(responseText);
 }

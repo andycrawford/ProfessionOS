@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight, Sparkles, X, Plus, MessageSquare } from "lucide-react";
 import styles from "./AiPanel.module.css";
 
 export interface ChatMessage {
@@ -16,18 +16,33 @@ export interface Suggestion {
   actions?: string[];
 }
 
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
 interface AiPanelProps {
   suggestion?: Suggestion;
   messages?: ChatMessage[];
+  conversations?: ConversationSummary[];
+  activeConversationId?: string | null;
   onSuggestionAction?: (suggestionId: string, action: string) => void;
   onSendMessage?: (content: string) => void;
+  onNewChat?: () => void;
+  onSelectConversation?: (conversationId: string) => void;
 }
 
 export default function AiPanel({
   suggestion,
   messages = [],
+  conversations = [],
+  activeConversationId,
   onSuggestionAction,
   onSendMessage,
+  onNewChat,
+  onSelectConversation,
 }: AiPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [draft, setDraft] = useState("");
@@ -47,6 +62,16 @@ export default function AiPanel({
       <div className={styles.header}>
         <Bot size={14} className={styles.botIcon} aria-hidden="true" />
         {!collapsed && <span className={styles.title}>AI Assistant</span>}
+        {!collapsed && (
+          <button
+            className={styles.newChatButton}
+            onClick={onNewChat}
+            aria-label="New chat"
+            title="New chat"
+          >
+            <Plus size={13} aria-hidden="true" />
+          </button>
+        )}
         <button
           className={styles.collapseButton}
           onClick={() => setCollapsed((c) => !c)}
@@ -62,6 +87,28 @@ export default function AiPanel({
 
       {!collapsed && (
         <>
+          {conversations.length > 0 && (
+            <div className={styles.historySection} aria-label="Conversation history">
+              <div className={styles.historyLabel}>
+                <MessageSquare size={10} aria-hidden="true" />
+                History
+              </div>
+              <ul className={styles.historyList} role="list">
+                {conversations.map((conv) => (
+                  <li key={conv.id}>
+                    <button
+                      className={`${styles.historyItem}${conv.id === activeConversationId ? ` ${styles.historyItemActive}` : ""}`}
+                      onClick={() => onSelectConversation?.(conv.id)}
+                      title={conv.title}
+                    >
+                      <span className={styles.historyItemTitle}>{conv.title}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {suggestion && (
             <div className={styles.suggestionCard} role="complementary" aria-label="Proactive suggestion">
               <div className={styles.suggestionLabel}>
