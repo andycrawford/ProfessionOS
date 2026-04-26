@@ -583,3 +583,304 @@
   background-color: rgba(0, 201, 167, 0.15);
   border-color: var(--color-accent-teal);
 }
+
+/* ── Shared section layout ────────────────────────────────────────────────── */
+
+.sectionInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.sectionHeader {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.sectionEyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-teal);
+}
+
+.sectionTitle {
+  font-family: var(--font-ui);
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.sectionSubtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Features section ─────────────────────────────────────────────────────── */
+
+.features {
+  padding: 100px 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background-color: var(--color-border-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.featureCard {
+  background-color: var(--color-bg-base);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: background-color 150ms ease;
+}
+
+.featureCard:hover {
+  background-color: var(--color-bg-surface);
+}
+
+.featureIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-default);
+  background-color: rgba(0, 201, 167, 0.1);
+  border: 1px solid rgba(0, 201, 167, 0.2);
+  color: var(--color-accent-teal);
+  flex-shrink: 0;
+}
+
+.featureTitle {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.featureDescription {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Pricing section ──────────────────────────────────────────────────────── */
+
+.pricing {
+  padding: 100px 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.pricingCard {
+  position: relative;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.pricingCardFeatured {
+  border-color: var(--color-accent-teal);
+  background-color: var(--color-bg-raised);
+  box-shadow: 0 0 0 1px rgba(0, 201, 167, 0.2), 0 24px 48px rgba(0, 0, 0, 0.3);
+}
+
+.featuredBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 24px;
+  padding: 0 12px;
+  background-color: var(--color-accent-teal);
+  color: #0D0F12;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.pricingCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.planName {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.planTagline {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.planPrice {
+  border-top: 1px solid var(--color-border-default);
+  border-bottom: 1px solid var(--color-border-default);
+  padding: var(--space-4) 0;
+}
+
+.planPriceLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.planFeatures {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.planFeatures li {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.planFeatures li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--color-accent-teal);
+  font-size: 11px;
+}
+
+.planCta {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 20px;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  border-radius: var(--radius-default);
+  text-decoration: none;
+  transition: border-color 120ms ease, color 120ms ease;
+  align-self: flex-start;
+}
+
+.planCta:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.planCtaPrimary {
+  background-color: var(--color-accent-teal);
+  border-color: var(--color-accent-teal);
+  color: #0D0F12;
+  font-weight: 600;
+}
+
+.planCtaPrimary:hover {
+  opacity: 0.88;
+  border-color: var(--color-accent-teal);
+  color: #0D0F12;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.footer {
+  border-top: 1px solid var(--color-border-default);
+  padding: 32px 0;
+}
+
+.footerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.footerBrand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 120ms ease;
+}
+
+.footerBrand:hover {
+  opacity: 1;
+}
+
+.footerCopy {
+  font-size: 12px;
+  color: #4A5568;
+  margin: 0;
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-left: auto;
+}
+
+.footerLinks a {
+  font-size: 12px;
+  color: #4A5568;
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.footerLinks a:hover {
+  color: var(--color-text-secondary);
+}

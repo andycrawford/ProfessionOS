@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import styles from "./page.module.css";
 import ProfessionCycler from "@/components/marketing/ProfessionCycler";
+import {
+  LayoutDashboard,
+  Sparkles,
+  Activity,
+  BarChart3,
+  BellRing,
+  Plug,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Profession OS — Every signal. One surface.",
@@ -158,6 +166,160 @@ export default function MarketingPage() {
           </div>
         </div>
       </main>
+
+      {/* ── Features ───────────────────────────────────────────────── */}
+      <section id="features" className={styles.features}>
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Features</span>
+            <h2 className={styles.sectionTitle}>Everything you need. Nothing you don&apos;t.</h2>
+            <p className={styles.sectionSubtitle}>
+              Profession OS unifies your most critical work signals in one keyboard-driven command center — powered by AI that understands context.
+            </p>
+          </div>
+
+          <div className={styles.featureGrid}>
+            {[
+              {
+                icon: <LayoutDashboard size={18} />,
+                title: "Command Center",
+                description:
+                  "A keyboard-driven workspace that unifies all your professional tools in one surface. Launch, navigate, and act without leaving the keyboard.",
+              },
+              {
+                icon: <Sparkles size={18} />,
+                title: "AI Assistant",
+                description:
+                  "Ask questions across your entire work graph. Get grounded, context-aware answers sourced from your real data — not hallucinations.",
+              },
+              {
+                icon: <Activity size={18} />,
+                title: "Activity Timeline",
+                description:
+                  "A real-time feed of every signal across Email, Calendar, Slack, GitHub, and CRM. Nothing falls through the cracks.",
+              },
+              {
+                icon: <BarChart3 size={18} />,
+                title: "Live Widgets",
+                description:
+                  "At-a-glance metrics for email volume, calendar load, Slack unread, open PRs, and CRM follow-ups — updated continuously.",
+              },
+              {
+                icon: <BellRing size={18} />,
+                title: "Signal Intelligence",
+                description:
+                  "AI surfaces anomalies and opportunities before they become problems. Critical alerts are prioritized, noise is suppressed.",
+              },
+              {
+                icon: <Plug size={18} />,
+                title: "One-Click Integrations",
+                description:
+                  "Connect GitHub, Google, Linear, Salesforce, and more via OAuth in seconds. All your services, one unified data model.",
+              },
+            ].map((f) => (
+              <div key={f.title} className={styles.featureCard}>
+                <div className={styles.featureIcon}>{f.icon}</div>
+                <h3 className={styles.featureTitle}>{f.title}</h3>
+                <p className={styles.featureDescription}>{f.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ────────────────────────────────────────────────── */}
+      <section id="pricing" className={styles.pricing}>
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionEyebrow}>Pricing</span>
+            <h2 className={styles.sectionTitle}>Simple, transparent pricing.</h2>
+            <p className={styles.sectionSubtitle}>
+              Choose the plan that fits your workflow. All plans include a 14-day free trial.
+            </p>
+          </div>
+
+          <div className={styles.pricingGrid}>
+            {/* Individual */}
+            <div className={styles.pricingCard}>
+              <div className={styles.pricingCardHeader}>
+                <span className={styles.planName}>Individual</span>
+                <p className={styles.planTagline}>For solo professionals who demand clarity.</p>
+              </div>
+              <div className={styles.planPrice}>
+                <span className={styles.planPriceLabel}>Pricing coming soon</span>
+              </div>
+              <ul className={styles.planFeatures} role="list">
+                <li>5 service integrations</li>
+                <li>AI Assistant (100 queries/day)</li>
+                <li>Activity timeline</li>
+                <li>Live widgets dashboard</li>
+                <li>30-day signal history</li>
+                <li>Email support</li>
+              </ul>
+              <a href="/sign-up" className={styles.planCta}>Get notified →</a>
+            </div>
+
+            {/* Team */}
+            <div className={`${styles.pricingCard} ${styles.pricingCardFeatured}`}>
+              <div className={styles.featuredBadge}>Most Popular</div>
+              <div className={styles.pricingCardHeader}>
+                <span className={styles.planName}>Team</span>
+                <p className={styles.planTagline}>For high-output teams that move fast.</p>
+              </div>
+              <div className={styles.planPrice}>
+                <span className={styles.planPriceLabel}>Pricing coming soon</span>
+              </div>
+              <ul className={styles.planFeatures} role="list">
+                <li>Everything in Individual</li>
+                <li>Unlimited integrations</li>
+                <li>AI Assistant (unlimited)</li>
+                <li>Shared team workspace</li>
+                <li>1-year signal history</li>
+                <li>Admin controls</li>
+                <li>Priority support</li>
+              </ul>
+              <a href="/sign-up" className={`${styles.planCta} ${styles.planCtaPrimary}`}>Get notified →</a>
+            </div>
+
+            {/* Enterprise */}
+            <div className={styles.pricingCard}>
+              <div className={styles.pricingCardHeader}>
+                <span className={styles.planName}>Enterprise</span>
+                <p className={styles.planTagline}>For organizations with enterprise-grade needs.</p>
+              </div>
+              <div className={styles.planPrice}>
+                <span className={styles.planPriceLabel}>Contact us</span>
+              </div>
+              <ul className={styles.planFeatures} role="list">
+                <li>Everything in Team</li>
+                <li>SSO / SAML</li>
+                <li>Audit logs</li>
+                <li>Custom data retention</li>
+                <li>Dedicated onboarding</li>
+                <li>SLA & 24/7 support</li>
+                <li>Custom integrations</li>
+              </ul>
+              <a href="mailto:sales@professionos.com" className={styles.planCta}>Talk to sales →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ─────────────────────────────────────────────────── */}
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <a href="/" className={styles.footerBrand} aria-label="Profession OS">
+            <Image src="/brand/logo.svg" alt="Profession OS" width={110} height={22} />
+          </a>
+          <p className={styles.footerCopy}>© 2026 Profession OS. All rights reserved.</p>
+          <nav className={styles.footerLinks} aria-label="Footer">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="/docs">Docs</a>
+            <a href="/blog">Blog</a>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

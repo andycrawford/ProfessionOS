@@ -1,0 +1,225 @@
+/* ── Docs / Blog placeholder page ───────────────────────────────────────────
+   Shares the same dark grid aesthetic as the marketing page.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.page {
+  min-height: 100vh;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  background-image:
+    linear-gradient(var(--color-border-default) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border-default) 1px, transparent 1px);
+  background-size: 40px 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Nav ──────────────────────────────────────────────────────────────────── */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border-default);
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.navInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.navBrand {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.navLink:hover {
+  color: var(--color-text-primary);
+}
+
+.navLinkActive {
+  color: var(--color-text-primary);
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.navLinkSecondary {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.navLinkSecondary:hover {
+  color: var(--color-text-primary);
+}
+
+.navCta {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 14px;
+  background-color: var(--color-accent-teal);
+  color: #0D0F12;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  border-radius: var(--radius-default);
+  text-decoration: none;
+  transition: opacity 120ms ease;
+}
+
+.navCta:hover {
+  opacity: 0.88;
+}
+
+/* ── Main content ─────────────────────────────────────────────────────────── */
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px var(--space-6);
+}
+
+.comingSoon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-5);
+  max-width: 520px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-teal);
+}
+
+.title {
+  font-family: var(--font-ui);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 22px;
+  background-color: var(--color-accent-teal);
+  color: #0D0F12;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  border-radius: var(--radius-default);
+  text-decoration: none;
+  transition: opacity 120ms ease;
+  margin-top: var(--space-2);
+}
+
+.cta:hover {
+  opacity: 0.88;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.footer {
+  border-top: 1px solid var(--color-border-default);
+  padding: 32px 0;
+  flex-shrink: 0;
+}
+
+.footerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.footerBrand {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 120ms ease;
+}
+
+.footerBrand:hover {
+  opacity: 1;
+}
+
+.footerCopy {
+  font-size: 12px;
+  color: #4A5568;
+  margin: 0;
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-left: auto;
+}
+
+.footerLinks a {
+  font-size: 12px;
+  color: #4A5568;
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.footerLinks a:hover {
+  color: var(--color-text-secondary);
+}
