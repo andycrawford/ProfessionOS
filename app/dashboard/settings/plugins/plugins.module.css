@@ -1,0 +1,245 @@
+/* Settings — Custom Plugins page */
+
+.page {
+  padding: var(--space-8);
+  max-width: 900px;
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.heading {
+  font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.subheading {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* Plugin list */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--duration-fast) var(--easing-default);
+}
+
+.card:hover {
+  border-color: var(--color-border-focus);
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+/* Plugin info */
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-size: var(--text-body-base-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.typeBadge {
+  padding: 1px var(--space-2);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+}
+
+.description {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.meta {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-disabled);
+  margin-top: 2px;
+}
+
+/* Actions */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--text-body-sm-size);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default);
+}
+
+.actionButton:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.actionButton.destructive {
+  color: var(--color-alert-critical);
+  border-color: transparent;
+}
+
+.actionButton.destructive:hover {
+  border-color: var(--color-alert-critical);
+}
+
+/* Enable/disable toggle */
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle {
+  display: block;
+  width: 36px;
+  height: 20px;
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  position: relative;
+  transition:
+    background var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default);
+}
+
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--color-text-disabled);
+  border-radius: 50%;
+  transition:
+    transform var(--duration-fast) var(--easing-default),
+    background var(--duration-fast) var(--easing-default);
+}
+
+.toggleInput:checked + .toggle {
+  background: var(--color-accent-brand);
+  border-color: var(--color-accent-brand);
+}
+
+.toggleInput:checked + .toggle::after {
+  transform: translateX(16px);
+  background: #0d0f12;
+}
+
+.toggleInput:disabled + .toggle {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Code block (inline expand) */
+
+.codeBlock {
+  border-top: 1px solid var(--color-border-default);
+  background: var(--color-bg-raised);
+  padding: var(--space-4);
+}
+
+.codeLoading {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-primary);
+  white-space: pre;
+  overflow: auto;
+  max-height: 400px;
+}
+
+/* Empty state */
+
+.empty {
+  padding: var(--space-8);
+  text-align: center;
+  background: var(--color-bg-surface);
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+}
+
+.emptyIcon {
+  color: var(--color-text-disabled);
+  margin: 0 auto var(--space-4);
+}
+
+.emptyTitle {
+  font-size: var(--text-body-base-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.emptyBody {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+}

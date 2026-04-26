@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plug, Building2 } from "lucide-react";
+import { Plug, Building2, Puzzle } from "lucide-react";
 import styles from "./settings.module.css";
 
 const navItems = [
   { href: "/dashboard/settings/services", label: "Services", icon: Plug },
+  { href: "/dashboard/settings/plugins", label: "Plugins", icon: Puzzle },
   { href: "/dashboard/settings/organization", label: "Organization", icon: Building2 },
 ];
 
