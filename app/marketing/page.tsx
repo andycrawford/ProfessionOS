@@ -32,7 +32,7 @@ export default function MarketingPage() {
           </ul>
 
           <div className={styles.navActions}>
-            <a href="/sign-in" className={styles.navLinkSecondary}>Sign in</a>
+            <a href="https://app.professionos.com" className={styles.navLinkSecondary}>Sign in</a>
             <a href="/sign-up" className={styles.navCta}>Get Started</a>
           </div>
         </div>
@@ -60,7 +60,7 @@ export default function MarketingPage() {
 
           <div className={styles.ctaRow}>
             <a href="/sign-up" className={styles.ctaPrimary}>Start free →</a>
-            <a href="/demo" className={styles.ctaSecondary}>View demo</a>
+            <a href="https://demo.professionos.com" className={styles.ctaSecondary}>View demo</a>
           </div>
 
           <p className={styles.socialProof}>Used by professionals at</p>
