@@ -1,7 +1,6 @@
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { NextResponse } from "next/server";
-import type { NextFetchEvent, NextProxy } from "next/server";
-import type { NextAuthRequest } from "next-auth";
+import type { NextRequest } from "next/server";
 
 /**
  * Profession OS — Auth Proxy
@@ -15,19 +14,28 @@ import type { NextAuthRequest } from "next-auth";
  *                   excluded from the matcher entirely)
  *   /sign-in      — authenticated → redirect to /dashboard
  *
- * NextAuth v5's `auth(callback)` returns a NextMiddleware when the callback
- * is typed as NextAuthMiddleware. Explicit parameter types guide TS to the
- * correct overload; the result is assignable to NextProxy (= NextMiddleware).
+ * Uses safeAuth() instead of the auth(callback) HOC so that deployments
+ * without DATABASE_URL (e.g. demo.professionos.com) can return null safely
+ * rather than crashing. The auth(callback) overload from an async NextAuth
+ * factory does not satisfy Next.js 16's proxy function requirement.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const proxy: NextProxy = auth((req: NextAuthRequest, _event: NextFetchEvent) => {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const session = req.auth;
+
+  // Demo mode: no DATABASE_URL means this is a public demo deployment.
+  // Pass all requests through — individual route handlers use safeAuth() and
+  // return demo data (empty arrays, simulated streams) for unauthenticated users.
+  if (!process.env.DATABASE_URL) {
+    return NextResponse.next();
+  }
 
   const isDashboard = pathname.startsWith("/dashboard");
   const isApi = pathname.startsWith("/api"); // /api/auth/* excluded by matcher
 
-  if ((isDashboard || isApi) && !session) {
+  // Call safeAuth — returns null if auth throws (e.g. no DATABASE_URL on demo).
+  const session = await safeAuth();
+
+  if ((isDashboard || isApi) && !session?.user?.id) {
     if (isApi) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -37,10 +45,12 @@ export const proxy: NextProxy = auth((req: NextAuthRequest, _event: NextFetchEve
   }
 
   // Already signed in — skip the sign-in page
-  if (pathname === "/sign-in" && session) {
+  if (pathname === "/sign-in" && session?.user?.id) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
-});
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
