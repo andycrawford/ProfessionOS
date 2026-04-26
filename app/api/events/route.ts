@@ -64,12 +64,48 @@ function formatSSE(event: SSEEvent): string {
   return `event: ${event.type}\ndata: ${JSON.stringify(event.payload)}\n\n`;
 }
 
+// ─── Demo stream (unauthenticated) ───────────────────────────────────────────
+// When no session is present (e.g. demo.professionos.com), return an open SSE
+// stream that sends an initial ping and periodic keepalive comments. The
+// dashboard already renders INITIAL_FEED from local state, so no feed_item
+// events are needed here — we just need the connection to succeed so the
+// "Reconnecting…" banner stays hidden.
+
+function demoPingStream(): Response {
+  const encoder = new TextEncoder();
+  let pingTimer: ReturnType<typeof setInterval>;
+
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(
+        encoder.encode(`event: ping\ndata: ${JSON.stringify({ ts: Date.now() })}\n\n`)
+      );
+      pingTimer = setInterval(
+        () => controller.enqueue(encoder.encode(": keepalive\n\n")),
+        20_000
+      );
+    },
+    cancel() {
+      clearInterval(pingTimer);
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return demoPingStream();
   }
 
   const userId = session.user.id;
