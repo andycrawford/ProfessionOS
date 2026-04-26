@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
-// Production domain: https://app.professionos.com
-// Marketing site (future): https://professionos.com, https://www.professionos.com
-const PRODUCTION_ORIGIN = "https://app.professionos.com";
+// Production app domain: https://app.professionos.com
+// Marketing site apex: https://professionos.com (www redirects to apex in HTML)
+const MARKETING_ORIGIN = "https://professionos.com";
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -26,12 +26,14 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Allow the future marketing site to call app APIs
+        // Allow the marketing site (apex only — www redirects to apex) to call app APIs.
+        // Note: Access-Control-Allow-Origin accepts a single origin; dynamic multi-origin
+        // support would require middleware.
         source: "/api/(.*)",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: PRODUCTION_ORIGIN,
+            value: MARKETING_ORIGIN,
           },
           {
             key: "Access-Control-Allow-Methods",

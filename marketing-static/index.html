@@ -23,6 +23,14 @@
   <meta name="twitter:description" content="One OS for your entire professional life. Mail · Calendar · Code · CRM — monitored by AI.">
   <meta name="twitter:image" content="https://professionos.com/brand/og-card.png">
 
+  <!-- Canonical — redirect www to apex -->
+  <link rel="canonical" href="https://professionos.com">
+  <script>
+    if (location.hostname === 'www.professionos.com') {
+      location.replace('https://professionos.com' + location.pathname + location.search + location.hash);
+    }
+  </script>
+
   <!-- Favicon -->
   <link rel="icon" href="/brand/logo-icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/brand/logo-icon-96.png">
