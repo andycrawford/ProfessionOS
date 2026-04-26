@@ -1,5 +1,29 @@
 /* Organization settings page */
 
+.page {
+  padding: var(--space-8);
+  max-width: 900px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.heading {
+  font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.subheading {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
 .sections {
   display: flex;
   flex-direction: column;

@@ -6,7 +6,7 @@ import { organizations, organizationMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 import OrganizationClient, { type OrgData } from "./OrganizationClient";
-import styles from "../services/services.module.css";
+import styles from "./organization.module.css";
 
 export default async function OrganizationPage() {
   const session = await auth();
