@@ -1,0 +1,28 @@
+/* Dashboard settings shell — mirrors app/dashboard.module.css structure */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg-base);
+}
+
+/* Area below the fixed topbar */
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  margin-top: var(--topbar-height);
+}
+
+/* Content area to the right of the fixed nav rail, scrollable */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  margin-left: var(--nav-rail-width);
+  transition: margin-left var(--duration-default) var(--easing-default);
+}

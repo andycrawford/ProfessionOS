@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Mail,
   Calendar,
@@ -144,6 +145,8 @@ const MAX_FEED_ITEMS = 100;
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   // ── Core state ──────────────────────────────────────────────────────────────
   const [alerts, setAlerts] = useState<Alert[]>(INITIAL_ALERTS);
   const [feed, setFeed] = useState<FeedItem[]>(INITIAL_FEED);
@@ -366,9 +369,7 @@ export default function DashboardPage() {
       subtitle: "Preferences and configuration",
       icon: <Settings size={16} />,
       group: "System",
-      action: () => {
-        /* settings panel — future feature */
-      },
+      action: () => router.push("/dashboard/settings/services"),
     },
   ];
 
@@ -390,7 +391,16 @@ export default function DashboardPage() {
         />
 
         <div className={styles.body}>
-          <NavRail activeItemId={activeNav} onNavigate={setActiveNav} />
+          <NavRail
+            activeItemId={activeNav}
+            onNavigate={(id) => {
+              if (id === "settings") {
+                router.push("/dashboard/settings/services");
+              } else {
+                setActiveNav(id);
+              }
+            }}
+          />
 
           <div className={styles.content}>
             <AlertBar
