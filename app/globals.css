@@ -103,6 +103,40 @@
   --ai-panel-collapsed-width: 40px;
 }
 
+/* ─── Light Theme Overrides ─── */
+
+[data-theme="light"] {
+  /* Backgrounds */
+  --color-bg-base: #F5F7FA;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-raised: #EEF1F5;
+  --color-bg-overlay: #E4E8EF;
+
+  /* Borders */
+  --color-border-default: #D1D8E4;
+  --color-border-subtle: #E8EDF4;
+  --color-border-focus: #3D7EFF;
+
+  /* Text */
+  --color-text-primary: #0D1117;
+  --color-text-secondary: #5A6478;
+  --color-text-disabled: #9DA8BB;
+
+  /* Accent (same hues, slightly darker for contrast on light bg) */
+  --color-accent-brand: #00A98A;
+  --color-accent-chart: #3D7EFF;
+
+  /* Alerts (unchanged — same semantic meaning) */
+  --color-alert-critical: #FF4757;
+  --color-alert-warning: #FFA502;
+  --color-alert-info: #00A86B;
+  --color-alert-neutral: #6B778C;
+
+  /* Elevation */
+  --elevation-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --elevation-modal: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
 /* ─── Global Reset & Base ─── */
 
 *,

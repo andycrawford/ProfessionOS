@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Bell, Bot, Search } from "lucide-react";
+import { Bell, Bot, Moon, Search, Sun } from "lucide-react";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import styles from "./Topbar.module.css";
 
 interface TopbarProps {
@@ -15,6 +16,8 @@ export default function Topbar({
   onCommandPaletteOpen,
   userInitials,
 }: TopbarProps) {
+  const { theme, toggle } = useTheme();
+
   return (
     <header className={styles.topbar} role="banner">
       <div className={styles.brand}>
@@ -55,6 +58,18 @@ export default function Topbar({
           aria-label="Toggle AI assistant"
         >
           <Bot size={16} aria-hidden="true" />
+        </button>
+
+        <button
+          className={styles.iconButton}
+          onClick={toggle}
+          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {theme === "dark" ? (
+            <Sun size={16} aria-hidden="true" />
+          ) : (
+            <Moon size={16} aria-hidden="true" />
+          )}
         </button>
 
         <div className={styles.avatar} role="button" aria-label="User menu" tabIndex={0}>
