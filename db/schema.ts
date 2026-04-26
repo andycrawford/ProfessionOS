@@ -176,6 +176,42 @@ export const aiMessages = pgTable("ai_messages", {
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+// ── Organization / SSO tables ─────────────────────────────────────────────────
+
+// One row per enterprise tenant. domain is used for sign-in domain detection.
+// SSO fields (entraIdTenantId, ssoClientId, ssoClientSecret) are nullable until SSO is configured.
+export const organizations = pgTable("organizations", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  // Unique — used to match user email domain to an org at sign-in
+  domain: text("domain").notNull().unique(),
+  // Entra ID tenant ID — set when Azure AD SSO is configured
+  entraIdTenantId: text("entra_id_tenant_id"),
+  ssoClientId: text("sso_client_id"),
+  // Stored encrypted at rest
+  ssoClientSecret: text("sso_client_secret"),
+  ssoEnabled: boolean("sso_enabled").notNull().default(false),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// Membership join table linking users to organizations.
+// role: 'admin' can manage SSO config; 'member' is a regular org user.
+export const organizationMembers = pgTable("organization_members", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("member"),
+  joinedAt: timestamp("joined_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // Audit trail — records significant user and system actions.
 export const activityLog = pgTable("activity_log", {
   id: text("id")
@@ -203,4 +239,6 @@ export const schema = {
   activityLog,
   aiConversations,
   aiMessages,
+  organizations,
+  organizationMembers,
 };
