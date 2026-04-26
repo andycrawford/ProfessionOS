@@ -103,7 +103,7 @@ async function getOrgProviders(): Promise<Provider[]> {
       name: `${org.name} (SSO)`,
       clientId: org.clientId,
       clientSecret: org.clientSecret,
-      issuer: `https://login.microsoftonline.com/${org.tenantId}/v2.0/`,
+      issuer: `https://login.microsoftonline.com/${org.tenantId}/v2.0`,
     })
   );
   _orgProvidersLoadedAt = now;
@@ -162,7 +162,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
         issuer:
           process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID &&
           process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID !== "common"
-            ? `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID}/v2.0/`
+            ? `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID}/v2.0`
             : undefined,
       }),
 
