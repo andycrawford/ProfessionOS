@@ -78,6 +78,12 @@
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      /* Grid anchored to viewport so it never shows tile seams when scrolling */
+      background-image:
+        linear-gradient(var(--color-border-default) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-border-default) 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-attachment: fixed;
     }
 
     :focus-visible {
@@ -88,11 +94,6 @@
     /* ── Page ───────────────────────────────────────────────────────────── */
     .page {
       min-height: 100vh;
-      background-color: var(--color-bg-base);
-      background-image:
-        linear-gradient(var(--color-border-default) 1px, transparent 1px),
-        linear-gradient(90deg, var(--color-border-default) 1px, transparent 1px);
-      background-size: 40px 40px;
       position: relative;
     }
 

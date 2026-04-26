@@ -16,12 +16,12 @@
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   font-family: var(--font-ui);
-  /* Subtle grid overlay */
+  /* Grid anchored to viewport so it never shows tile seams when scrolling */
   background-image:
     linear-gradient(var(--color-border-default) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-border-default) 1px, transparent 1px);
   background-size: 40px 40px;
-  background-position: 0 0;
+  background-attachment: fixed;
   position: relative;
 }
 
