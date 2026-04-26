@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { aiConversations, aiMessages } from "@/db/schema";
 import { eq, and, asc } from "drizzle-orm";
@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Params) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -45,7 +45,7 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

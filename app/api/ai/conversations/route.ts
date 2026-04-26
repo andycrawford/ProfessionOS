@@ -2,14 +2,14 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { aiConversations, aiMessages } from "@/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     // Unauthenticated (e.g. demo mode) — return an empty list so the dashboard
     // renders without a conversation history panel rather than showing an error.

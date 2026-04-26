@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { activityItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -13,7 +13,7 @@ const VALID_STATUSES = new Set(["seen", "actioned", "dismissed"]);
 type Params = { id: string };
 
 export async function PATCH(req: Request, { params }: { params: Promise<Params> }) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { organizations, organizationMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -9,7 +9,7 @@ import OrganizationClient, { type OrgData } from "./OrganizationClient";
 import styles from "./organization.module.css";
 
 export default async function OrganizationPage() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const db = getDb();

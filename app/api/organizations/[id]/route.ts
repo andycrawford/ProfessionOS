@@ -4,7 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { organizations, organizationMembers, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -27,7 +27,7 @@ async function requireAdmin(userId: string, orgId: string) {
 }
 
 export async function GET(_req: Request, { params }: RouteContext) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -59,7 +59,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
 }
 
 export async function PATCH(req: Request, { params }: RouteContext) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }

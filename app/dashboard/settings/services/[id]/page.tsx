@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -17,7 +17,7 @@ export default async function ServiceDetailPage({
 }: {
   params: Promise<Params>;
 }) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const { id } = await params;

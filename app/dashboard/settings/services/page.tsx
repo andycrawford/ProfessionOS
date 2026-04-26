@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices, activityItems } from "@/db/schema";
 import { eq, count } from "drizzle-orm";
@@ -14,7 +14,7 @@ import ServicesListClient, { type ServiceRow } from "./ServicesListClient";
 import styles from "./services.module.css";
 
 export default async function ServicesPage() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const db = getDb();

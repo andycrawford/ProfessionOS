@@ -3,13 +3,13 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { activityItems } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 export async function GET(req: Request) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }

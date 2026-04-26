@@ -196,3 +196,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
     },
   };
 });
+
+// ── safeAuth ──────────────────────────────────────────────────────────────────
+// Wraps auth() with error handling so that deployments without DATABASE_URL
+// (e.g. demo.professionos.com) return null instead of a 500 when NextAuth
+// cannot reach the DB adapter. All existing auth-gated routes already treat a
+// null session as unauthenticated — this just prevents the crash.
+export async function safeAuth(): Promise<{ user?: { id?: string; email?: string | null; name?: string | null } } | null> {
+  try {
+    return await auth() as { user?: { id?: string; email?: string | null; name?: string | null } } | null;
+  } catch {
+    return null;
+  }
+}

@@ -5,7 +5,7 @@
 export const dynamic = "force-dynamic";
 
 import "@/services/plugins"; // populate plugin registry
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices, activityItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -108,7 +108,7 @@ export async function GET(req: Request) {
 
 // Manual trigger — scoped to the authenticated user's services only.
 export async function POST() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }

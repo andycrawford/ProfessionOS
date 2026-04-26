@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { customPlugins } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -9,7 +9,7 @@ import PluginsClient, { type PluginRow } from "./PluginsClient";
 import styles from "./plugins.module.css";
 
 export default async function PluginsPage() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) redirect("/sign-in");
 
   const db = getDb();

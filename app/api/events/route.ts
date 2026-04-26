@@ -2,7 +2,7 @@
 // On connect: emit the user's last 24h of activity (desc, limit 50).
 // Poll every 30s for items newer than the cursor and stream any new ones.
 // Keep-alive comment ping every 20s to prevent Vercel 300s timeout (DVI-83).
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { activityItems, connectedServices } from "@/db/schema";
 import { eq, and, gt, desc } from "drizzle-orm";
@@ -103,7 +103,7 @@ function demoPingStream(): Response {
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function GET() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return demoPingStream();
   }

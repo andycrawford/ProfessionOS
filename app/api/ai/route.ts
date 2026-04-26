@@ -5,7 +5,7 @@
 export const dynamic = "force-dynamic";
 
 import Anthropic from "@anthropic-ai/sdk";
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices, activityItems, aiConversations, aiMessages, customPlugins } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -240,7 +240,7 @@ export async function POST(req: Request) {
   const incomingConversationId: string | undefined = body.conversationId;
   const lastUser = messages.findLast((m) => m.role === "user");
 
-  const session = await auth();
+  const session = await safeAuth();
   const userId = session?.user?.id;
 
   if (userId) {

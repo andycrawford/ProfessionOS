@@ -5,7 +5,7 @@
 export const dynamic = "force-dynamic";
 
 import "@/services/plugins"; // populate plugin registry
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices, activityItems } from "@/db/schema";
 import { eq, and, count } from "drizzle-orm";
@@ -13,7 +13,7 @@ import { getPlugin } from "@/services/registry";
 import type { ServiceType } from "@/services/types";
 
 export async function GET() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -54,7 +54,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }

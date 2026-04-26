@@ -5,7 +5,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/auth";
+import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -13,7 +13,7 @@ import { eq, and } from "drizzle-orm";
 type Params = { id: string };
 
 export async function GET(_req: Request, { params }: { params: Promise<Params> }) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -34,7 +34,7 @@ export async function GET(_req: Request, { params }: { params: Promise<Params> }
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<Params> }) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -84,7 +84,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<Params> 
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<Params> }) {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
