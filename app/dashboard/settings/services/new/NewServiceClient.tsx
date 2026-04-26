@@ -50,7 +50,11 @@ export default function NewServiceClient({ plugins }: Props) {
       const res = await fetch("/api/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: selected.type, config: values }),
+        body: JSON.stringify({
+          type: selected.type,
+          displayName: selected.displayName,
+          config: values,
+        }),
       });
 
       if (!res.ok) {
