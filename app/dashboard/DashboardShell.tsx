@@ -14,10 +14,11 @@ export default function DashboardShell({
   const pathname = usePathname();
 
   const activeNav = pathname.startsWith("/dashboard/settings") ? "settings" : "code";
+  const settingsRoot = "/dashboard/settings/services";
 
   function handleNavigate(id: string) {
     if (id === "settings") {
-      router.push("/dashboard/settings/services");
+      router.push(settingsRoot);
     } else {
       // Return to main dashboard for all other items
       router.push("/");
