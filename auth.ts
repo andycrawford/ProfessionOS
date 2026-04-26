@@ -136,13 +136,19 @@ async function upsertOrgMember(userId: string, orgId: string): Promise<void> {
 
 // ── NextAuth export ───────────────────────────────────────────────────────────
 
+// When DATABASE_URL is absent (e.g. demo deployments), fall back to JWT
+// sessions so NextAuth never calls the DB adapter on unauthenticated requests.
+// All authenticated features remain behind auth guards that already require
+// session.user.id to be present.
+const hasDatabase = !!process.env.DATABASE_URL;
+
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   const orgProviders = await getOrgProviders();
 
   return {
-    adapter,
+    adapter: hasDatabase ? adapter : undefined,
     session: {
-      strategy: "database",
+      strategy: hasDatabase ? "database" : "jwt",
     },
     providers: [
       // Auto-infers clientId from AUTH_GOOGLE_ID, clientSecret from AUTH_GOOGLE_SECRET
