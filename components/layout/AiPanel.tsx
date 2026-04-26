@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bot, ChevronLeft, ChevronRight, Sparkles, X, Plus, MessageSquare } from "lucide-react";
 import styles from "./AiPanel.module.css";
 
@@ -46,6 +46,11 @@ export default function AiPanel({
 }: AiPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [draft, setDraft] = useState("");
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && draft.trim()) {
@@ -151,6 +156,7 @@ export default function AiPanel({
                 <div className={styles.messageBubble}>{msg.content}</div>
               </div>
             ))}
+            <div ref={bottomRef} />
           </div>
 
           <div className={styles.inputArea}>
@@ -161,6 +167,11 @@ export default function AiPanel({
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onInput={(e) => {
+                  const el = e.currentTarget;
+                  el.style.height = "auto";
+                  el.style.height = `${el.scrollHeight}px`;
+                }}
                 rows={1}
                 aria-label="Chat input"
               />

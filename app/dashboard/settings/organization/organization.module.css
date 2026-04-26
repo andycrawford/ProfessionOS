@@ -71,7 +71,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 
@@ -191,6 +191,11 @@
 
 .testLink:hover {
   color: var(--color-text-primary);
+}
+
+.testLinkDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* ── Feedback ─────────────────────────────────────────────────────────────── */

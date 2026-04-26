@@ -157,7 +157,7 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
   if (!org && !creating) {
     return (
       <div className={styles.empty}>
-        <Building2 size={40} className={styles.emptyIcon} />
+        <Building2 size={40} className={styles.emptyIcon} aria-hidden="true" />
         <p className={styles.emptyTitle}>No organization yet</p>
         <p className={styles.emptyBody}>
           Create an organization to manage members and configure enterprise SSO.
@@ -330,10 +330,13 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
                 {ssoSaving ? "Saving…" : "Save SSO Config"}
               </button>
               <a
-                href={`https://login.microsoftonline.com/${tenantId || "common"}/oauth2/v2.0/authorize`}
+                href={`https://login.microsoftonline.com/${org.entraIdTenantId || "common"}/oauth2/v2.0/authorize`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={styles.testLink}
+                className={`${styles.testLink}${!org.entraIdTenantId ? ` ${styles.testLinkDisabled}` : ""}`}
+                aria-disabled={!org.entraIdTenantId}
+                title={!org.entraIdTenantId ? "Save SSO config first" : undefined}
+                onClick={!org.entraIdTenantId ? (e) => e.preventDefault() : undefined}
               >
                 Test SSO Login
                 <ExternalLink size={13} aria-hidden="true" />

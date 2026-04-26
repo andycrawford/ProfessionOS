@@ -32,20 +32,36 @@ export default function PluginsClient({
   const [codeLoading, setCodeLoading] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [toggleErrors, setToggleErrors] = useState<Record<string, string>>({});
+  const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({});
+  const [codeErrors, setCodeErrors] = useState<Record<string, string>>({});
 
   async function handleToggle(id: string, current: boolean) {
     setToggling(id);
+    setToggleErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
+    // Optimistic update
+    setPlugins((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, enabled: !current } : p))
+    );
     try {
       const res = await fetch(`/api/plugins/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: !current }),
       });
-      if (res.ok) {
+      if (!res.ok) {
+        // Revert optimistic update
         setPlugins((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, enabled: !current } : p))
+          prev.map((p) => (p.id === id ? { ...p, enabled: current } : p))
         );
+        setToggleErrors((prev) => ({ ...prev, [id]: "Failed to update plugin" }));
       }
+    } catch {
+      // Revert optimistic update
+      setPlugins((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, enabled: current } : p))
+      );
+      setToggleErrors((prev) => ({ ...prev, [id]: "Network error" }));
     } finally {
       setToggling(null);
     }
@@ -54,12 +70,17 @@ export default function PluginsClient({
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete plugin "${name}"? This cannot be undone.`)) return;
     setDeletingId(id);
+    setDeleteErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
     try {
       const res = await fetch(`/api/plugins/${id}`, { method: "DELETE" });
       if (res.ok) {
         setPlugins((prev) => prev.filter((p) => p.id !== id));
         if (expandedId === id) setExpandedId(null);
+      } else {
+        setDeleteErrors((prev) => ({ ...prev, [id]: "Failed to delete plugin" }));
       }
+    } catch {
+      setDeleteErrors((prev) => ({ ...prev, [id]: "Network error" }));
     } finally {
       setDeletingId(null);
     }
@@ -73,12 +94,17 @@ export default function PluginsClient({
     setExpandedId(id);
     if (!codeCache[id]) {
       setCodeLoading(id);
+      setCodeErrors((prev) => { const next = { ...prev }; delete next[id]; return next; });
       try {
         const res = await fetch(`/api/plugins/${id}`);
         if (res.ok) {
           const data = await res.json();
           setCodeCache((prev) => ({ ...prev, [id]: data.code ?? "" }));
+        } else {
+          setCodeErrors((prev) => ({ ...prev, [id]: "Failed to load plugin code" }));
         }
+      } catch {
+        setCodeErrors((prev) => ({ ...prev, [id]: "Network error" }));
       } finally {
         setCodeLoading(null);
       }
@@ -103,9 +129,15 @@ export default function PluginsClient({
         const isExpanded = expandedId === plugin.id;
         const isDeleting = deletingId === plugin.id;
         const isToggling = toggling === plugin.id;
+        const toggleError = toggleErrors[plugin.id];
+        const deleteError = deleteErrors[plugin.id];
+        const codeError = codeErrors[plugin.id];
 
         return (
           <li key={plugin.id} className={styles.card}>
+            {(toggleError || deleteError) && (
+              <p className={styles.rowError}>{toggleError ?? deleteError}</p>
+            )}
             <div className={styles.cardRow}>
               <div className={styles.info}>
                 <div className={styles.nameRow}>
@@ -167,6 +199,8 @@ export default function PluginsClient({
               <div className={styles.codeBlock}>
                 {codeLoading === plugin.id ? (
                   <p className={styles.codeLoading}>Loading…</p>
+                ) : codeError ? (
+                  <p className={styles.codeError}>{codeError}</p>
                 ) : (
                   <pre className={styles.pre}>
                     <code>{codeCache[plugin.id] ?? ""}</code>
