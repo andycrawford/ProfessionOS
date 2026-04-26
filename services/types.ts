@@ -8,6 +8,7 @@ export enum ServiceType {
   Ziflow = "ziflow",
   NetSuiteInvoices = "netsuite_invoices",
   NetSuiteRMA = "netsuite_rma",
+  ClaudeAi = "claude_ai",
 }
 
 export type UrgencyLevel = 0 | 1 | 2; // 0=normal, 1=important, 2=urgent

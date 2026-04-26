@@ -1,9 +1,15 @@
-// AI chat endpoint — streams a simulated assistant response word-by-word.
-// Replace the response generator with a real LLM call when integrating a model.
+// AI chat endpoint — streams a real Claude response when the user has a claude-ai
+// connectedService configured; falls back to a simulated word-by-word response otherwise.
 
 export const dynamic = "force-dynamic";
 
-// ─── Response pool ────────────────────────────────────────────────────────────
+import Anthropic from "@anthropic-ai/sdk";
+import { auth } from "@/auth";
+import { getDb } from "@/db";
+import { connectedServices, activityItems } from "@/db/schema";
+import { eq, and, desc } from "drizzle-orm";
+
+// ─── Fallback simulated responses ─────────────────────────────────────────────
 
 const RESPONSES: Record<string, string> = {
   default:
@@ -45,29 +51,18 @@ function pickResponse(userMessage: string): string {
   return RESPONSES.default;
 }
 
-// ─── Route handler ────────────────────────────────────────────────────────────
-
-export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  const messages: { role: string; content: string }[] = body.messages ?? [];
-  const lastUser = messages.findLast((m) => m.role === "user");
-  const responseText = pickResponse(lastUser?.content ?? "");
-
+function simulatedStream(text: string): Response {
   const encoder = new TextEncoder();
-  // Stream word by word with a short delay to simulate typing
-  const words = responseText.split(" ");
-
+  const words = text.split(" ");
   const stream = new ReadableStream({
     async start(controller) {
       for (let i = 0; i < words.length; i++) {
-        // Append space after each word except the last
         controller.enqueue(encoder.encode(words[i] + (i < words.length - 1 ? " " : "")));
         await new Promise<void>((r) => setTimeout(r, 45));
       }
       controller.close();
     },
   });
-
   return new Response(stream, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
@@ -75,4 +70,138 @@ export async function POST(req: Request) {
       "X-Accel-Buffering": "no",
     },
   });
+}
+
+// ─── Context builder ───────────────────────────────────────────────────────────
+
+type ActivityRow = {
+  itemType: string;
+  title: string;
+  urgency: number;
+  body: string | null;
+  occurredAt: Date | null;
+};
+
+function buildSystemPrompt(items: ActivityRow[]): string {
+  const urgencyLabel = (u: number) => (u === 2 ? "URGENT" : u === 1 ? "IMPORTANT" : "normal");
+
+  const itemLines = items.map((item, i) => {
+    const when = item.occurredAt
+      ? item.occurredAt.toISOString().replace("T", " ").slice(0, 16) + " UTC"
+      : "unknown time";
+    const body = item.body ? ` — ${item.body.slice(0, 120)}` : "";
+    return `${i + 1}. [${urgencyLabel(item.urgency)}] ${item.itemType.toUpperCase()}: ${item.title}${body} (${when})`;
+  });
+
+  const contextBlock =
+    itemLines.length > 0
+      ? `\n\nThe user's current activity feed (sorted by priority):\n${itemLines.join("\n")}`
+      : "\n\nThe user has no recent activity items.";
+
+  return (
+    "You are a professional productivity assistant embedded in Profession OS — a unified dashboard that aggregates activity from email, calendar, tasks, and other services. " +
+    "Your role is to help the user stay on top of their work: summarise what's happening, flag priorities, and suggest concrete next actions. " +
+    "Be concise and direct. When you recommend an action, be specific." +
+    contextBlock
+  );
+}
+
+// ─── Route handler ────────────────────────────────────────────────────────────
+
+export async function POST(req: Request) {
+  const body = await req.json().catch(() => ({}));
+  const messages: { role: string; content: string }[] = body.messages ?? [];
+  const lastUser = messages.findLast((m) => m.role === "user");
+
+  // Attempt to load the user's claude-ai service config.
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (userId) {
+    const db = getDb();
+    const [service] = await db
+      .select()
+      .from(connectedServices)
+      .where(
+        and(
+          eq(connectedServices.userId, userId),
+          eq(connectedServices.type, "claude_ai"),
+          eq(connectedServices.enabled, true)
+        )
+      )
+      .limit(1);
+
+    if (service) {
+      const config = service.config as Record<string, unknown>;
+      const credentials = service.credentials as Record<string, unknown>;
+      const apiKey = (credentials.apiKey as string) || (config.apiKey as string);
+      const model = (config.model as string) || "claude-sonnet-4-6";
+      const limitRaw = config.contextItemLimit;
+      const contextItemLimit =
+        typeof limitRaw === "number" ? limitRaw : parseInt(String(limitRaw ?? "20")) || 20;
+
+      if (apiKey) {
+        // Load the user's top activity items for context.
+        const activityRows = await db
+          .select({
+            itemType: activityItems.itemType,
+            title: activityItems.title,
+            urgency: activityItems.urgency,
+            body: activityItems.body,
+            occurredAt: activityItems.occurredAt,
+          })
+          .from(activityItems)
+          .where(eq(activityItems.userId, userId))
+          .orderBy(desc(activityItems.urgency), desc(activityItems.occurredAt))
+          .limit(contextItemLimit);
+
+        const systemPrompt = buildSystemPrompt(activityRows);
+
+        const client = new Anthropic({ apiKey });
+
+        // Stream real Anthropic response.
+        const anthropicMessages = messages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          }));
+
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          async start(controller) {
+            const streamResponse = await client.messages.create({
+              model,
+              max_tokens: 1024,
+              system: systemPrompt,
+              messages: anthropicMessages,
+              stream: true,
+            });
+
+            for await (const event of streamResponse) {
+              if (
+                event.type === "content_block_delta" &&
+                event.delta.type === "text_delta"
+              ) {
+                controller.enqueue(encoder.encode(event.delta.text));
+              }
+            }
+            controller.close();
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+          },
+        });
+      }
+    }
+  }
+
+  // Fallback: simulated response for unauthenticated users or those without a claude-ai plugin.
+  const responseText = pickResponse(lastUser?.content ?? "");
+  return simulatedStream(responseText);
 }
