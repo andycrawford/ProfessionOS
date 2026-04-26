@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/auth";
 import { getDb } from "@/db";
-import { connectedServices, activityItems, aiConversations, aiMessages } from "@/db/schema";
+import { connectedServices, activityItems, aiConversations, aiMessages, customPlugins } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 
 // ─── Fallback simulated responses ─────────────────────────────────────────────
@@ -107,6 +107,131 @@ function buildSystemPrompt(items: ActivityRow[]): string {
   );
 }
 
+// ─── Plugin generation ────────────────────────────────────────────────────────
+
+const PLUGIN_INTENT_RE =
+  /\b(create|build|make|add|generate)\s+(a\s+)?(plugin|integration|connector)\s+(for|to|with)\s+(\w[\w\s]*)/i;
+
+const PLUGIN_INTERFACE_PROMPT = `You are a code generator for Profession OS, a productivity dashboard.
+Generate a JavaScript object literal (no import statements, no TypeScript syntax) that implements this interface:
+
+{
+  type: string,           // unique snake_case identifier, e.g. "jira"
+  displayName: string,    // human-readable name
+  description: string,    // one-sentence description
+  icon: string,           // a lucide-react icon name, e.g. "CheckSquare"
+  color: string,          // a CSS hex color
+  configFields: Array<{   // fields shown in the Settings UI
+    key: string,
+    label: string,
+    type: "text" | "password" | "number" | "select" | "checkbox",
+    required: boolean,
+    placeholder?: string,
+    description?: string,
+    options?: Array<{ label: string, value: string }>
+  }>,
+  poll: async function(config, credentials) {
+    // Fetch items from the external service.
+    // Return an array of ActivityItemData objects:
+    // { externalId: string, itemType: string, title: string, urgency: 0|1|2,
+    //   summary?: string, sourceUrl?: string, metadata: object, occurredAt?: Date }
+    // Use fetch() for HTTP calls. Do not import anything.
+    return [];
+  },
+  testConnection: async function(config, credentials) {
+    // Return true if credentials are valid, false otherwise.
+    return false;
+  }
+}
+
+Rules:
+- Output ONLY a single JavaScript object literal wrapped in a markdown code block (\`\`\`javascript ... \`\`\`)
+- No import/require statements — use fetch() for HTTP
+- No TypeScript syntax — plain JavaScript only
+- The object must be self-contained and evaluable with Function()
+- Use credentials for secrets (API keys, tokens), config for non-secret settings`;
+
+function detectPluginIntent(message: string): string | null {
+  const match = PLUGIN_INTENT_RE.exec(message);
+  return match ? match[5].trim() : null;
+}
+
+function extractCodeBlock(text: string): string | null {
+  const match = /```(?:javascript|js|typescript|ts)?\s*([\s\S]*?)```/.exec(text);
+  return match ? match[1].trim() : null;
+}
+
+async function generatePlugin(
+  serviceName: string,
+  apiKey: string,
+  model: string,
+  userId: string,
+  conversationId: string,
+  db: ReturnType<typeof import("@/db").getDb>
+): Promise<string> {
+  const client = new Anthropic({ apiKey });
+  const response = await client.messages.create({
+    model,
+    max_tokens: 2048,
+    system: PLUGIN_INTERFACE_PROMPT,
+    messages: [{ role: "user", content: `Create a plugin for ${serviceName}.` }],
+  });
+
+  const text = response.content
+    .filter((b) => b.type === "text")
+    .map((b) => (b as { type: "text"; text: string }).text)
+    .join("");
+
+  const code = extractCodeBlock(text);
+  if (!code) {
+    return `I wasn't able to generate valid plugin code for "${serviceName}". Please try again with a more specific service name.`;
+  }
+
+  // Quick sanity-check: the code must eval without throwing.
+  try {
+    // eslint-disable-next-line no-new-func
+    new Function(`"use strict"; return (${code})`)();
+  } catch {
+    return `I generated code for "${serviceName}" but it contains a syntax error. Please try again.`;
+  }
+
+  // Derive type and name from the object if possible, fall back to serviceName.
+  let pluginType = serviceName.toLowerCase().replace(/\s+/g, "_");
+  let pluginName = serviceName;
+  let pluginDescription = "";
+  try {
+    // eslint-disable-next-line no-new-func
+    const obj = new Function(`"use strict"; return (${code})`)() as Record<string, unknown>;
+    if (typeof obj.type === "string") pluginType = obj.type;
+    if (typeof obj.displayName === "string") pluginName = obj.displayName;
+    if (typeof obj.description === "string") pluginDescription = obj.description;
+  } catch {
+    // use defaults
+  }
+
+  await db.insert(customPlugins).values({
+    userId,
+    type: pluginType,
+    name: pluginName,
+    description: pluginDescription,
+    code,
+    enabled: true,
+  });
+
+  // Persist exchange in conversation.
+  await db.insert(aiMessages).values({
+    conversationId,
+    role: "assistant",
+    content: `Plugin created: **${pluginName}** (\`${pluginType}\`). It's now enabled and will appear in your next poll cycle. You can manage it in **Settings → Plugins**.`,
+  });
+  await db
+    .update(aiConversations)
+    .set({ updatedAt: new Date() })
+    .where(eq(aiConversations.id, conversationId));
+
+  return `Plugin created: **${pluginName}** (\`${pluginType}\`). It's now enabled and will run on your next poll cycle. You can view and manage it in **Settings → Plugins**.`;
+}
+
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
@@ -161,6 +286,20 @@ export async function POST(req: Request) {
             role: "user",
             content: lastUser.content,
           });
+        }
+
+        // Plugin generation intent — handle before normal streaming.
+        const pluginTarget = lastUser ? detectPluginIntent(lastUser.content) : null;
+        if (pluginTarget) {
+          const reply = await generatePlugin(
+            pluginTarget,
+            apiKey,
+            model,
+            userId,
+            conversationId,
+            db
+          );
+          return simulatedStream(reply, conversationId);
         }
 
         // Load the user's top activity items for context.
