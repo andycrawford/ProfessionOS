@@ -104,6 +104,11 @@ async function getOrgProviders(): Promise<Provider[]> {
       clientId: org.clientId,
       clientSecret: org.clientSecret,
       issuer: `https://login.microsoftonline.com/${org.tenantId}/v2.0`,
+      // Auth.js calls p.account(tokenSet) for all new sign-ins. MicrosoftEntraID
+      // does not define this method, causing TypeError: e is not a function in the
+      // minified callback bundle. Returning the tokenSet passes the raw tokens
+      // through for storage in the accounts table.
+      account: (tokens) => tokens,
     })
   );
   _orgProvidersLoadedAt = now;
@@ -164,6 +169,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
           process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID !== "common"
             ? `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID}/v2.0`
             : undefined,
+        // Auth.js calls p.account(tokenSet) for all new sign-ins. MicrosoftEntraID
+        // does not define this method, causing TypeError: e is not a function in the
+        // minified callback bundle. Returning the tokenSet passes the raw tokens
+        // through for storage in the accounts table.
+        account: (tokens) => tokens,
       }),
 
       // Per-org enterprise providers — one per SSO-enabled org in DB
