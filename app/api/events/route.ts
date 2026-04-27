@@ -1,12 +1,19 @@
 // SSE endpoint — streams live dashboard events from real activityItems.
-// On connect: emit the user's last 24h of activity (desc, limit 50).
-// Poll every 30s for items newer than the cursor and stream any new ones.
+// On connect: emit the user's last 24h of activity (desc, limit 50) then
+// send widget_update events for all 5 dashboard tiles with real metrics.
+// Poll every 30s for new feed items AND refreshed widget metrics.
 // Keep-alive comment ping every 20s to prevent Vercel 300s timeout (DVI-83).
 import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { activityItems, connectedServices } from "@/db/schema";
-import { eq, and, gt, desc } from "drizzle-orm";
-import type { SSEEvent, FeedItem, FeedService, FeedItemSeverity } from "@/lib/types";
+import { eq, and, gt, gte, lt, desc } from "drizzle-orm";
+import type { SSEEvent, FeedItem, FeedService, FeedItemSeverity, WidgetServiceKey } from "@/lib/types";
+import {
+  WIDGET_SERVICE_TYPES,
+  RANGE_CONFIG,
+  buildWidgetMetrics,
+  type MetricsRow,
+} from "@/lib/metrics";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +69,95 @@ function toFeedItem(
 
 function formatSSE(event: SSEEvent): string {
   return `event: ${event.type}\ndata: ${JSON.stringify(event.payload)}\n\n`;
+}
+
+// ─── Widget metrics helper ────────────────────────────────────────────────────
+// Computes real WidgetMetrics for all 5 dashboard tiles using the 24h window.
+// Falls back gracefully: services with no connected adapter return state:"empty".
+
+const ALL_WIDGET_KEYS: WidgetServiceKey[] = ["mail", "calendar", "slack", "code", "crm"];
+
+async function fetchAllWidgetMetrics(userId: string): Promise<SSEEvent[]> {
+  const db = getDb();
+  const range = "24h" as const;
+  const { buckets, bucketMs } = RANGE_CONFIG[range];
+  const windowMs     = buckets * bucketMs;
+  const now          = Date.now();
+  const currentStart = new Date(now - windowMs);
+  const prevStart    = new Date(now - 2 * windowMs);
+
+  const rowShape = {
+    serviceId:  activityItems.serviceId,
+    occurredAt: activityItems.occurredAt,
+    createdAt:  activityItems.createdAt,
+    urgency:    activityItems.urgency,
+  };
+
+  // Fetch current-period rows for all services in one query, joined to get type
+  let currentAll: (MetricsRow & { serviceType: string | null })[] = [];
+  let prevAll:    (MetricsRow & { serviceType: string | null })[] = [];
+  try {
+    currentAll = await db
+      .select({ ...rowShape, serviceType: connectedServices.type })
+      .from(activityItems)
+      .innerJoin(connectedServices, eq(activityItems.serviceId, connectedServices.id))
+      .where(
+        and(
+          eq(activityItems.userId, userId),
+          gte(activityItems.createdAt, currentStart)
+        )
+      );
+
+    prevAll = await db
+      .select({ ...rowShape, serviceType: connectedServices.type })
+      .from(activityItems)
+      .innerJoin(connectedServices, eq(activityItems.serviceId, connectedServices.id))
+      .where(
+        and(
+          eq(activityItems.userId, userId),
+          gte(activityItems.createdAt, prevStart),
+          lt(activityItems.createdAt, currentStart)
+        )
+      );
+  } catch {
+    // DB error — return empty metrics for all tiles rather than dropping the stream
+    return ALL_WIDGET_KEYS.map((service) => ({
+      type: "widget_update" as const,
+      payload: buildWidgetMetrics(service, range, [], [], false),
+    }));
+  }
+
+  // Check which service types the user actually has connected
+  let connectedTypes: Set<string> = new Set();
+  try {
+    const rows = await db
+      .select({ type: connectedServices.type })
+      .from(connectedServices)
+      .where(
+        and(
+          eq(connectedServices.userId, userId),
+          eq(connectedServices.enabled, true)
+        )
+      );
+    connectedTypes = new Set(rows.map((r) => r.type));
+  } catch {
+    // Leave connectedTypes empty — all widgets will show as empty
+  }
+
+  return ALL_WIDGET_KEYS.map((service) => {
+    const types = WIDGET_SERVICE_TYPES[service];
+    const hasConnected = types.length > 0 && types.some((t) => connectedTypes.has(t));
+    const currentRows: MetricsRow[] = currentAll.filter(
+      (r) => r.serviceType !== null && types.includes(r.serviceType)
+    );
+    const prevRows: MetricsRow[] = prevAll.filter(
+      (r) => r.serviceType !== null && types.includes(r.serviceType)
+    );
+    return {
+      type: "widget_update" as const,
+      payload: buildWidgetMetrics(service, range, currentRows, prevRows, hasConnected),
+    };
+  });
 }
 
 // ─── Demo stream (unauthenticated) ───────────────────────────────────────────
@@ -166,6 +262,14 @@ export async function GET() {
         // DB unavailable at connect — continue; polling will retry
       }
 
+      // Emit initial widget metrics for all 5 dashboard tiles
+      try {
+        const widgetEvents = await fetchAllWidgetMetrics(userId);
+        for (const event of widgetEvents) enqueue(event);
+      } catch {
+        // Non-fatal — dashboard will show loading/empty state
+      }
+
       // Poll every 30s for items newer than the cursor
       const schedulePoll = () => {
         pollTimer = setTimeout(async () => {
@@ -202,6 +306,14 @@ export async function GET() {
             }
           } catch {
             // DB error — skip this poll cycle
+          }
+
+          // Refresh widget metrics after each feed poll so sparklines stay current
+          try {
+            const widgetEvents = await fetchAllWidgetMetrics(userId);
+            for (const event of widgetEvents) enqueue(event);
+          } catch {
+            // Non-fatal — skip widget refresh for this cycle
           }
 
           schedulePoll();
