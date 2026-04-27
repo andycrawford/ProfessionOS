@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   ShoppingCart,
   RotateCcw,
@@ -25,14 +26,28 @@ const NETSUITE_MONITORS = [
   { configKey: "monitorSalesOrder", itemType: "netsuite_sales_order", label: "Sales Orders",          Icon: TrendingUp },
 ] as const;
 
+function getInitials(name?: string | null, email?: string | null): string {
+  if (name) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts[0][0].toUpperCase();
+  }
+  if (email) return email[0].toUpperCase();
+  return "";
+}
+
 export default function DashboardShell({
   children,
   orgLogoUrl,
   orgName,
+  userName,
+  userEmail,
 }: {
   children: React.ReactNode;
   orgLogoUrl?: string | null;
   orgName?: string | null;
+  userName?: string | null;
+  userEmail?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -40,6 +55,7 @@ export default function DashboardShell({
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
   const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
+  const [pollIntervalSeconds, setPollIntervalSeconds] = useState(30);
 
   useEffect(() => {
     fetch("/api/settings/keybindings")
@@ -47,6 +63,17 @@ export default function DashboardShell({
       .then((data) => {
         setKeybindingOverrides(data.overrides ?? {});
         setPluginBindings(data.pluginBindings ?? []);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/settings/poll-interval")
+      .then((r) => r.json())
+      .then((data) => {
+        if (typeof data.pollIntervalSeconds === "number") {
+          setPollIntervalSeconds(data.pollIntervalSeconds);
+        }
       })
       .catch(() => {});
   }, []);
@@ -88,6 +115,15 @@ export default function DashboardShell({
       .catch(() => {});
   }, []);
 
+  async function handlePollIntervalChange(seconds: number) {
+    setPollIntervalSeconds(seconds);
+    await fetch("/api/settings/poll-interval", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pollIntervalSeconds: seconds }),
+    }).catch(() => {});
+  }
+
   const k = (defaultKey: string, actionId: string) =>
     keybindingOverrides[actionId] ?? defaultKey;
 
@@ -126,10 +162,20 @@ export default function DashboardShell({
     }
   }
 
+  const userInitials = getInitials(userName, userEmail);
+
   return (
     <>
       <div className={styles.shell}>
-        <Topbar userInitials="AC" orgLogoUrl={orgLogoUrl} orgName={orgName} />
+        <Topbar
+          userInitials={userInitials || undefined}
+          userName={userName ?? undefined}
+          orgLogoUrl={orgLogoUrl}
+          orgName={orgName}
+          pollIntervalSeconds={pollIntervalSeconds}
+          onPollIntervalChange={handlePollIntervalChange}
+          onSignOut={() => signOut({ callbackUrl: "/" })}
+        />
         <div className={styles.body}>
           <NavRail
             activeItemId={activeNav}

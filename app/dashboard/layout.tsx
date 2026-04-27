@@ -31,7 +31,12 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   }
 
   return (
-    <DashboardShell orgLogoUrl={orgLogoUrl} orgName={orgName}>
+    <DashboardShell
+      orgLogoUrl={orgLogoUrl}
+      orgName={orgName}
+      userName={session?.user?.name ?? null}
+      userEmail={session?.user?.email ?? null}
+    >
       {children}
     </DashboardShell>
   );
