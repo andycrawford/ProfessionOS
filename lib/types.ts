@@ -5,7 +5,11 @@
 export type FeedItemSeverity = "critical" | "warning" | "info" | "neutral";
 export type FeedService = "mail" | "calendar" | "messaging" | "code" | "crm" | "ai";
 export type AlertSeverity = "critical" | "warning" | "info";
-export type WidgetServiceKey = "mail" | "calendar" | "messaging" | "code" | "crm";
+// Base (static) keys for the five core service tiles
+export type BaseWidgetServiceKey = "mail" | "calendar" | "messaging" | "code" | "crm";
+// Dynamic netsuite_* keys — one per enabled monitor (e.g. netsuite_po, netsuite_rma)
+export type NetsuiteWidgetKey = `netsuite_${string}`;
+export type WidgetServiceKey = BaseWidgetServiceKey | NetsuiteWidgetKey;
 export type WidgetState = "default" | "warning" | "critical" | "loading" | "empty";
 
 export interface FeedItem {
@@ -37,9 +41,12 @@ export interface WidgetMetrics {
 
 // Widget display preferences — stored in userSettings.widgetPreferences.
 // Array order determines render order; hidden widgets remain in the array.
+// label is optional — populated for dynamic netsuite_* tiles where the display
+// name cannot be derived from the key alone (e.g. user-defined custom monitors).
 export interface WidgetPreference {
   key: WidgetServiceKey;
   enabled: boolean;
+  label?: string;
 }
 
 export const DEFAULT_WIDGET_PREFS: WidgetPreference[] = [
@@ -48,6 +55,80 @@ export const DEFAULT_WIDGET_PREFS: WidgetPreference[] = [
   { key: "messaging", enabled: true },
   { key: "code", enabled: true },
   { key: "crm", enabled: true },
+];
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+
+/**
+ * Describes a single keyboard shortcut action.
+ * defaultKey uses the same format as useKeyboardShortcuts:
+ * e.g. "e", "cmd+k", "shift+?", "/"
+ */
+export interface KeybindingDef {
+  id: string;
+  category: string;
+  action: string;
+  description: string;
+  defaultKey: string;
+}
+
+/**
+ * User overrides stored in DB — maps action id to a custom key.
+ * Only overridden keys are stored; missing = use defaultKey.
+ */
+export type KeybindingOverrides = Record<string, string>;
+
+/** Built-in keybindings. Keep in sync with DashboardClient shortcuts. */
+export const DEFAULT_KEYBINDINGS: KeybindingDef[] = [
+  {
+    id: "open-command-palette",
+    category: "System",
+    action: "Open Command Palette",
+    description: "Search commands and navigate",
+    defaultKey: "cmd+k",
+  },
+  {
+    id: "open-command-line",
+    category: "System",
+    action: "Open Command Line",
+    description: "Quick command entry",
+    defaultKey: "/",
+  },
+  {
+    id: "show-shortcuts",
+    category: "System",
+    action: "Show Keyboard Shortcuts",
+    description: "Open this help dialog",
+    defaultKey: "shift+?",
+  },
+  {
+    id: "toggle-ai",
+    category: "Navigation",
+    action: "Toggle AI Assistant",
+    description: "Show or hide the AI panel",
+    defaultKey: "cmd+/",
+  },
+  {
+    id: "nav-mail",
+    category: "Navigation",
+    action: "Go to Mail",
+    description: "Navigate to the Mail section",
+    defaultKey: "e",
+  },
+  {
+    id: "nav-calendar",
+    category: "Navigation",
+    action: "Go to Calendar",
+    description: "Navigate to the Calendar section",
+    defaultKey: "c",
+  },
+  {
+    id: "nav-messaging",
+    category: "Navigation",
+    action: "Go to Messaging",
+    description: "Navigate to the Messaging section",
+    defaultKey: "m",
+  },
 ];
 
 // Discriminated union of all SSE event shapes

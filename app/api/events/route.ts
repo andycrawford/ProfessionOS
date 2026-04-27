@@ -9,7 +9,7 @@ import { activityItems, connectedServices } from "@/db/schema";
 import { eq, and, gt, gte, lt, desc } from "drizzle-orm";
 import type { SSEEvent, FeedItem, FeedService, FeedItemSeverity, WidgetServiceKey } from "@/lib/types";
 import {
-  WIDGET_SERVICE_TYPES,
+  getServiceTypes,
   RANGE_CONFIG,
   buildWidgetMetrics,
   type MetricsRow,
@@ -145,7 +145,7 @@ async function fetchAllWidgetMetrics(userId: string): Promise<SSEEvent[]> {
   }
 
   return ALL_WIDGET_KEYS.map((service) => {
-    const types = WIDGET_SERVICE_TYPES[service];
+    const types = getServiceTypes(service);
     const hasConnected = types.length > 0 && types.some((t) => connectedTypes.has(t));
     const currentRows: MetricsRow[] = currentAll.filter(
       (r) => r.serviceType !== null && types.includes(r.serviceType)

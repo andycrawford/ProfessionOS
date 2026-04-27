@@ -22,21 +22,51 @@
  *   service type maps to it yet.
  */
 
-import type { WidgetServiceKey, WidgetMetrics, WidgetState } from "@/lib/types";
+import type { WidgetServiceKey, BaseWidgetServiceKey, WidgetMetrics, WidgetState } from "@/lib/types";
 
 // ─── Service type mapping ─────────────────────────────────────────────────────
 
 /**
- * Maps each dashboard widget key to the DB connectedServices.type values it
- * aggregates. An empty array means no service type exists yet (always empty).
+ * Maps each static dashboard widget key to the DB connectedServices.type values
+ * it aggregates. An empty array means no service type exists yet (always empty).
+ * netsuite_* keys are handled dynamically via getServiceTypes().
  */
-export const WIDGET_SERVICE_TYPES: Record<WidgetServiceKey, string[]> = {
+export const WIDGET_SERVICE_TYPES: Record<BaseWidgetServiceKey, string[]> = {
   mail:     ["ms365_email"],
   calendar: ["ms365_calendar", "google_calendar"],
   messaging: [], // no service type mapped yet
   code:     ["clickup", "ziflow"],
   crm:      ["netsuite_invoices", "netsuite_rma"],
 };
+
+/**
+ * Returns the connectedServices.type values to check for a given widget key.
+ * All netsuite_* tiles share the same "netsuite_crm" service type — they
+ * differ by activityItems.itemType rather than service type.
+ */
+export function getServiceTypes(key: WidgetServiceKey): string[] {
+  if (key.startsWith("netsuite_")) return ["netsuite_crm"];
+  return WIDGET_SERVICE_TYPES[key as BaseWidgetServiceKey] ?? [];
+}
+
+// Display labels for the known netsuite_* item types
+const NETSUITE_KEY_LABELS: Record<string, string> = {
+  netsuite_po:           "Purchase Orders",
+  netsuite_rma:          "Return Auth.",
+  netsuite_vendor_bill:  "Vendor Bills",
+  netsuite_sales_order:  "Sales Orders",
+};
+
+/**
+ * Returns a human-readable label for a netsuite_* widget key.
+ * Falls back to normalising the record type suffix for unknown/custom keys.
+ */
+export function netsuiteKeyLabel(key: string): string {
+  if (key in NETSUITE_KEY_LABELS) return NETSUITE_KEY_LABELS[key];
+  // e.g. "netsuite_custom_expenseReport" → "Expense Report"
+  const suffix = key.replace(/^netsuite_custom_/, "").replace(/^netsuite_/, "");
+  return suffix.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()).trim() || key;
+}
 
 // ─── Range configuration ──────────────────────────────────────────────────────
 
@@ -52,13 +82,22 @@ export const RANGE_CONFIG: Record<MetricsRange, { buckets: number; bucketMs: num
   "30d": { buckets: 30, bucketMs: 24 * 60 * 60 * 1000 }, // 1-day   buckets
 };
 
-const SECONDARY_LABELS: Record<WidgetServiceKey, string> = {
+const SECONDARY_LABELS: Record<BaseWidgetServiceKey, string> = {
   mail:     "emails",
   calendar: "events",
   messaging: "messages",
   code:     "tasks",
   crm:      "follow-ups",
 };
+
+/**
+ * Returns the secondary count label for a widget tile.
+ * netsuite_* tiles always use "pending items".
+ */
+export function getSecondaryLabel(key: WidgetServiceKey): string {
+  if (key.startsWith("netsuite_")) return "pending items";
+  return SECONDARY_LABELS[key as BaseWidgetServiceKey] ?? "items";
+}
 
 // ─── Core computation ─────────────────────────────────────────────────────────
 
@@ -134,7 +173,7 @@ export function buildWidgetMetrics(
   return {
     service,
     metric,
-    secondaryLabel: SECONDARY_LABELS[service],
+    secondaryLabel: getSecondaryLabel(service),
     deltaPercent,
     sparkline,
     state,

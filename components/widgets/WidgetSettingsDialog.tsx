@@ -1,25 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChevronUp, ChevronDown, Mail, Calendar, MessageSquare, Code2, Users } from "lucide-react";
-import type { WidgetPreference, WidgetServiceKey } from "@/lib/types";
+import { X, ChevronUp, ChevronDown, Mail, Calendar, MessageSquare, Code2, Users, Database } from "lucide-react";
+import type { WidgetPreference } from "@/lib/types";
+import { netsuiteKeyLabel } from "@/lib/metrics";
 import styles from "./WidgetSettingsDialog.module.css";
 
-const SERVICE_LABELS: Record<WidgetServiceKey, string> = {
-  mail: "Email",
-  calendar: "Calendar",
+const STATIC_LABELS: Record<string, string> = {
+  mail:      "Email",
+  calendar:  "Calendar",
   messaging: "Messaging",
-  code: "Code",
-  crm: "CRM",
+  code:      "Code",
+  crm:       "CRM",
 };
 
-const SERVICE_ICONS: Record<WidgetServiceKey, React.ReactNode> = {
-  mail: <Mail size={16} />,
-  calendar: <Calendar size={16} />,
-  messaging: <MessageSquare size={16} />,
-  code: <Code2 size={16} />,
-  crm: <Users size={16} />,
-};
+function getServiceLabel(key: string, label?: string): string {
+  if (label) return label;
+  return STATIC_LABELS[key] ?? netsuiteKeyLabel(key);
+}
+
+function getServiceIcon(key: string): React.ReactNode {
+  const icons: Record<string, React.ReactNode> = {
+    mail:      <Mail size={16} />,
+    calendar:  <Calendar size={16} />,
+    messaging: <MessageSquare size={16} />,
+    code:      <Code2 size={16} />,
+    crm:       <Users size={16} />,
+  };
+  if (key in icons) return icons[key];
+  if (key.startsWith("netsuite_")) return <Database size={16} />;
+  return null;
+}
 
 interface Props {
   open: boolean;
@@ -100,16 +111,16 @@ export default function WidgetSettingsDialog({ open, onClose, prefs, onSave }: P
               className={`${styles.item} ${!pref.enabled ? styles.itemDisabled : ""}`}
             >
               <span className={styles.itemIcon} aria-hidden="true">
-                {SERVICE_ICONS[pref.key]}
+                {getServiceIcon(pref.key)}
               </span>
-              <span className={styles.itemLabel}>{SERVICE_LABELS[pref.key]}</span>
+              <span className={styles.itemLabel}>{getServiceLabel(pref.key, pref.label)}</span>
 
               <div className={styles.itemActions}>
                 <button
                   className={styles.reorderBtn}
                   onClick={() => move(index, -1)}
                   disabled={index === 0}
-                  aria-label={`Move ${SERVICE_LABELS[pref.key]} up`}
+                  aria-label={`Move ${getServiceLabel(pref.key, pref.label)} up`}
                   title="Move up"
                 >
                   <ChevronUp size={14} />
@@ -118,7 +129,7 @@ export default function WidgetSettingsDialog({ open, onClose, prefs, onSave }: P
                   className={styles.reorderBtn}
                   onClick={() => move(index, 1)}
                   disabled={index === local.length - 1}
-                  aria-label={`Move ${SERVICE_LABELS[pref.key]} down`}
+                  aria-label={`Move ${getServiceLabel(pref.key, pref.label)} down`}
                   title="Move down"
                 >
                   <ChevronDown size={14} />
@@ -129,7 +140,7 @@ export default function WidgetSettingsDialog({ open, onClose, prefs, onSave }: P
                   onClick={() => toggle(index)}
                   role="switch"
                   aria-checked={pref.enabled}
-                  aria-label={`${pref.enabled ? "Hide" : "Show"} ${SERVICE_LABELS[pref.key]}`}
+                  aria-label={`${pref.enabled ? "Hide" : "Show"} ${getServiceLabel(pref.key, pref.label)}`}
                 >
                   <span className={styles.toggleKnob} />
                 </button>

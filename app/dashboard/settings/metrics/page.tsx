@@ -1,34 +1,51 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ChevronUp, ChevronDown, Mail, Calendar, MessageSquare, Code2, Users } from "lucide-react";
-import type { WidgetPreference, WidgetServiceKey } from "@/lib/types";
+import { ChevronUp, ChevronDown, Mail, Calendar, MessageSquare, Code2, Users, Database } from "lucide-react";
+import type { WidgetPreference } from "@/lib/types";
 import { DEFAULT_WIDGET_PREFS } from "@/lib/types";
+import { netsuiteKeyLabel } from "@/lib/metrics";
 import styles from "./metrics.module.css";
 
-const SERVICE_LABELS: Record<WidgetServiceKey, string> = {
-  mail: "Email",
-  calendar: "Calendar",
+const STATIC_LABELS: Record<string, string> = {
+  mail:      "Email",
+  calendar:  "Calendar",
   messaging: "Messaging",
-  code: "Code",
-  crm: "CRM",
+  code:      "Code",
+  crm:       "CRM",
 };
 
-const SERVICE_DESCRIPTIONS: Record<WidgetServiceKey, string> = {
-  mail: "Unread messages and inbox activity",
-  calendar: "Upcoming events and meeting count",
+const STATIC_DESCRIPTIONS: Record<string, string> = {
+  mail:      "Unread messages and inbox activity",
+  calendar:  "Upcoming events and meeting count",
   messaging: "Team messages and chat notifications",
-  code: "Open pull requests and code review tasks",
-  crm: "Follow-ups due and deal pipeline activity",
+  code:      "Open pull requests and code review tasks",
+  crm:       "Follow-ups due and deal pipeline activity",
 };
 
-const SERVICE_ICONS: Record<WidgetServiceKey, React.ReactNode> = {
-  mail: <Mail size={16} />,
-  calendar: <Calendar size={16} />,
-  messaging: <MessageSquare size={16} />,
-  code: <Code2 size={16} />,
-  crm: <Users size={16} />,
-};
+function getServiceLabel(key: string, label?: string): string {
+  if (label) return label;
+  return STATIC_LABELS[key] ?? netsuiteKeyLabel(key);
+}
+
+function getServiceDescription(key: string): string {
+  if (key in STATIC_DESCRIPTIONS) return STATIC_DESCRIPTIONS[key];
+  if (key.startsWith("netsuite_")) return "NetSuite pending-approval count";
+  return "";
+}
+
+function getServiceIcon(key: string): React.ReactNode {
+  const icons: Record<string, React.ReactNode> = {
+    mail:      <Mail size={16} />,
+    calendar:  <Calendar size={16} />,
+    messaging: <MessageSquare size={16} />,
+    code:      <Code2 size={16} />,
+    crm:       <Users size={16} />,
+  };
+  if (key in icons) return icons[key];
+  if (key.startsWith("netsuite_")) return <Database size={16} />;
+  return null;
+}
 
 export default function MetricsSettingsPage() {
   const [prefs, setPrefs] = useState<WidgetPreference[]>(DEFAULT_WIDGET_PREFS);
@@ -118,11 +135,11 @@ export default function MetricsSettingsPage() {
                 className={`${styles.item} ${!pref.enabled ? styles.itemDisabled : ""}`}
               >
                 <span className={styles.itemIcon} aria-hidden="true">
-                  {SERVICE_ICONS[pref.key]}
+                  {getServiceIcon(pref.key)}
                 </span>
                 <div className={styles.itemBody}>
-                  <span className={styles.itemLabel}>{SERVICE_LABELS[pref.key]}</span>
-                  <span className={styles.itemDesc}>{SERVICE_DESCRIPTIONS[pref.key]}</span>
+                  <span className={styles.itemLabel}>{getServiceLabel(pref.key, pref.label)}</span>
+                  <span className={styles.itemDesc}>{getServiceDescription(pref.key)}</span>
                 </div>
 
                 <div className={styles.itemActions}>
@@ -130,7 +147,7 @@ export default function MetricsSettingsPage() {
                     className={styles.reorderBtn}
                     onClick={() => move(index, -1)}
                     disabled={index === 0}
-                    aria-label={`Move ${SERVICE_LABELS[pref.key]} up`}
+                    aria-label={`Move ${getServiceLabel(pref.key, pref.label)} up`}
                     title="Move up"
                   >
                     <ChevronUp size={14} />
@@ -139,7 +156,7 @@ export default function MetricsSettingsPage() {
                     className={styles.reorderBtn}
                     onClick={() => move(index, 1)}
                     disabled={index === prefs.length - 1}
-                    aria-label={`Move ${SERVICE_LABELS[pref.key]} down`}
+                    aria-label={`Move ${getServiceLabel(pref.key, pref.label)} down`}
                     title="Move down"
                   >
                     <ChevronDown size={14} />
@@ -150,7 +167,7 @@ export default function MetricsSettingsPage() {
                     onClick={() => toggle(index)}
                     role="switch"
                     aria-checked={pref.enabled}
-                    aria-label={`${pref.enabled ? "Hide" : "Show"} ${SERVICE_LABELS[pref.key]}`}
+                    aria-label={`${pref.enabled ? "Hide" : "Show"} ${getServiceLabel(pref.key, pref.label)}`}
                   >
                     <span className={styles.toggleKnob} />
                   </button>

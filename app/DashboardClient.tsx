@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Code2,
   Users,
+  Database,
   Bot,
   Settings,
   Filter,
@@ -31,11 +32,13 @@ import WidgetCard, { type WidgetState } from "@/components/widgets/WidgetCard";
 import WidgetRow from "@/components/widgets/WidgetRow";
 import WidgetSettingsDialog from "@/components/widgets/WidgetSettingsDialog";
 import CommandPalette, { type Command } from "@/components/CommandPalette";
+import KeyboardHelpDialog, { type PluginBinding } from "@/components/KeyboardHelpDialog";
 
 import { useEventStream } from "@/lib/hooks/useEventStream";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
-import type { WidgetMetrics, WidgetPreference, WidgetServiceKey } from "@/lib/types";
+import type { WidgetMetrics, WidgetPreference, WidgetServiceKey, KeybindingOverrides } from "@/lib/types";
 import { DEFAULT_WIDGET_PREFS } from "@/lib/types";
+import { netsuiteKeyLabel } from "@/lib/metrics";
 
 import styles from "./dashboard.module.css";
 
@@ -52,47 +55,17 @@ interface WidgetData {
   alertCount?: number;
 }
 
-const EMPTY_WIDGETS: Record<ServiceKey, WidgetData> = {
-  mail: {
-    primaryMetric: 0,
-    secondaryLabel: "new messages",
-    deltaPercent: 0,
-    sparklineData: [],
-    state: "default",
-  },
-  calendar: {
-    primaryMetric: 0,
-    secondaryLabel: "events today",
-    deltaPercent: 0,
-    sparklineData: [],
-    state: "default",
-  },
-  messaging: {
-    primaryMetric: 0,
-    secondaryLabel: "unread messages",
-    deltaPercent: 0,
-    sparklineData: [],
-    state: "default",
-  },
-  code: {
-    primaryMetric: 0,
-    secondaryLabel: "open PRs",
-    deltaPercent: 0,
-    sparklineData: [],
-    state: "default",
-  },
-  crm: {
-    primaryMetric: 0,
-    secondaryLabel: "follow-ups due",
-    deltaPercent: 0,
-    sparklineData: [],
-    state: "default",
-  },
+const EMPTY_WIDGET: WidgetData = {
+  primaryMetric: 0,
+  secondaryLabel: "items",
+  deltaPercent: 0,
+  sparklineData: [],
+  state: "default",
 };
 
-// Per-service display config used when rendering widget cards dynamically
-const WIDGET_CONFIG: Record<
-  ServiceKey,
+// Static display config for the five core service tiles
+const BASE_WIDGET_CONFIG: Record<
+  string,
   { serviceLabel: string; icon: React.ReactNode; route: string }
 > = {
   mail: {
@@ -122,6 +95,20 @@ const WIDGET_CONFIG: Record<
   },
 };
 
+/** Return display config for any widget key, including dynamic netsuite_* keys. */
+function getWidgetConfig(
+  key: string,
+  label?: string,
+): { serviceLabel: string; icon: React.ReactNode; route: string } {
+  if (key in BASE_WIDGET_CONFIG) return BASE_WIDGET_CONFIG[key];
+  // Dynamic netsuite_* tile — all link to the CRM detail page
+  return {
+    serviceLabel: label ?? netsuiteKeyLabel(key),
+    icon: <Database size={16} />,
+    route: "/dashboard/crm",
+  };
+}
+
 // Max feed items retained in memory to avoid unbounded growth
 const MAX_FEED_ITEMS = 100;
 
@@ -137,7 +124,7 @@ export default function DashboardClient({
   // ── Core state ──────────────────────────────────────────────────────────────
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [feed, setFeed] = useState<FeedItem[]>([]);
-  const [widgets, setWidgets] = useState<Record<ServiceKey, WidgetData>>(EMPTY_WIDGETS);
+  const [widgets, setWidgets] = useState<Record<string, WidgetData>>({});
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -495,13 +482,14 @@ export default function DashboardClient({
               <div className={styles.widgetRowWrapper}>
                 <WidgetRow>
                   {visibleWidgets.map((pref) => {
-                    const cfg = WIDGET_CONFIG[pref.key];
+                    const cfg = getWidgetConfig(pref.key, pref.label);
+                    const data = widgets[pref.key] ?? EMPTY_WIDGET;
                     return (
                       <WidgetCard
                         key={pref.key}
                         serviceLabel={cfg.serviceLabel}
                         serviceIcon={cfg.icon}
-                        {...widgets[pref.key]}
+                        {...data}
                         onViewAll={() => router.push(cfg.route)}
                       />
                     );
