@@ -195,6 +195,8 @@ export const organizations = pgTable("organizations", {
   // Stored encrypted at rest
   ssoClientSecret: text("sso_client_secret"),
   ssoEnabled: boolean("sso_enabled").notNull().default(false),
+  // Optional logo URL for white-labeling — shown in the topbar instead of the default logo
+  logoUrl: text("logo_url"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 

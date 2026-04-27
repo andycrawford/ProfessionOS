@@ -9,25 +9,42 @@ interface TopbarProps {
   alertCount?: number;
   onCommandPaletteOpen?: () => void;
   userInitials?: string;
+  orgLogoUrl?: string | null;
+  orgName?: string | null;
 }
 
 export default function Topbar({
   alertCount = 0,
   onCommandPaletteOpen,
   userInitials,
+  orgLogoUrl,
+  orgName,
 }: TopbarProps) {
   const { theme, toggle } = useTheme();
 
   return (
     <header className={styles.topbar} role="banner">
       <div className={styles.brand}>
-        <Image
-          src="/brand/logo.svg"
-          alt="Profession OS"
-          width={140}
-          height={28}
-          priority
-        />
+        {orgLogoUrl ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={orgLogoUrl}
+              alt={orgName ?? "Organization logo"}
+              height={28}
+              style={{ maxWidth: 120, objectFit: "contain" }}
+            />
+            <span className={styles.wordmark}>{orgName} OS</span>
+          </>
+        ) : (
+          <Image
+            src="/brand/logo.svg"
+            alt="Profession OS"
+            width={140}
+            height={28}
+            priority
+          />
+        )}
       </div>
 
       <div className={styles.searchTrigger}>

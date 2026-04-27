@@ -76,13 +76,14 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, domain, ssoEnabled, entraIdTenantId, ssoClientId, ssoClientSecret } = body;
+  const { name, domain, logoUrl, ssoEnabled, entraIdTenantId, ssoClientId, ssoClientSecret } = body;
 
   // Build the update object — only include fields that were explicitly provided
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: Record<string, any> = {};
   if (name !== undefined) updates.name = name;
   if (domain !== undefined) updates.domain = domain;
+  if (logoUrl !== undefined) updates.logoUrl = logoUrl || null;
   if (ssoEnabled !== undefined) updates.ssoEnabled = Boolean(ssoEnabled);
   if (entraIdTenantId !== undefined) updates.entraIdTenantId = entraIdTenantId || null;
   if (ssoClientId !== undefined) updates.ssoClientId = ssoClientId || null;

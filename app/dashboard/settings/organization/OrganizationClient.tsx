@@ -8,6 +8,7 @@ export type OrgData = {
   id: string;
   name: string;
   domain: string;
+  logoUrl: string | null;
   entraIdTenantId: string | null;
   ssoClientId: string | null;
   ssoClientSecretSet: boolean;
@@ -31,6 +32,7 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
   // Edit-org form state (profile section)
   const [profileName, setProfileName] = useState(initialOrg?.name ?? "");
   const [profileDomain, setProfileDomain] = useState(initialOrg?.domain ?? "");
+  const [profileLogoUrl, setProfileLogoUrl] = useState(initialOrg?.logoUrl ?? "");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState(false);
@@ -87,14 +89,14 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
       const res = await fetch(`/api/organizations/${org.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: profileName, domain: profileDomain }),
+        body: JSON.stringify({ name: profileName, domain: profileDomain, logoUrl: profileLogoUrl }),
       });
       const data = await res.json();
       if (!res.ok) {
         setProfileError(data.error ?? "Failed to save");
         return;
       }
-      setOrg((prev) => prev ? { ...prev, name: data.name, domain: data.domain } : prev);
+      setOrg((prev) => prev ? { ...prev, name: data.name, domain: data.domain, logoUrl: data.logoUrl } : prev);
       setProfileSuccess(true);
       setTimeout(() => setProfileSuccess(false), 3000);
     } catch {
@@ -243,6 +245,19 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
               required
             />
             <p className={styles.hint}>Used to match employees by email address.</p>
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="org-logo-url">Logo URL</label>
+            <input
+              id="org-logo-url"
+              className={styles.input}
+              type="url"
+              value={profileLogoUrl}
+              onChange={(e) => setProfileLogoUrl(e.target.value)}
+              disabled={!isAdmin}
+              placeholder="https://example.com/logo.png"
+            />
+            <p className={styles.hint}>Displayed in the header alongside your organization name. Leave blank to use the default logo.</p>
           </div>
           {profileError && <p className={styles.error}>{profileError}</p>}
           {profileSuccess && <p className={styles.success}>Saved.</p>}

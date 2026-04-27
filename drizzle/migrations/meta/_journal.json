@@ -43,6 +43,13 @@
       "when": 1777258538000,
       "tag": "0005_widget_preferences",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777259326649,
+      "tag": "0006_last_sentinels",
+      "breakpoints": true
     }
   ]
 }

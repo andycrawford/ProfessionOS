@@ -7,8 +7,12 @@ import styles from "./dashboard.module.css";
 
 export default function DashboardShell({
   children,
+  orgLogoUrl,
+  orgName,
 }: {
   children: React.ReactNode;
+  orgLogoUrl?: string | null;
+  orgName?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,7 +39,7 @@ export default function DashboardShell({
 
   return (
     <div className={styles.shell}>
-      <Topbar userInitials="AC" />
+      <Topbar userInitials="AC" orgLogoUrl={orgLogoUrl} orgName={orgName} />
       <div className={styles.body}>
         <NavRail activeItemId={activeNav} onNavigate={handleNavigate} />
         <div className={styles.content}>{children}</div>
