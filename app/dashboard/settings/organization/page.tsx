@@ -12,27 +12,32 @@ export default async function OrganizationPage() {
   const session = await safeAuth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const db = getDb();
-
-  // Find the org this user belongs to (if any)
-  const [membership] = await db
-    .select({
-      org: organizations,
-      role: organizationMembers.role,
-    })
-    .from(organizationMembers)
-    .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
-    .where(eq(organizationMembers.userId, session.user.id))
-    .limit(1);
-
   let orgData: OrgData | null = null;
-  if (membership) {
-    const { ssoClientSecret: _secret, ...safeOrg } = membership.org;
-    orgData = {
-      ...safeOrg,
-      ssoClientSecretSet: !!membership.org.ssoClientSecret,
-      userRole: membership.role as "admin" | "member",
-    };
+
+  try {
+    const db = getDb();
+
+    // Find the org this user belongs to (if any)
+    const [membership] = await db
+      .select({
+        org: organizations,
+        role: organizationMembers.role,
+      })
+      .from(organizationMembers)
+      .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
+      .where(eq(organizationMembers.userId, session.user.id))
+      .limit(1);
+
+    if (membership) {
+      const { ssoClientSecret: _secret, ...safeOrg } = membership.org;
+      orgData = {
+        ...safeOrg,
+        ssoClientSecretSet: !!membership.org.ssoClientSecret,
+        userRole: membership.role as "admin" | "member",
+      };
+    }
+  } catch {
+    // Migration may not have run yet (e.g. logo_url column missing); degrade gracefully
   }
 
   return (
