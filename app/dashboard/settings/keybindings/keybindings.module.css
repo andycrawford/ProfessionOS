@@ -1,0 +1,197 @@
+/* Keybindings settings page */
+
+.page {
+  padding: var(--space-8);
+  max-width: 640px;
+}
+
+.header {
+  margin-bottom: var(--space-8);
+}
+
+.heading {
+  font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-1);
+}
+
+.subheading {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+
+.section {
+  margin-bottom: var(--space-8);
+}
+
+.sectionTitle {
+  font-size: var(--text-body-sm-size, 12px);
+  font-weight: 600;
+  color: var(--color-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 var(--space-3);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+}
+
+/* ── Row ─────────────────────────────────────────────────────────────────── */
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  min-height: 44px;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: var(--color-bg-raised);
+}
+
+.actionLabel {
+  font-size: var(--text-body-base-size, 14px);
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.rowControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Record button ───────────────────────────────────────────────────────── */
+
+.recordBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-width: 60px;
+  transition: border-color var(--duration-fast) var(--easing-default),
+              background var(--duration-fast) var(--easing-default);
+}
+
+.recordBtn:hover {
+  border-color: var(--color-border-focus);
+  background: var(--color-bg-overlay);
+}
+
+.recordBtn.recording {
+  border-color: var(--color-accent-brand);
+  background: color-mix(in srgb, var(--color-accent-brand) 10%, transparent);
+  color: var(--color-accent-brand);
+  font-size: var(--text-body-sm-size, 12px);
+  padding: var(--space-1) var(--space-3);
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to   { opacity: 0.6; }
+}
+
+/* ── Key badges (shared) ─────────────────────────────────────────────────── */
+
+.keysRow {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-default);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ibm-plex-mono, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Reset button ────────────────────────────────────────────────────────── */
+
+.resetBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--color-text-disabled);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-default),
+              background var(--duration-fast) var(--easing-default);
+}
+
+.resetBtn:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-overlay);
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+.saveRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.saveBtn {
+  padding: var(--space-2) var(--space-6);
+  background: var(--color-accent-brand);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-default);
+  font-size: var(--text-body-base-size, 14px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--easing-default);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorMsg {
+  font-size: var(--text-body-sm-size, 12px);
+  color: var(--color-status-error, #f87171);
+  margin: var(--space-2) 0 0;
+}

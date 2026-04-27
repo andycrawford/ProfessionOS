@@ -44,6 +44,20 @@ export interface ConfigField {
   options?: { label: string; value: string }[];
 }
 
+/**
+ * Optional keyboard shortcut a plugin can declare.
+ * The declared key is the default; users can override it in keybinding settings.
+ * action must be a stable unique identifier (e.g. "plugin:jira:open").
+ */
+export interface PluginKeybinding {
+  /** Stable action id — used as the key for user overrides */
+  action: string;
+  /** Default key binding in useKeyboardShortcuts format (e.g. "j", "cmd+j") */
+  defaultKey: string;
+  /** Human-readable label shown in the shortcuts help dialog */
+  description: string;
+}
+
 export interface ServicePlugin {
   type: ServiceType;
   displayName: string;
@@ -56,4 +70,6 @@ export interface ServicePlugin {
   getAuthUrl?(redirectUri: string): string;
   /** Optional: approve/action an item in the external service. Returns true on success. */
   approveItem?(config: ServiceConfig, externalId: string, action: string): Promise<boolean>;
+  /** Optional: keyboard shortcut this plugin wants to register. */
+  keybinding?: PluginKeybinding;
 }

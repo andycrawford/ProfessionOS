@@ -138,15 +138,28 @@ export default function DashboardClient({
   const [activeNav, setActiveNav] = useState("code");
   const [feedFilter, setFeedFilter] = useState<FeedService | "all">("all");
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [aiStreaming, setAiStreaming] = useState(false);
   const streamAbortRef = useRef<AbortController | null>(null);
 
-  // ── Load widget preferences ──────────────────────────────────────────────────
+  // ── Keybinding overrides & plugin bindings ───────────────────────────────────
+  const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
+  const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
+
+  // ── Load widget preferences + keybindings ────────────────────────────────────
   useEffect(() => {
     fetch("/api/settings/widgets")
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) setWidgetPrefs(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/settings/keybindings")
+      .then((r) => r.json())
+      .then((data) => {
+        setKeybindingOverrides(data.overrides ?? {});
+        setPluginBindings(data.pluginBindings ?? []);
       })
       .catch(() => {});
   }, []);
@@ -436,10 +449,22 @@ export default function DashboardClient({
   ];
 
   // ── Global keyboard shortcuts ────────────────────────────────────────────────
+  // Resolve effective key for an action: use user override or fall back to default.
+  const k = (defaultKey: string, actionId: string) =>
+    keybindingOverrides[actionId] ?? defaultKey;
+
   useKeyboardShortcuts({
-    "cmd+k": () => setPaletteOpen(true),
-    "cmd+/": () => setActiveNav((n) => (n === "ai" ? "code" : "ai")),
-    escape: () => setPaletteOpen(false),
+    [k("cmd+k", "open-command-palette")]: () => setPaletteOpen(true),
+    [k("/", "open-command-line")]: () => setPaletteOpen(true),
+    [k("shift+?", "show-shortcuts")]: () => setHelpOpen(true),
+    [k("cmd+/", "toggle-ai")]: () => setActiveNav((n) => (n === "ai" ? "code" : "ai")),
+    [k("e", "nav-mail")]: () => router.push("/dashboard/mail"),
+    [k("c", "nav-calendar")]: () => router.push("/dashboard/calendar"),
+    [k("m", "nav-messaging")]: () => router.push("/dashboard/messaging"),
+    escape: () => {
+      if (helpOpen) { setHelpOpen(false); return; }
+      setPaletteOpen(false);
+    },
   });
 
   // ── Derived: visible widgets in preference order ─────────────────────────────
@@ -553,6 +578,13 @@ export default function DashboardClient({
         onClose={() => setMetricsSettingsOpen(false)}
         prefs={widgetPrefs}
         onSave={handleSaveWidgetPrefs}
+      />
+
+      <KeyboardHelpDialog
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        overrides={keybindingOverrides}
+        pluginBindings={pluginBindings}
       />
     </>
   );

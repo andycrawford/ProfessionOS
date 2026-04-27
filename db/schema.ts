@@ -75,6 +75,8 @@ export const userSettings = pgTable("user_settings", {
   theme: text("theme").default("system").notNull(),
   // Array of { key, enabled } ordered by display position. Null = use defaults.
   widgetPreferences: jsonb("widget_preferences"),
+  // Record<actionId, customKey> — user overrides for keyboard shortcuts. Null = use defaults.
+  keybindings: jsonb("keybindings"),
 });
 
 // ── Plugin system tables ──────────────────────────────────────────────────────
