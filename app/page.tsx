@@ -22,7 +22,7 @@ export default async function DashboardPage() {
   // which has no DATABASE_URL, so session is always null there.
   if (!session?.user?.id) {
     if (process.env.DEMO_MODE === "true") {
-      return <DashboardClient userInitials="OS" userName="Demo User" />;
+      return <DashboardClient userInitials="OS" userName="Demo User" userEmail="demo@professionos.com" />;
     }
     redirect("/sign-in");
   }

@@ -201,10 +201,26 @@
   letter-spacing: 0.02em;
 }
 
+.menuUserInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  flex: 1;
+}
+
 .menuUserName {
   font-size: var(--text-body-sm-size);
   color: var(--color-text-primary);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuUserEmail {
+  font-size: 11px;
+  color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

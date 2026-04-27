@@ -19,6 +19,7 @@ interface TopbarProps {
   onCommandPaletteOpen?: () => void;
   userInitials?: string;
   userName?: string;
+  userEmail?: string;
   orgLogoUrl?: string | null;
   orgName?: string | null;
   pollIntervalSeconds?: number;
@@ -31,6 +32,7 @@ export default function Topbar({
   onCommandPaletteOpen,
   userInitials,
   userName,
+  userEmail,
   orgLogoUrl,
   orgName,
   pollIntervalSeconds = 30,
@@ -144,7 +146,10 @@ export default function Topbar({
                       {userInitials}
                     </div>
                   )}
-                  {userName && <span className={styles.menuUserName}>{userName}</span>}
+                  <div className={styles.menuUserInfo}>
+                    {userName && <span className={styles.menuUserName}>{userName}</span>}
+                    {userEmail && <span className={styles.menuUserEmail}>{userEmail}</span>}
+                  </div>
                 </div>
               )}
 
