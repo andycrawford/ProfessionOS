@@ -34,30 +34,6 @@ const END_HOUR = 19;   // 7 pm (last visible hour label)
 const SLOT_PX = 64;    // px per hour
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
-// ── Mock events (representative of multi-source data) ─────────────────────────
-
-const MOCK_EVENTS: CalEvent[] = [
-  // Calendar service
-  { id: "c1", title: "Team Standup", date: "2026-04-26", startHour: 9, startMin: 0, endHour: 9, endMin: 30, source: "calendar" },
-  { id: "c2", title: "Product Review", date: "2026-04-26", startHour: 14, startMin: 0, endHour: 15, endMin: 0, source: "calendar" },
-  { id: "c3", title: "Q2 Planning Session", date: "2026-04-28", startHour: 10, startMin: 0, endHour: 12, endMin: 0, source: "calendar" },
-  { id: "c4", title: "Board Meeting", date: "2026-04-30", startHour: 13, startMin: 0, endHour: 14, endMin: 30, source: "calendar" },
-  { id: "c5", title: "Design Sprint", date: "2026-04-22", startHour: 11, startMin: 0, endHour: 13, endMin: 0, source: "calendar" },
-  { id: "c6", title: "1:1 with Manager", date: "2026-05-05", startHour: 10, startMin: 0, endHour: 10, endMin: 30, source: "calendar" },
-  // CRM tasks
-  { id: "r1", title: "Follow up: Acme Corp", date: "2026-04-27", startHour: 11, startMin: 0, endHour: 11, endMin: 30, source: "crm" },
-  { id: "r2", title: "Call: Jane Smith", date: "2026-04-29", startHour: 15, startMin: 0, endHour: 15, endMin: 30, source: "crm" },
-  { id: "r3", title: "Proposal deadline", date: "2026-05-02", startHour: 10, startMin: 0, endHour: 11, endMin: 0, source: "crm" },
-  // Email discovery meetings
-  { id: "m1", title: "Interview: Frontend Dev", date: "2026-04-25", startHour: 10, startMin: 0, endHour: 11, endMin: 0, source: "mail" },
-  { id: "m2", title: "Design Review", date: "2026-04-27", startHour: 14, startMin: 0, endHour: 15, endMin: 0, source: "mail" },
-  { id: "m3", title: "Vendor Sync", date: "2026-05-01", startHour: 9, startMin: 30, endHour: 10, endMin: 30, source: "mail" },
-  // Messaging meetings
-  { id: "g1", title: "Sprint Retro", date: "2026-04-24", startHour: 16, startMin: 0, endHour: 17, endMin: 0, source: "messaging" },
-  { id: "g2", title: "Engineering Sync", date: "2026-04-28", startHour: 9, startMin: 0, endHour: 9, endMin: 30, source: "messaging" },
-  { id: "g3", title: "All Hands", date: "2026-05-01", startHour: 15, startMin: 0, endHour: 16, endMin: 0, source: "messaging" },
-];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function toDateKey(d: Date): string {
@@ -119,14 +95,7 @@ export default function CalendarView() {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
 
-  const eventsByDate = useMemo(() => {
-    const map: Record<string, CalEvent[]> = {};
-    for (const evt of MOCK_EVENTS) {
-      if (!map[evt.date]) map[evt.date] = [];
-      map[evt.date].push(evt);
-    }
-    return map;
-  }, []);
+  const eventsByDate: Record<string, CalEvent[]> = {};
 
   function navigate(dir: -1 | 1) {
     const next = new Date(currentDate);
