@@ -116,8 +116,10 @@ const MAX_FEED_ITEMS = 100;
 
 export default function DashboardClient({
   userInitials,
+  userName,
 }: {
   userInitials: string;
+  userName?: string;
 }) {
   const router = useRouter();
 
@@ -478,6 +480,7 @@ export default function DashboardClient({
           alertCount={alerts.length}
           onCommandPaletteOpen={() => setPaletteOpen(true)}
           userInitials={userInitials}
+          userName={userName}
         />
 
         <div className={styles.body}>

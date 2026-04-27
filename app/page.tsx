@@ -17,7 +17,15 @@ function getInitials(name: string | null | undefined): string {
 
 export default async function DashboardPage() {
   const session = await safeAuth();
-  if (!session?.user?.id) redirect("/sign-in");
+
+  // Demo mode: no auth required. DEMO_MODE=true is set on demo.professionos.com
+  // which has no DATABASE_URL, so session is always null there.
+  if (!session?.user?.id) {
+    if (process.env.DEMO_MODE === "true") {
+      return <DashboardClient userInitials="OS" userName="Demo User" />;
+    }
+    redirect("/sign-in");
+  }
 
   // Redirect first-time users (no connected services) to the setup page.
   // Skip silently if the DB is unavailable.
@@ -36,6 +44,7 @@ export default async function DashboardPage() {
   }
 
   const userInitials = getInitials(session.user.name);
+  const userName = session.user.name ?? undefined;
 
-  return <DashboardClient userInitials={userInitials} />;
+  return <DashboardClient userInitials={userInitials} userName={userName} />;
 }
