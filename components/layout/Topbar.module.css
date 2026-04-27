@@ -30,6 +30,10 @@
   white-space: nowrap;
 }
 
+.wordmarkAccent {
+  color: var(--color-accent-brand);
+}
+
 .searchTrigger {
   flex: 1;
   display: flex;
@@ -256,15 +260,15 @@
 }
 
 .refreshOptionActive {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #fff;
+  background: var(--color-accent-brand);
+  border-color: var(--color-accent-brand);
+  color: #000;
 }
 
 .refreshOptionActive:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #fff;
+  background: var(--color-accent-brand);
+  border-color: var(--color-accent-brand);
+  color: #000;
 }
 
 .menuItem {

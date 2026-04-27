@@ -64,7 +64,7 @@ export default function Topbar({
               height={28}
               style={{ maxWidth: 120, objectFit: "contain" }}
             />
-            <span className={styles.wordmark}>{orgName} OS</span>
+            <span className={styles.wordmark}>{orgName} <span className={styles.wordmarkAccent}>OS</span></span>
           </>
         ) : (
           <Image
