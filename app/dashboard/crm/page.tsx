@@ -1,5 +1,5 @@
-import ServiceDetailShell from "@/app/dashboard/_components/ServiceDetailShell";
+import CrmClient from "./CrmClient";
 
 export default function CrmPage() {
-  return <ServiceDetailShell service="crm" />;
+  return <CrmClient />;
 }

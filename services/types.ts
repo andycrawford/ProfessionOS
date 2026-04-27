@@ -8,6 +8,7 @@ export enum ServiceType {
   Ziflow = "ziflow",
   NetSuiteInvoices = "netsuite_invoices",
   NetSuiteRMA = "netsuite_rma",
+  NetSuiteCRM = "netsuite_crm",
   ClaudeAi = "claude_ai",
   MSTeams = "ms_teams",
 }

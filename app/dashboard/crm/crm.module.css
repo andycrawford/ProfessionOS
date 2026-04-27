@@ -1,0 +1,195 @@
+/* NetSuite CRM page — record groups and approve rows */
+
+/* ── Record type group ──────────────────────────────────────────────────────── */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.groupHeading {
+  font-size: var(--text-body-sm-size);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-1);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* ── Approve row ────────────────────────────────────────────────────────────── */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  background: var(--color-bg-surface);
+  transition: border-color var(--duration-fast) var(--easing-default);
+  flex-wrap: wrap;
+}
+
+.row:hover {
+  border-color: var(--color-border-subtle);
+}
+
+.rowDone {
+  opacity: 0.55;
+}
+
+/* ── Urgency dot ─────────────────────────────────────────────────────────────── */
+
+.urgencyDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.urgencyHigh {
+  background: var(--color-alert-critical, #ff4757);
+}
+
+.urgencyMed {
+  background: var(--color-alert-warning, #ffa502);
+}
+
+.urgencyLow {
+  background: var(--color-border-default);
+}
+
+/* ── Row body ────────────────────────────────────────────────────────────────── */
+
+.rowLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowMeta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-caption-size, 11px);
+  color: var(--color-text-secondary);
+}
+
+/* ── Row actions ────────────────────────────────────────────────────────────── */
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.rowError {
+  width: 100%;
+  font-size: var(--text-caption-size, 11px);
+  color: var(--color-alert-critical, #ff4757);
+  margin: var(--space-1) 0 0;
+}
+
+/* ── Approve button ──────────────────────────────────────────────────────────── */
+
+.approveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-body-sm-size);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  color: #fff;
+  background: var(--color-accent-brand, #00c9a7);
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition:
+    opacity var(--duration-fast) var(--easing-default),
+    background var(--duration-fast) var(--easing-default);
+}
+
+.approveBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.approveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation: none; }
+}
+
+/* ── Approved badge ──────────────────────────────────────────────────────────── */
+
+.approvedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-body-sm-size);
+  color: var(--color-accent-brand, #00c9a7);
+  border: 1px solid var(--color-accent-brand, #00c9a7);
+  border-radius: var(--radius-default);
+}
+
+/* ── View link (external) ────────────────────────────────────────────────────── */
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default);
+}
+
+.viewLink:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-subtle);
+}

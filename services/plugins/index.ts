@@ -5,3 +5,4 @@ import "./google-calendar";
 import "./clickup";
 import "./claude-ai";
 import "./ms-teams";
+import "./netsuite-crm";
