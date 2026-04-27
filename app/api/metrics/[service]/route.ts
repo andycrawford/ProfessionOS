@@ -1,7 +1,7 @@
 // GET /api/metrics/[service]?range=24h|7d|30d
 //
 // Returns activity-history metrics for one dashboard tile.
-// [service] must be one of: mail, calendar, slack, code, crm.
+// [service] must be one of: mail, calendar, messaging, code, crm.
 // Falls back to range=24h when the query param is omitted.
 //
 // Response shape extends WidgetMetrics (lib/types.ts) with two extra fields:
@@ -23,7 +23,7 @@ import {
   type MetricsRow,
 } from "@/lib/metrics";
 
-const VALID_SERVICES = new Set<string>(["mail", "calendar", "slack", "code", "crm"]);
+const VALID_SERVICES = new Set<string>(["mail", "calendar", "messaging", "code", "crm"]);
 const VALID_RANGES   = new Set<string>(["24h", "7d", "30d"]);
 
 type Params = { service: string };
@@ -70,13 +70,13 @@ export async function GET(req: Request, { params }: { params: Promise<Params> })
       range,
       metric: 0,
       secondaryLabel:
-        { mail: "emails", calendar: "events", slack: "messages", code: "tasks", crm: "follow-ups" }[service],
+        { mail: "emails", calendar: "events", messaging: "messages", code: "tasks", crm: "follow-ups" }[service],
       deltaPercent: 0,
       sparkline: new Array(buckets).fill(0),
       state: "empty",
     });
 
-  // No DB service types mapped to this widget (e.g. "slack") → always empty
+  // No DB service types mapped to this widget (e.g. "messaging") → always empty
   if (serviceTypes.length === 0) return emptyResponse();
 
   const db = getDb();

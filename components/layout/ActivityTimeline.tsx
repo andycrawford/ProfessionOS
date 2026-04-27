@@ -5,7 +5,7 @@ import styles from "./ActivityTimeline.module.css";
 
 export type FeedItemSeverity = "critical" | "warning" | "info" | "neutral";
 
-export type FeedService = "mail" | "calendar" | "slack" | "code" | "crm" | "ai";
+export type FeedService = "mail" | "calendar" | "messaging" | "code" | "crm" | "ai";
 
 export interface FeedItem {
   id: string;
@@ -26,7 +26,7 @@ const SERVICE_FILTERS: { id: FeedService | "all"; label: string }[] = [
   { id: "all", label: "All" },
   { id: "mail", label: "Mail" },
   { id: "calendar", label: "Calendar" },
-  { id: "slack", label: "Slack" },
+  { id: "messaging", label: "Messaging" },
   { id: "crm", label: "CRM" },
   { id: "code", label: "Code" },
   { id: "ai", label: "AI" },
@@ -35,7 +35,7 @@ const SERVICE_FILTERS: { id: FeedService | "all"; label: string }[] = [
 const serviceIcon: Partial<Record<FeedService, React.ReactNode>> = {
   mail: <Mail size={14} aria-hidden="true" />,
   calendar: <Calendar size={14} aria-hidden="true" />,
-  slack: <MessageSquare size={14} aria-hidden="true" />,
+  messaging: <MessageSquare size={14} aria-hidden="true" />,
   code: <Code2 size={14} aria-hidden="true" />,
   crm: <Users size={14} aria-hidden="true" />,
 };

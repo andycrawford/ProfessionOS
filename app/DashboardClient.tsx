@@ -38,7 +38,7 @@ import styles from "./dashboard.module.css";
 
 // ─── Widget state ─────────────────────────────────────────────────────────────
 
-type ServiceKey = "mail" | "calendar" | "slack" | "code" | "crm";
+type ServiceKey = "mail" | "calendar" | "messaging" | "code" | "crm";
 
 interface WidgetData {
   primaryMetric: number;
@@ -64,7 +64,7 @@ const EMPTY_WIDGETS: Record<ServiceKey, WidgetData> = {
     sparklineData: [],
     state: "default",
   },
-  slack: {
+  messaging: {
     primaryMetric: 0,
     secondaryLabel: "unread messages",
     deltaPercent: 0,
@@ -285,12 +285,12 @@ export default function DashboardClient({
       action: () => router.push("/dashboard/calendar"),
     },
     {
-      id: "nav-slack",
-      label: "Go to Slack",
+      id: "nav-messaging",
+      label: "Go to Messaging",
       subtitle: "Navigate",
       icon: <MessageSquare size={16} />,
       group: "Navigate",
-      action: () => router.push("/dashboard/slack"),
+      action: () => router.push("/dashboard/messaging"),
     },
     {
       id: "nav-code",
@@ -343,12 +343,12 @@ export default function DashboardClient({
       action: () => setFeedFilter("calendar"),
     },
     {
-      id: "filter-slack",
-      label: "Filter timeline: Slack",
+      id: "filter-messaging",
+      label: "Filter timeline: Messaging",
       subtitle: "Filter timeline",
       icon: <MessageSquare size={16} />,
       group: "Timeline",
-      action: () => setFeedFilter("slack"),
+      action: () => setFeedFilter("messaging"),
     },
     {
       id: "filter-code",
@@ -433,10 +433,10 @@ export default function DashboardClient({
                   onViewAll={() => router.push("/dashboard/calendar")}
                 />
                 <WidgetCard
-                  serviceLabel="Slack"
+                  serviceLabel="Messaging"
                   serviceIcon={<MessageSquare size={16} />}
-                  {...widgets.slack}
-                  onViewAll={() => router.push("/dashboard/slack")}
+                  {...widgets.messaging}
+                  onViewAll={() => router.push("/dashboard/messaging")}
                 />
                 <WidgetCard
                   serviceLabel="Code"

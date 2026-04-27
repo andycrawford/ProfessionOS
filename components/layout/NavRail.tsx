@@ -21,7 +21,7 @@ interface NavItem {
 const topItems: NavItem[] = [
   { id: "mail", label: "Mail", icon: <Mail size={20} aria-hidden="true" /> },
   { id: "calendar", label: "Calendar", icon: <Calendar size={20} aria-hidden="true" /> },
-  { id: "slack", label: "Slack", icon: <MessageSquare size={20} aria-hidden="true" /> },
+  { id: "messaging", label: "Messaging", icon: <MessageSquare size={20} aria-hidden="true" /> },
   { id: "crm", label: "CRM", icon: <Users size={20} aria-hidden="true" /> },
   { id: "code", label: "Code", icon: <Code2 size={20} aria-hidden="true" />, active: true },
 ];

@@ -3,9 +3,9 @@
 // Keep these types in sync with the component prop types they feed into.
 
 export type FeedItemSeverity = "critical" | "warning" | "info" | "neutral";
-export type FeedService = "mail" | "calendar" | "slack" | "code" | "crm" | "ai";
+export type FeedService = "mail" | "calendar" | "messaging" | "code" | "crm" | "ai";
 export type AlertSeverity = "critical" | "warning" | "info";
-export type WidgetServiceKey = "mail" | "calendar" | "slack" | "code" | "crm";
+export type WidgetServiceKey = "mail" | "calendar" | "messaging" | "code" | "crm";
 export type WidgetState = "default" | "warning" | "critical" | "loading" | "empty";
 
 export interface FeedItem {

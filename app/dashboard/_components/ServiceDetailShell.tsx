@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Mail, Calendar, MessageSquare, Code2, Users, ChevronLeft, AlertTriangle, RefreshCw } from "lucide-react";
 import styles from "./ServiceDetailShell.module.css";
 
-type ServiceKey = "mail" | "calendar" | "slack" | "code" | "crm";
+type ServiceKey = "mail" | "calendar" | "messaging" | "code" | "crm";
 type TimeRange = "24h" | "7d" | "30d";
 
 // "disconnected" = service not connected yet (default shell state)
@@ -31,10 +31,10 @@ const SERVICE_CONFIG: Record<
     description: "Calendar events and scheduling overview",
     emptyMessage: "No events scheduled in this period",
   },
-  slack: {
-    label: "Slack",
+  messaging: {
+    label: "Messaging",
     icon: <MessageSquare size={20} aria-hidden="true" />,
-    description: "Slack messages and channel activity",
+    description: "Messages and channel activity",
     emptyMessage: "All caught up — no unread messages",
   },
   code: {

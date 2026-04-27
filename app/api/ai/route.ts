@@ -21,12 +21,12 @@ const RESPONSES: Record<string, string> = {
     "Your inbox has 131 unread messages — 22% higher than yesterday. The main drivers are Q2 planning threads from Finance (+18), a vendor renewal thread from Procurement (+12), and the usual daily digests. I can draft responses to the action-required ones if you like.",
   pr:
     "You have 13 open PRs. Two are stale (no activity in 5+ days): feature/auth-refactor and fix/checkout-race. The rest are actively reviewed. Want me to post a nudge comment on the stale ones?",
-  slack:
+  messaging:
     "You're mentioned 7 times across #eng, #product, and #design. The highest-priority thread is the checkout error in #eng — the team is investigating and expects a root-cause in ~30 minutes.",
   error:
     "The /api/checkout error spike started at 09:47 and is now at 12% failure rate. Sentry trace shows a null-pointer in the PaymentService.processCard method — looks like a null customer ID on guest checkout. Do you want me to surface the relevant code diff?",
   summary:
-    "Here's your morning summary: 131 emails (3 need replies), 13 calendar events today (3 conflicts on Thursday), 261 Slack unread (7 direct mentions), and 1 active P0 incident on /api/checkout. Overall risk level: elevated. I recommend addressing the checkout error first.",
+    "Here's your morning summary: 131 emails (3 need replies), 13 calendar events today (3 conflicts on Thursday), 261 messages unread (7 direct mentions), and 1 active P0 incident on /api/checkout. Overall risk level: elevated. I recommend addressing the checkout error first.",
 };
 
 function pickResponse(userMessage: string): string {
@@ -41,7 +41,7 @@ function pickResponse(userMessage: string): string {
     return RESPONSES.pr;
   }
   if (lower.includes("slack") || lower.includes("message")) {
-    return RESPONSES.slack;
+    return RESPONSES.messaging;
   }
   if (lower.includes("error") || lower.includes("spike") || lower.includes("checkout")) {
     return RESPONSES.error;

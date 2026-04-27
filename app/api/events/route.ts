@@ -75,7 +75,7 @@ function formatSSE(event: SSEEvent): string {
 // Computes real WidgetMetrics for all 5 dashboard tiles using the 24h window.
 // Falls back gracefully: services with no connected adapter return state:"empty".
 
-const ALL_WIDGET_KEYS: WidgetServiceKey[] = ["mail", "calendar", "slack", "code", "crm"];
+const ALL_WIDGET_KEYS: WidgetServiceKey[] = ["mail", "calendar", "messaging", "code", "crm"];
 
 async function fetchAllWidgetMetrics(userId: string): Promise<SSEEvent[]> {
   const db = getDb();

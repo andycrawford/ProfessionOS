@@ -122,7 +122,7 @@ export default function MarketingPage() {
                   {[
                     { label: "EMAIL", value: "124", delta: "↑ 18%", status: "up" },
                     { label: "CALENDAR", value: "12", delta: "⚠ 3", status: "warn" },
-                    { label: "SLACK", value: "248", delta: "↓ 5%", status: "down" },
+                    { label: "MESSAGING", value: "248", delta: "↓ 5%", status: "down" },
                     { label: "CODE", value: "11", delta: "↑ 22%", status: "up" },
                     { label: "CRM", value: "5", delta: "—", status: "neutral" },
                   ].map((w) => (
@@ -196,13 +196,13 @@ export default function MarketingPage() {
                 icon: <Activity size={18} />,
                 title: "Activity Timeline",
                 description:
-                  "A real-time feed of every signal across Email, Calendar, Slack, GitHub, and CRM. Nothing falls through the cracks.",
+                  "A real-time feed of every signal across Email, Calendar, Messages, GitHub, and CRM. Nothing falls through the cracks.",
               },
               {
                 icon: <BarChart3 size={18} />,
                 title: "Live Widgets",
                 description:
-                  "At-a-glance metrics for email volume, calendar load, Slack unread, open PRs, and CRM follow-ups — updated continuously.",
+                  "At-a-glance metrics for email volume, calendar load, unread messages, open PRs, and CRM follow-ups — updated continuously.",
               },
               {
                 icon: <BellRing size={18} />,

@@ -18,7 +18,7 @@
  * Disconnected service
  *   When the user has no enabled connected service for the requested widget
  *   key, the response returns state: "empty", metric: 0, deltaPercent: 0, and
- *   a flat sparkline of zeros. "slack" always returns empty because no DB
+ *   a flat sparkline of zeros. "messaging" always returns empty because no DB
  *   service type maps to it yet.
  */
 
@@ -33,7 +33,7 @@ import type { WidgetServiceKey, WidgetMetrics, WidgetState } from "@/lib/types";
 export const WIDGET_SERVICE_TYPES: Record<WidgetServiceKey, string[]> = {
   mail:     ["ms365_email"],
   calendar: ["ms365_calendar", "google_calendar"],
-  slack:    [], // no service type mapped yet
+  messaging: [], // no service type mapped yet
   code:     ["clickup", "ziflow"],
   crm:      ["netsuite_invoices", "netsuite_rma"],
 };
@@ -55,7 +55,7 @@ export const RANGE_CONFIG: Record<MetricsRange, { buckets: number; bucketMs: num
 const SECONDARY_LABELS: Record<WidgetServiceKey, string> = {
   mail:     "emails",
   calendar: "events",
-  slack:    "messages",
+  messaging: "messages",
   code:     "tasks",
   crm:      "follow-ups",
 };

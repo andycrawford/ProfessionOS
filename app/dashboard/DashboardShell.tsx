@@ -17,7 +17,7 @@ export default function DashboardShell({
     if (pathname.startsWith("/dashboard/settings")) return "settings";
     if (pathname.startsWith("/dashboard/mail")) return "mail";
     if (pathname.startsWith("/dashboard/calendar")) return "calendar";
-    if (pathname.startsWith("/dashboard/slack")) return "slack";
+    if (pathname.startsWith("/dashboard/messaging")) return "messaging";
     if (pathname.startsWith("/dashboard/code")) return "code";
     if (pathname.startsWith("/dashboard/crm")) return "crm";
     return "code";
@@ -26,7 +26,7 @@ export default function DashboardShell({
   function handleNavigate(id: string) {
     if (id === "settings") {
       router.push("/dashboard/settings/services");
-    } else if (["mail", "calendar", "slack", "code", "crm"].includes(id)) {
+    } else if (["mail", "calendar", "messaging", "code", "crm"].includes(id)) {
       router.push(`/dashboard/${id}`);
     } else {
       router.push("/");

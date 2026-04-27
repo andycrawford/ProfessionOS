@@ -267,7 +267,7 @@ export default function DesignSystemPage() {
               <div className={styles.widgetItem}>
                 <span className={styles.stateLabel}>Loading</span>
                 <WidgetCard
-                  serviceLabel="SLACK"
+                  serviceLabel="MESSAGING"
                   serviceIcon={<MessageSquare size={16} />}
                   state="loading"
                 />
