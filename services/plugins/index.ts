@@ -4,3 +4,4 @@ import "./ms365-calendar";
 import "./google-calendar";
 import "./clickup";
 import "./claude-ai";
+import "./ms-teams";

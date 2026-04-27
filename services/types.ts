@@ -9,6 +9,7 @@ export enum ServiceType {
   NetSuiteInvoices = "netsuite_invoices",
   NetSuiteRMA = "netsuite_rma",
   ClaudeAi = "claude_ai",
+  MSTeams = "ms_teams",
 }
 
 export type UrgencyLevel = 0 | 1 | 2; // 0=normal, 1=important, 2=urgent
