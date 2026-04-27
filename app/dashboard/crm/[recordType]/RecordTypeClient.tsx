@@ -2,14 +2,21 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ChevronLeft, Users, AlertTriangle, RefreshCw } from "lucide-react";
+import {
+  ChevronLeft,
+  FileText,
+  AlertTriangle,
+  RefreshCw,
+  CheckCheck,
+  Loader2,
+} from "lucide-react";
 import styles from "@/app/dashboard/_components/ServiceDetailShell.module.css";
-import crmStyles from "./crm.module.css";
+import crmStyles from "../crm.module.css";
 import {
   ApproveRow,
   labelForItemType,
   type ActivityItem,
-} from "./_components/ApproveRow";
+} from "../_components/ApproveRow";
 
 interface ConnectedService {
   id: string;
@@ -18,13 +25,14 @@ interface ConnectedService {
   status: string;
 }
 
-export default function CrmClient() {
+export default function RecordTypeClient({ recordType }: { recordType: string }) {
   const [service, setService] = useState<ConnectedService | null>(null);
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [pageState, setPageState] = useState<
     "loading" | "disconnected" | "empty" | "error" | "populated"
   >("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [bulkApproving, setBulkApproving] = useState(false);
 
   const load = useCallback(async () => {
     setPageState("loading");
@@ -43,20 +51,20 @@ export default function CrmClient() {
 
       setService(ns);
 
-      const itemsRes = await fetch(`/api/items?serviceId=${ns.id}&limit=100`);
+      const itemsRes = await fetch(
+        `/api/items?serviceId=${ns.id}&itemType=${encodeURIComponent(recordType)}&limit=100`
+      );
       if (!itemsRes.ok) throw new Error("Failed to load activity items");
       const { items: fetched }: { items: ActivityItem[] } = await itemsRes.json();
-      const nsItems = fetched.filter(
-        (i) => i.itemType.startsWith("netsuite_") && i.status !== "dismissed"
-      );
+      const visible = fetched.filter((i) => i.status !== "dismissed");
 
-      setItems(nsItems);
-      setPageState(nsItems.length === 0 ? "empty" : "populated");
+      setItems(visible);
+      setPageState(visible.length === 0 ? "empty" : "populated");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Unknown error");
       setPageState("error");
     }
-  }, []);
+  }, [recordType]);
 
   useEffect(() => {
     load();
@@ -68,42 +76,78 @@ export default function CrmClient() {
     );
   }, []);
 
-  const grouped = items.reduce<Record<string, ActivityItem[]>>((acc, item) => {
-    const label = labelForItemType(item.itemType);
-    if (!acc[label]) acc[label] = [];
-    acc[label].push(item);
-    return acc;
-  }, {});
+  const handleApproveAll = useCallback(async () => {
+    if (!service) return;
+    const pending = items.filter((i) => i.status !== "actioned");
+    if (pending.length === 0) return;
 
+    setBulkApproving(true);
+    for (const item of pending) {
+      try {
+        const res = await fetch(`/api/services/${service.id}/approve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ externalId: item.externalId }),
+        });
+        if (res.ok) {
+          setItems((prev) =>
+            prev.map((i) => (i.id === item.id ? { ...i, status: "actioned" } : i))
+          );
+        }
+      } catch {
+        // continue with remaining items on individual failure
+      }
+    }
+    setBulkApproving(false);
+  }, [service, items]);
+
+  const label = labelForItemType(recordType);
   const pendingCount = items.filter((i) => i.status !== "actioned").length;
 
   return (
     <div className={styles.page}>
-      <Link href="/" className={styles.breadcrumb}>
+      <Link href="/dashboard/crm" className={styles.breadcrumb}>
         <ChevronLeft size={14} aria-hidden="true" />
-        Dashboard
+        CRM
       </Link>
 
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.headerIcon}>
-            <Users size={20} aria-hidden="true" />
+            <FileText size={20} aria-hidden="true" />
           </span>
           <div>
-            <h1 className={styles.heading}>CRM</h1>
+            <h1 className={styles.heading}>{label}</h1>
             <p className={styles.subheading}>
               {service
                 ? `${service.displayName} — ${pendingCount} pending approval${pendingCount !== 1 ? "s" : ""}`
-                : "Contacts, follow-ups, and pipeline metrics"}
+                : "NetSuite records pending approval"}
             </p>
           </div>
         </div>
 
-        {pageState !== "loading" && pageState !== "disconnected" && (
-          <button className={styles.actionBtn} onClick={load} aria-label="Refresh">
-            <RefreshCw size={14} aria-hidden="true" />
-            Refresh
-          </button>
+        {pageState === "populated" && (
+          <div style={{ display: "flex", gap: "var(--space-2)" }}>
+            {pendingCount > 0 && (
+              <button
+                className={styles.actionBtn}
+                onClick={handleApproveAll}
+                disabled={bulkApproving}
+                aria-label={`Approve all ${pendingCount} pending ${label}`}
+              >
+                {bulkApproving ? (
+                  <Loader2 size={14} aria-hidden="true" style={{ animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <CheckCheck size={14} aria-hidden="true" />
+                )}
+                {bulkApproving ? "Approving…" : `Approve All (${pendingCount})`}
+              </button>
+            )}
+            <button className={styles.actionBtn} onClick={load} aria-label="Refresh">
+              <RefreshCw size={14} aria-hidden="true" />
+              Refresh
+            </button>
+          </div>
         )}
       </div>
 
@@ -112,8 +156,7 @@ export default function CrmClient() {
       <div className={styles.content}>
         {pageState === "loading" && (
           <div className={styles.skeletonWrapper} aria-busy="true" aria-label="Loading…">
-            <div className={`${styles.skeleton} ${styles.skeletonChart}`} />
-            {Array.from({ length: 4 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className={`${styles.skeleton} ${styles.skeletonRow}`} />
             ))}
           </div>
@@ -128,7 +171,7 @@ export default function CrmClient() {
                 aria-hidden="true"
               />
             </div>
-            <p className={styles.stateMessage}>{errorMsg ?? "Failed to load CRM data"}</p>
+            <p className={styles.stateMessage}>{errorMsg ?? "Failed to load records"}</p>
             <button className={styles.actionBtn} onClick={load}>
               <RefreshCw size={14} aria-hidden="true" />
               Retry
@@ -148,29 +191,26 @@ export default function CrmClient() {
         {pageState === "empty" && (
           <div className={styles.stateCenter}>
             <div className={styles.stateIconRing}>
-              <Users size={20} aria-hidden="true" />
+              <FileText size={20} aria-hidden="true" />
             </div>
-            <p className={styles.stateMessage}>No pending approvals — all caught up.</p>
+            <p className={styles.stateMessage}>
+              No pending {label.toLowerCase()} — all caught up.
+            </p>
           </div>
         )}
 
         {pageState === "populated" && (
           <div className={styles.itemList}>
-            {Object.entries(grouped).map(([label, groupItems]) => (
-              <section key={label} className={crmStyles.group}>
-                <h2 className={crmStyles.groupHeading}>{label}</h2>
-                <ul className={crmStyles.list} aria-label={label}>
-                  {groupItems.map((item) => (
-                    <ApproveRow
-                      key={item.id}
-                      item={item}
-                      serviceId={service!.id}
-                      onApproved={handleApproved}
-                    />
-                  ))}
-                </ul>
-              </section>
-            ))}
+            <ul className={crmStyles.list} aria-label={label}>
+              {items.map((item) => (
+                <ApproveRow
+                  key={item.id}
+                  item={item}
+                  serviceId={service!.id}
+                  onApproved={handleApproved}
+                />
+              ))}
+            </ul>
           </div>
         )}
       </div>

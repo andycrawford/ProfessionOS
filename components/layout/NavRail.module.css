@@ -83,6 +83,54 @@
   opacity: 1;
 }
 
+/* ── CRM sub-items (per record type) ─────────────────────────────────────── */
+
+.navSubList {
+  display: flex;
+  flex-direction: column;
+}
+
+.navSubItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 34px;
+  padding: 0 14px 0 36px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    color var(--duration-fast) var(--easing-default),
+    background-color var(--duration-fast) var(--easing-default),
+    border-left-color var(--duration-fast) var(--easing-default);
+  font-family: var(--font-ui);
+  font-size: var(--text-body-sm-size);
+  width: 100%;
+  text-align: left;
+}
+
+.navSubItem:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface);
+}
+
+.navSubItem.active {
+  color: var(--color-text-primary);
+  border-left-color: var(--color-accent-brand);
+}
+
+.navSubIcon {
+  flex-shrink: 0;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .divider {
   height: 1px;
   background: var(--color-border-default);
