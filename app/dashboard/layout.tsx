@@ -12,17 +12,21 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   let orgName: string | null = null;
 
   if (session?.user?.id) {
-    const db = getDb();
-    const [membership] = await db
-      .select({ logoUrl: organizations.logoUrl, name: organizations.name })
-      .from(organizationMembers)
-      .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
-      .where(eq(organizationMembers.userId, session.user.id))
-      .limit(1);
+    try {
+      const db = getDb();
+      const [membership] = await db
+        .select({ logoUrl: organizations.logoUrl, name: organizations.name })
+        .from(organizationMembers)
+        .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
+        .where(eq(organizationMembers.userId, session.user.id))
+        .limit(1);
 
-    if (membership) {
-      orgLogoUrl = membership.logoUrl ?? null;
-      orgName = membership.name;
+      if (membership) {
+        orgLogoUrl = membership.logoUrl ?? null;
+        orgName = membership.name;
+      }
+    } catch {
+      // Migration may not have run yet; fall back to default branding
     }
   }
 
