@@ -1,5 +1,5 @@
-import ServiceDetailShell from "@/app/dashboard/_components/ServiceDetailShell";
+import CalendarView from "./CalendarView";
 
 export default function CalendarPage() {
-  return <ServiceDetailShell service="calendar" />;
+  return <CalendarView />;
 }
