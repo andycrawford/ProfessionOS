@@ -1,16 +1,39 @@
 /* Service detail page shell */
 
 .page {
-  padding: var(--space-8);
+  padding: var(--space-6);
   max-width: 960px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
+}
+
+/* ── Breadcrumb ──────────────────────────────────────────────────────── */
+
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  width: fit-content;
+}
+
+.breadcrumb:hover {
+  color: var(--color-text-primary);
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
 
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.headerLeft {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -34,21 +57,16 @@
   font-weight: var(--text-heading-sm-weight);
   color: var(--color-text-primary);
   line-height: 1.2;
+  margin: 0;
 }
 
 .subheading {
   font-size: var(--text-body-sm-size);
   color: var(--color-text-secondary);
-  margin-top: var(--space-1);
+  margin: var(--space-1) 0 0;
 }
 
-/* ── Controls row ───────────────────────────────────────────────────── */
-
-.controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
+/* ── Time range selector ─────────────────────────────────────────────── */
 
 .timeRangeSelector {
   display: flex;
@@ -57,6 +75,7 @@
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-default);
   padding: 2px;
+  flex-shrink: 0;
 }
 
 .timeRangeBtn {
@@ -75,12 +94,30 @@
 
 .timeRangeBtn:hover {
   color: var(--color-text-primary);
+  background: var(--color-bg-surface);
 }
 
 .timeRangeBtnActive {
   background: var(--color-bg-surface);
   color: var(--color-text-primary);
   font-weight: 500;
+  border: 1px solid var(--color-accent-chart);
+}
+
+/* ── Divider ─────────────────────────────────────────────────────────── */
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+}
+
+/* ── Content ─────────────────────────────────────────────────────────── */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 320px;
 }
 
 /* ── Chart area ─────────────────────────────────────────────────────── */
@@ -89,18 +126,10 @@
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
   background: var(--color-bg-surface);
-  height: 240px;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.chartPlaceholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
 }
 
 .chartPlaceholderText {
@@ -108,9 +137,60 @@
   color: var(--color-text-disabled);
 }
 
-/* ── Empty state ─────────────────────────────────────────────────────── */
+/* ── Item list ──────────────────────────────────────────────────────── */
 
-.emptyState {
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Centered states (error / empty / disconnected) ─────────────────── */
+
+.stateCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+.stateIconRing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+}
+
+.stateIconRingError {
+  background: rgba(255, 71, 87, 0.08);
+  border-color: var(--color-alert-critical);
+}
+
+.stateIcon {
+  color: var(--color-text-secondary);
+}
+
+.stateIconError {
+  color: var(--color-alert-critical);
+}
+
+.stateMessage {
+  font-size: var(--text-body-base-size, 13px);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── Disconnected state ─────────────────────────────────────────────── */
+
+.disconnectedState {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -120,17 +200,69 @@
   border-radius: var(--radius-lg);
 }
 
-.emptyStateText {
-  font-size: var(--text-body-sm-size);
-  color: var(--color-text-secondary);
-}
+/* ── Action button (retry / connect link) ───────────────────────────── */
 
-.connectLink {
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--text-body-sm-size);
   color: var(--color-accent-brand);
+  background: none;
+  border: 1px solid var(--color-accent-brand);
+  border-radius: var(--radius-default);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
   text-decoration: none;
+  font-family: var(--font-ui);
+  transition:
+    background-color var(--duration-fast) var(--easing-default),
+    color var(--duration-fast) var(--easing-default);
 }
 
-.connectLink:hover {
-  text-decoration: underline;
+.actionBtn:hover {
+  background: rgba(0, 201, 167, 0.08);
+}
+
+/* ── Loading skeletons ──────────────────────────────────────────────── */
+
+.skeletonWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeleton {
+  border-radius: var(--radius-default);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-surface) 25%,
+    var(--color-bg-raised) 50%,
+    var(--color-bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--color-bg-raised);
+  }
+}
+
+.skeletonChart {
+  height: 200px;
+  width: 100%;
+}
+
+.skeletonRow {
+  height: 52px;
+  width: 100%;
+  border-radius: var(--radius-default);
 }

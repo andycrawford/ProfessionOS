@@ -12,7 +12,8 @@
   cursor: pointer;
   transition:
     border-color var(--duration-fast) var(--easing-default),
-    background-color var(--duration-fast) var(--easing-default);
+    background-color var(--duration-fast) var(--easing-default),
+    transform var(--duration-fast) var(--easing-default);
 }
 
 /* ── States ── */
@@ -21,6 +22,12 @@
 .card.hover {
   border-color: var(--color-accent-chart);
   background-color: var(--color-bg-raised);
+}
+
+.card:active:not(.loading):not(.empty) {
+  transform: scale(0.98);
+  border-color: var(--color-accent-brand);
+  background-color: var(--color-bg-surface);
 }
 
 .card.warning {
