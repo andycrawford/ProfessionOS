@@ -112,9 +112,9 @@ export default function MetricsSettingsPage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.heading}>Metrics</h1>
+        <h1 className={styles.heading}>Activity Tiles</h1>
         <p className={styles.subheading}>
-          Choose which metrics appear in your dashboard header and set their display order.
+          Choose which activity tiles appear in your dashboard header and set their display order.
         </p>
       </div>
 

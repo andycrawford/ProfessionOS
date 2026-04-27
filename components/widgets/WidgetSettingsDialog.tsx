@@ -93,7 +93,7 @@ export default function WidgetSettingsDialog({ open, onClose, prefs, onSave }: P
       >
         <div className={styles.header}>
           <h2 id="metrics-dialog-title" className={styles.title}>
-            Metrics Tiles
+            Activity Tiles
           </h2>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
             <X size={16} />
@@ -101,7 +101,7 @@ export default function WidgetSettingsDialog({ open, onClose, prefs, onSave }: P
         </div>
 
         <p className={styles.description}>
-          Choose which metrics appear on your dashboard and set their display order.
+          Choose which activity tiles appear on your dashboard and set their display order.
         </p>
 
         <ul className={styles.list} aria-label="Metric tile configuration">

@@ -7,7 +7,7 @@ import styles from "./settings.module.css";
 
 const navItems = [
   { href: "/dashboard/settings/interface", label: "Interface", icon: Palette },
-  { href: "/dashboard/settings/metrics", label: "Metrics", icon: LayoutDashboard },
+  { href: "/dashboard/settings/metrics", label: "Activity Tiles", icon: LayoutDashboard },
   { href: "/dashboard/settings/keybindings", label: "Keybindings", icon: Keyboard },
   { href: "/dashboard/settings/services", label: "Services", icon: Plug },
   { href: "/dashboard/settings/plugins", label: "Plugins", icon: Puzzle },

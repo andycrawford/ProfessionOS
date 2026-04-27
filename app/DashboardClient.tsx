@@ -436,8 +436,8 @@ export default function DashboardClient({
     // Settings
     {
       id: "metrics-settings",
-      label: "Configure Metrics Tiles",
-      subtitle: "Choose which metrics to display",
+      label: "Configure Activity Tiles",
+      subtitle: "Choose which activity tiles to display",
       icon: <SlidersHorizontal size={16} />,
       group: "System",
       action: () => setMetricsSettingsOpen(true),
