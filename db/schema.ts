@@ -73,6 +73,8 @@ export const userSettings = pgTable("user_settings", {
   digestTimeUtc: text("digest_time_utc").default("08:00").notNull(),
   aiModel: text("ai_model").default("claude-sonnet-4-6").notNull(),
   theme: text("theme").default("system").notNull(),
+  // Array of { key, enabled } ordered by display position. Null = use defaults.
+  widgetPreferences: jsonb("widget_preferences"),
 });
 
 // ── Plugin system tables ──────────────────────────────────────────────────────

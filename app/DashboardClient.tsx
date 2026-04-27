@@ -12,6 +12,7 @@ import {
   Settings,
   Filter,
   BellOff,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import Topbar from "@/components/layout/Topbar";
@@ -28,17 +29,19 @@ import AiPanel, {
 } from "@/components/layout/AiPanel";
 import WidgetCard, { type WidgetState } from "@/components/widgets/WidgetCard";
 import WidgetRow from "@/components/widgets/WidgetRow";
+import WidgetSettingsDialog from "@/components/widgets/WidgetSettingsDialog";
 import CommandPalette, { type Command } from "@/components/CommandPalette";
 
 import { useEventStream } from "@/lib/hooks/useEventStream";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
-import type { WidgetMetrics } from "@/lib/types";
+import type { WidgetMetrics, WidgetPreference, WidgetServiceKey } from "@/lib/types";
+import { DEFAULT_WIDGET_PREFS } from "@/lib/types";
 
 import styles from "./dashboard.module.css";
 
 // ─── Widget state ─────────────────────────────────────────────────────────────
 
-type ServiceKey = "mail" | "calendar" | "messaging" | "code" | "crm";
+type ServiceKey = WidgetServiceKey;
 
 interface WidgetData {
   primaryMetric: number;
@@ -87,6 +90,38 @@ const EMPTY_WIDGETS: Record<ServiceKey, WidgetData> = {
   },
 };
 
+// Per-service display config used when rendering widget cards dynamically
+const WIDGET_CONFIG: Record<
+  ServiceKey,
+  { serviceLabel: string; icon: React.ReactNode; route: string }
+> = {
+  mail: {
+    serviceLabel: "Email",
+    icon: <Mail size={16} />,
+    route: "/dashboard/mail",
+  },
+  calendar: {
+    serviceLabel: "Calendar",
+    icon: <Calendar size={16} />,
+    route: "/dashboard/calendar",
+  },
+  messaging: {
+    serviceLabel: "Messaging",
+    icon: <MessageSquare size={16} />,
+    route: "/dashboard/messaging",
+  },
+  code: {
+    serviceLabel: "Code",
+    icon: <Code2 size={16} />,
+    route: "/dashboard/code",
+  },
+  crm: {
+    serviceLabel: "CRM",
+    icon: <Users size={16} />,
+    route: "/dashboard/crm",
+  },
+};
+
 // Max feed items retained in memory to avoid unbounded growth
 const MAX_FEED_ITEMS = 100;
 
@@ -108,12 +143,26 @@ export default function DashboardClient({
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | undefined>(undefined);
 
+  // ── Widget preferences ───────────────────────────────────────────────────────
+  const [widgetPrefs, setWidgetPrefs] = useState<WidgetPreference[]>(DEFAULT_WIDGET_PREFS);
+  const [metricsSettingsOpen, setMetricsSettingsOpen] = useState(false);
+
   // ── UI state ────────────────────────────────────────────────────────────────
   const [activeNav, setActiveNav] = useState("code");
   const [feedFilter, setFeedFilter] = useState<FeedService | "all">("all");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [aiStreaming, setAiStreaming] = useState(false);
   const streamAbortRef = useRef<AbortController | null>(null);
+
+  // ── Load widget preferences ──────────────────────────────────────────────────
+  useEffect(() => {
+    fetch("/api/settings/widgets")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setWidgetPrefs(data);
+      })
+      .catch(() => {});
+  }, []);
 
   // ── Real-time data layer ─────────────────────────────────────────────────────
   const { connected } = useEventStream({
@@ -265,6 +314,19 @@ export default function DashboardClient({
     return () => streamAbortRef.current?.abort();
   }, []);
 
+  // ── Widget preferences save ──────────────────────────────────────────────────
+  const handleSaveWidgetPrefs = useCallback(async (prefs: WidgetPreference[]) => {
+    const res = await fetch("/api/settings/widgets", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(prefs),
+    });
+    if (!res.ok) throw new Error("Failed to save");
+    const saved: WidgetPreference[] = await res.json();
+    setWidgetPrefs(saved);
+    setMetricsSettingsOpen(false);
+  }, []);
+
   // ── Command palette commands ─────────────────────────────────────────────────
   const commands: Command[] = [
     // Navigation
@@ -369,6 +431,14 @@ export default function DashboardClient({
     },
     // Settings
     {
+      id: "metrics-settings",
+      label: "Configure Metrics Tiles",
+      subtitle: "Choose which metrics to display",
+      icon: <SlidersHorizontal size={16} />,
+      group: "System",
+      action: () => setMetricsSettingsOpen(true),
+    },
+    {
       id: "settings",
       label: "Open Settings",
       subtitle: "Preferences and configuration",
@@ -384,6 +454,9 @@ export default function DashboardClient({
     "cmd+/": () => setActiveNav((n) => (n === "ai" ? "code" : "ai")),
     escape: () => setPaletteOpen(false),
   });
+
+  // ── Derived: visible widgets in preference order ─────────────────────────────
+  const visibleWidgets = widgetPrefs.filter((p) => p.enabled);
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
@@ -419,38 +492,30 @@ export default function DashboardClient({
             />
 
             <div className={styles.mainPanel}>
-              <WidgetRow>
-                <WidgetCard
-                  serviceLabel="Email"
-                  serviceIcon={<Mail size={16} />}
-                  {...widgets.mail}
-                  onViewAll={() => router.push("/dashboard/mail")}
-                />
-                <WidgetCard
-                  serviceLabel="Calendar"
-                  serviceIcon={<Calendar size={16} />}
-                  {...widgets.calendar}
-                  onViewAll={() => router.push("/dashboard/calendar")}
-                />
-                <WidgetCard
-                  serviceLabel="Messaging"
-                  serviceIcon={<MessageSquare size={16} />}
-                  {...widgets.messaging}
-                  onViewAll={() => router.push("/dashboard/messaging")}
-                />
-                <WidgetCard
-                  serviceLabel="Code"
-                  serviceIcon={<Code2 size={16} />}
-                  {...widgets.code}
-                  onViewAll={() => router.push("/dashboard/code")}
-                />
-                <WidgetCard
-                  serviceLabel="CRM"
-                  serviceIcon={<Users size={16} />}
-                  {...widgets.crm}
-                  onViewAll={() => router.push("/dashboard/crm")}
-                />
-              </WidgetRow>
+              <div className={styles.widgetRowWrapper}>
+                <WidgetRow>
+                  {visibleWidgets.map((pref) => {
+                    const cfg = WIDGET_CONFIG[pref.key];
+                    return (
+                      <WidgetCard
+                        key={pref.key}
+                        serviceLabel={cfg.serviceLabel}
+                        serviceIcon={cfg.icon}
+                        {...widgets[pref.key]}
+                        onViewAll={() => router.push(cfg.route)}
+                      />
+                    );
+                  })}
+                </WidgetRow>
+                <button
+                  className={styles.widgetSettingsBtn}
+                  onClick={() => setMetricsSettingsOpen(true)}
+                  aria-label="Configure metric tiles"
+                  title="Configure metric tiles"
+                >
+                  <SlidersHorizontal size={14} />
+                </button>
+              </div>
 
               <div className={styles.bottomRow}>
                 <ActivityTimeline
@@ -493,6 +558,13 @@ export default function DashboardClient({
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
         commands={commands}
+      />
+
+      <WidgetSettingsDialog
+        open={metricsSettingsOpen}
+        onClose={() => setMetricsSettingsOpen(false)}
+        prefs={widgetPrefs}
+        onSave={handleSaveWidgetPrefs}
       />
     </>
   );

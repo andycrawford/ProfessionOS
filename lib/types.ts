@@ -35,6 +35,21 @@ export interface WidgetMetrics {
   alertCount?: number;
 }
 
+// Widget display preferences — stored in userSettings.widgetPreferences.
+// Array order determines render order; hidden widgets remain in the array.
+export interface WidgetPreference {
+  key: WidgetServiceKey;
+  enabled: boolean;
+}
+
+export const DEFAULT_WIDGET_PREFS: WidgetPreference[] = [
+  { key: "mail", enabled: true },
+  { key: "calendar", enabled: true },
+  { key: "messaging", enabled: true },
+  { key: "code", enabled: true },
+  { key: "crm", enabled: true },
+];
+
 // Discriminated union of all SSE event shapes
 export type SSEEvent =
   | { type: "ping"; payload: { ts: number } }

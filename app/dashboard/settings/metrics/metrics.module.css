@@ -1,0 +1,224 @@
+/* Metrics settings page */
+
+.page {
+  padding: var(--space-8);
+  max-width: 640px;
+}
+
+.header {
+  margin-bottom: var(--space-8);
+}
+
+.heading {
+  font-size: var(--text-heading-sm-size);
+  font-weight: var(--text-heading-sm-weight);
+  color: var(--color-text-primary);
+}
+
+.subheading {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* ── Section ──────────────────────────────────────────────────────── */
+
+.section {
+  margin-bottom: var(--space-8);
+}
+
+.sectionTitle {
+  font-size: var(--text-body-base-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.sectionDesc {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Loading ──────────────────────────────────────────────────────── */
+
+.loadingMsg {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-disabled);
+  padding: var(--space-4) 0;
+}
+
+/* ── Tile list ────────────────────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  margin: 0 0 var(--space-4) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  transition: opacity var(--duration-fast), border-color var(--duration-fast);
+}
+
+.item:hover {
+  border-color: var(--color-border-focus);
+}
+
+.itemDisabled {
+  opacity: 0.45;
+}
+
+.itemIcon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.itemBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemLabel {
+  font-size: var(--text-body-base-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.itemDesc {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* ── Reorder buttons ──────────────────────────────────────────────── */
+
+.reorderBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.reorderBtn:hover:not(:disabled) {
+  background: var(--color-bg-raised);
+  color: var(--color-text-primary);
+}
+
+.reorderBtn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── Toggle switch ────────────────────────────────────────────────── */
+
+.toggleBtn {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background var(--duration-fast);
+  padding: 0;
+  flex-shrink: 0;
+  margin-left: var(--space-2);
+}
+
+.toggleOn {
+  background: var(--color-accent-brand);
+}
+
+.toggleOff {
+  background: var(--color-bg-base);
+  outline: 1px solid var(--color-border-default);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform var(--duration-fast);
+  pointer-events: none;
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(21px);
+}
+
+.toggleOff .toggleKnob {
+  transform: translateX(3px);
+}
+
+/* ── Feedback messages ────────────────────────────────────────────── */
+
+.errorMsg {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-alert-critical);
+  margin-bottom: var(--space-3);
+}
+
+.successMsg {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-accent-brand);
+  margin-bottom: var(--space-3);
+}
+
+/* ── Save row ─────────────────────────────────────────────────────── */
+
+.saveRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.saveBtn {
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-accent-brand);
+  border: none;
+  border-radius: var(--radius-default);
+  font-size: var(--text-body-sm-size);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--color-bg-base);
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.saveBtn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

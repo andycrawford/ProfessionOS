@@ -36,6 +36,13 @@
       "when": 1777166782052,
       "tag": "0004_custom_plugins",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1745713200000,
+      "tag": "0005_widget_preferences",
+      "breakpoints": true
     }
   ]
 }

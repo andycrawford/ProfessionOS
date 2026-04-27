@@ -52,6 +52,39 @@
   overflow:       hidden;
 }
 
+/* Wrapper that positions the configure-tiles button over the widget row */
+.widgetRowWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Gear/sliders button shown in the top-right of the widget row */
+.widgetSettingsBtn {
+  position:        absolute;
+  top:             var(--space-2);
+  right:           var(--space-2);
+  width:           24px;
+  height:          24px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      var(--color-bg-raised);
+  border:          1px solid var(--color-border-default);
+  border-radius:   var(--radius-sm);
+  color:           var(--color-text-secondary);
+  cursor:          pointer;
+  z-index:         10;
+  transition:      background var(--duration-fast),
+                   color var(--duration-fast),
+                   border-color var(--duration-fast);
+}
+
+.widgetSettingsBtn:hover {
+  background:    var(--color-bg-surface);
+  color:         var(--color-text-primary);
+  border-color:  var(--color-text-secondary);
+}
+
 /* Timeline + AI panel side by side */
 .bottomRow {
   flex:     1;
