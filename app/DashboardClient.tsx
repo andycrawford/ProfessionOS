@@ -274,7 +274,7 @@ export default function DashboardClient({
       subtitle: "Navigate",
       icon: <Mail size={16} />,
       group: "Navigate",
-      action: () => setActiveNav("mail"),
+      action: () => router.push("/dashboard/mail"),
     },
     {
       id: "nav-calendar",
@@ -282,7 +282,7 @@ export default function DashboardClient({
       subtitle: "Navigate",
       icon: <Calendar size={16} />,
       group: "Navigate",
-      action: () => setActiveNav("calendar"),
+      action: () => router.push("/dashboard/calendar"),
     },
     {
       id: "nav-slack",
@@ -290,7 +290,7 @@ export default function DashboardClient({
       subtitle: "Navigate",
       icon: <MessageSquare size={16} />,
       group: "Navigate",
-      action: () => setActiveNav("slack"),
+      action: () => router.push("/dashboard/slack"),
     },
     {
       id: "nav-code",
@@ -298,7 +298,7 @@ export default function DashboardClient({
       subtitle: "Navigate",
       icon: <Code2 size={16} />,
       group: "Navigate",
-      action: () => setActiveNav("code"),
+      action: () => router.push("/dashboard/code"),
     },
     {
       id: "nav-crm",
@@ -306,7 +306,7 @@ export default function DashboardClient({
       subtitle: "Navigate",
       icon: <Users size={16} />,
       group: "Navigate",
-      action: () => setActiveNav("crm"),
+      action: () => router.push("/dashboard/crm"),
     },
     {
       id: "nav-ai",
@@ -401,8 +401,10 @@ export default function DashboardClient({
             onNavigate={(id) => {
               if (id === "settings") {
                 router.push("/dashboard/settings/services");
+              } else if (id === "ai") {
+                setActiveNav("ai");
               } else {
-                setActiveNav(id);
+                router.push(`/dashboard/${id}`);
               }
             }}
           />
@@ -422,26 +424,31 @@ export default function DashboardClient({
                   serviceLabel="Email"
                   serviceIcon={<Mail size={16} />}
                   {...widgets.mail}
+                  onViewAll={() => router.push("/dashboard/mail")}
                 />
                 <WidgetCard
                   serviceLabel="Calendar"
                   serviceIcon={<Calendar size={16} />}
                   {...widgets.calendar}
+                  onViewAll={() => router.push("/dashboard/calendar")}
                 />
                 <WidgetCard
                   serviceLabel="Slack"
                   serviceIcon={<MessageSquare size={16} />}
                   {...widgets.slack}
+                  onViewAll={() => router.push("/dashboard/slack")}
                 />
                 <WidgetCard
                   serviceLabel="Code"
                   serviceIcon={<Code2 size={16} />}
                   {...widgets.code}
+                  onViewAll={() => router.push("/dashboard/code")}
                 />
                 <WidgetCard
                   serviceLabel="CRM"
                   serviceIcon={<Users size={16} />}
                   {...widgets.crm}
+                  onViewAll={() => router.push("/dashboard/crm")}
                 />
               </WidgetRow>
 
