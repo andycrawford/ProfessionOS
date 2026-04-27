@@ -40,6 +40,7 @@ export default async function ServiceDetailPage({
   return (
     <ServiceDetailClient
       id={service.id}
+      type={service.type as ServiceType}
       displayName={service.displayName}
       description={plugin?.description ?? ""}
       icon={plugin?.icon ?? "Plug"}

@@ -12,10 +12,11 @@ import {
 } from "lucide-react";
 import ServiceConfigForm from "@/components/ServiceConfigForm";
 import styles from "./service-detail.module.css";
-import type { ConfigField, ServiceStatus } from "@/services/types";
+import type { ConfigField, ServiceStatus, ServiceType } from "@/services/types";
 
 export interface ServiceDetailProps {
   id: string;
+  type: ServiceType;
   displayName: string;
   description: string;
   icon: string;
@@ -29,6 +30,7 @@ type TestResult = "success" | "failure" | null;
 
 export default function ServiceDetailClient({
   id,
+  type,
   displayName,
   description,
   icon,
@@ -185,6 +187,52 @@ export default function ServiceDetailClient({
             />
           )}
         </div>
+
+        {/* Link behavior — not relevant for embed_website (no activity items) */}
+        {type !== "embed_website" && (
+          <div className={styles.card}>
+            <p className={styles.sectionTitle}>Link behavior</p>
+            <p
+              style={{
+                fontSize: "var(--text-body-sm-size)",
+                color: "var(--color-text-secondary)",
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              Choose how links from this service open when you click them.
+            </p>
+            <label
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "var(--space-1)",
+                fontSize: "var(--text-body-sm-size)",
+                color: "var(--color-text-primary)",
+              }}
+            >
+              Open links in
+              <select
+                value={(formValues.linkBehavior as string | undefined) ?? "new_tab"}
+                onChange={(e) => handleFieldChange("linkBehavior", e.target.value)}
+                disabled={busy}
+                style={{
+                  padding: "var(--space-2) var(--space-3)",
+                  background: "var(--color-bg-raised)",
+                  border: "1px solid var(--color-border-default)",
+                  borderRadius: "var(--radius-default)",
+                  color: "var(--color-text-primary)",
+                  fontFamily: "var(--font-ui)",
+                  fontSize: "var(--text-body-base-size)",
+                  cursor: busy ? "not-allowed" : "default",
+                  opacity: busy ? 0.5 : 1,
+                }}
+              >
+                <option value="new_tab">New tab</option>
+                <option value="embed">Embed in dashboard</option>
+              </select>
+            </label>
+          </div>
+        )}
 
         {saveError && (
           <div

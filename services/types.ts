@@ -11,6 +11,7 @@ export enum ServiceType {
   NetSuiteCRM = "netsuite_crm",
   ClaudeAi = "claude_ai",
   MSTeams = "ms_teams",
+  EmbedWebsite = "embed_website",
 }
 
 export type UrgencyLevel = 0 | 1 | 2; // 0=normal, 1=important, 2=urgent
@@ -68,6 +69,13 @@ export interface ServicePlugin {
   poll(config: ServiceConfig, credentials: ServiceConfig): Promise<ActivityItemData[]>;
   testConnection(config: ServiceConfig, credentials: ServiceConfig): Promise<boolean>;
   getAuthUrl?(redirectUri: string): string;
+  /**
+   * Optional: refresh short-lived credentials (e.g. OAuth 2.0 access tokens).
+   * Called by the polling orchestrator before `poll()` when credentials are
+   * present. Returns updated credentials if a refresh occurred, or null if
+   * no refresh was needed or the plugin does not support it.
+   */
+  refreshCredentials?(config: ServiceConfig, credentials: ServiceConfig): Promise<ServiceConfig | null>;
   /** Optional: approve/action an item in the external service. Returns true on success. */
   approveItem?(config: ServiceConfig, externalId: string, action: string): Promise<boolean>;
   /** Optional: keyboard shortcut this plugin wants to register. */

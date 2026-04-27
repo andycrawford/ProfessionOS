@@ -8,6 +8,7 @@ import {
   Code2,
   Bot,
   Settings,
+  Globe,
 } from "lucide-react";
 import styles from "./NavRail.module.css";
 
@@ -21,6 +22,12 @@ export interface CrmSubItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+}
+
+export interface EmbedItem {
+  /** Connected service ID used to build the route: /dashboard/embed/{id} */
+  id: string;
+  label: string;
 }
 
 const topItems: NavItem[] = [
@@ -40,6 +47,8 @@ interface NavRailProps {
   activeItemId?: string;
   activeCrmSubItemId?: string;
   crmSubItems?: CrmSubItem[];
+  embedItems?: EmbedItem[];
+  activeEmbedItemId?: string;
   onNavigate?: (id: string) => void;
 }
 
@@ -47,6 +56,8 @@ export default function NavRail({
   activeItemId = "code",
   activeCrmSubItemId,
   crmSubItems,
+  embedItems,
+  activeEmbedItemId,
   onNavigate,
 }: NavRailProps) {
   return (
@@ -83,6 +94,25 @@ export default function NavRail({
           </div>
         ))}
       </div>
+
+      {embedItems && embedItems.length > 0 && (
+        <div className={styles.navSection}>
+          {embedItems.map((item) => (
+            <button
+              key={item.id}
+              className={`${styles.navItem}${item.id === activeEmbedItemId ? ` ${styles.active}` : ""}`}
+              onClick={() => onNavigate?.(`embed/${item.id}`)}
+              aria-label={item.label}
+              aria-current={item.id === activeEmbedItemId ? "page" : undefined}
+            >
+              <span className={styles.navIcon}>
+                <Globe size={20} aria-hidden="true" />
+              </span>
+              <span className={styles.navLabel}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.navSection}>
         {bottomItems.map((item) => (

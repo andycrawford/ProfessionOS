@@ -11,7 +11,7 @@ import {
   Box,
 } from "lucide-react";
 import Topbar from "@/components/layout/Topbar";
-import NavRail, { type CrmSubItem } from "@/components/layout/NavRail";
+import NavRail, { type CrmSubItem, type EmbedItem } from "@/components/layout/NavRail";
 import KeyboardHelpDialog, { type PluginBinding } from "@/components/KeyboardHelpDialog";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import type { KeybindingOverrides } from "@/lib/types";
@@ -55,6 +55,7 @@ export default function DashboardShell({
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
   const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
+  const [embedItems, setEmbedItems] = useState<EmbedItem[]>([]);
   const [pollIntervalSeconds, setPollIntervalSeconds] = useState(30);
 
   useEffect(() => {
@@ -81,36 +82,43 @@ export default function DashboardShell({
   useEffect(() => {
     fetch("/api/services")
       .then((r) => r.json())
-      .then((services: Array<{ type: string; config: Record<string, unknown> }>) => {
+      .then((services: Array<{ id: string; type: string; displayName: string; config: Record<string, unknown> }>) => {
+        // ── NetSuite CRM sub-items ──────────────────────────────────────────
         const ns = services.find((s) => s.type === "netsuite_crm");
-        if (!ns?.config) return;
+        if (ns?.config) {
+          const subItems: CrmSubItem[] = [];
 
-        const subItems: CrmSubItem[] = [];
-
-        for (const m of NETSUITE_MONITORS) {
-          if (ns.config[m.configKey]) {
-            subItems.push({
-              id: m.itemType,
-              label: m.label,
-              icon: <m.Icon size={16} aria-hidden="true" />,
-            });
+          for (const m of NETSUITE_MONITORS) {
+            if (ns.config[m.configKey]) {
+              subItems.push({
+                id: m.itemType,
+                label: m.label,
+                icon: <m.Icon size={16} aria-hidden="true" />,
+              });
+            }
           }
+
+          // Custom monitors (up to 3)
+          for (let i = 1; i <= 3; i++) {
+            const label = ns.config[`custom${i}Label`] as string | undefined;
+            const recordType = ns.config[`custom${i}RecordType`] as string | undefined;
+            if (label && recordType) {
+              subItems.push({
+                id: `netsuite_custom_${recordType}`,
+                label,
+                icon: <Box size={16} aria-hidden="true" />,
+              });
+            }
+          }
+
+          setCrmSubItems(subItems);
         }
 
-        // Custom monitors (up to 3)
-        for (let i = 1; i <= 3; i++) {
-          const label = ns.config[`custom${i}Label`] as string | undefined;
-          const recordType = ns.config[`custom${i}RecordType`] as string | undefined;
-          if (label && recordType) {
-            subItems.push({
-              id: `netsuite_custom_${recordType}`,
-              label,
-              icon: <Box size={16} aria-hidden="true" />,
-            });
-          }
-        }
-
-        setCrmSubItems(subItems);
+        // ── Embed website items ─────────────────────────────────────────────
+        const embeds = services
+          .filter((s) => s.type === "embed_website")
+          .map((s) => ({ id: s.id, label: s.displayName }));
+        setEmbedItems(embeds);
       })
       .catch(() => {});
   }, []);
@@ -142,6 +150,7 @@ export default function DashboardShell({
     if (pathname.startsWith("/dashboard/messaging")) return "messaging";
     if (pathname.startsWith("/dashboard/code")) return "code";
     if (pathname.startsWith("/dashboard/crm")) return "crm";
+    // Embed routes don't map to a top-level nav item
     return "code";
   })();
 
@@ -150,8 +159,15 @@ export default function DashboardShell({
     ? pathname.slice("/dashboard/crm/".length).split("/")[0] || undefined
     : undefined;
 
+  // Derive the active embed service ID from the pathname (e.g. /dashboard/embed/{serviceId})
+  const activeEmbedItemId = pathname.startsWith("/dashboard/embed/")
+    ? pathname.slice("/dashboard/embed/".length).split("/")[0] || undefined
+    : undefined;
+
   function handleNavigate(id: string) {
     if (id.startsWith("crm/")) {
+      router.push(`/dashboard/${id}`);
+    } else if (id.startsWith("embed/")) {
       router.push(`/dashboard/${id}`);
     } else if (id === "settings") {
       router.push("/dashboard/settings/services");
@@ -181,6 +197,8 @@ export default function DashboardShell({
             activeItemId={activeNav}
             activeCrmSubItemId={activeCrmSubItemId}
             crmSubItems={crmSubItems}
+            embedItems={embedItems}
+            activeEmbedItemId={activeEmbedItemId}
             onNavigate={handleNavigate}
           />
           <div className={styles.content}>{children}</div>
