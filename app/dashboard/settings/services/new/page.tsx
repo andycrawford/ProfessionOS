@@ -16,6 +16,8 @@ export default function NewServicePage() {
     color: p.color,
     configFields: p.configFields,
     hasOAuth: typeof p.getAuthUrl === "function",
+    oauthSourceField: p.oauthSourceField,
+    oauthAuthorizeEndpoint: p.oauthAuthorizeEndpoint,
   }));
 
   // Suspense required: NewServiceClient uses useSearchParams(), which causes

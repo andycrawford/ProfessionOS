@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, AlertCircle, Loader2, Puzzle } from "lucide-react";
+import { ChevronRight, AlertCircle, Loader2, Puzzle, Info } from "lucide-react";
 import ServiceIcon from "@/components/ServiceIcon";
 import ServiceConfigForm from "@/components/ServiceConfigForm";
 import styles from "./new-service.module.css";
@@ -16,8 +16,15 @@ interface PluginMeta {
   icon: string;
   color: string;
   configFields: ConfigField[];
-  /** True when the plugin uses OAuth — shows "Authorize" button instead of "Connect" */
+  /** True when the plugin uses a static OAuth flow (e.g. NetSuite). */
   hasOAuth?: boolean;
+  /**
+   * Config field key whose value "oauth" triggers a dynamic OAuth redirect
+   * instead of the direct-connect API (e.g. MS365 plugins).
+   */
+  oauthSourceField?: string;
+  /** Server-side authorize endpoint to redirect to when oauthSourceField === "oauth". */
+  oauthAuthorizeEndpoint?: string;
 }
 
 interface Props {
@@ -30,12 +37,12 @@ export default function NewServiceClient({ plugins }: Props) {
   const [selected, setSelected] = useState<PluginMeta | null>(null);
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const [submitting, setSubmitting] = useState(false);
-  // Seed error from query param — set by the OAuth callback on failure
+  // Seed from query params — set by OAuth callbacks on error/info
   const [error, setError] = useState<string | null>(searchParams.get("error"));
+  const [info, setInfo] = useState<string | null>(searchParams.get("info"));
 
   function handleSelect(plugin: PluginMeta) {
     setSelected(plugin);
-    // Seed defaults: empty strings for text fields, false for checkboxes
     const defaults: Record<string, string | number | boolean> = {};
     for (const f of plugin.configFields) {
       if (f.type === "checkbox") defaults[f.key] = false;
@@ -45,32 +52,49 @@ export default function NewServiceClient({ plugins }: Props) {
     }
     setValues(defaults);
     setError(null);
+    setInfo(null);
   }
 
-  function handleOAuth() {
+  /** True when the current config requires an OAuth redirect (dynamic OAuth plugins). */
+  function isOAuthRedirect(): boolean {
+    if (!selected?.oauthSourceField || !selected.oauthAuthorizeEndpoint) return false;
+    return String(values[selected.oauthSourceField] ?? "") === "oauth";
+  }
+
+  function handleNetSuiteOAuth() {
     if (!selected) return;
     setSubmitting(true);
     setError(null);
-
-    // For OAuth plugins, redirect to the authorize route which will kick off
-    // the consent flow and eventually create the service record on callback.
     const params = new URLSearchParams({
       accountId: String(values.accountId ?? ""),
       displayName: selected.displayName,
     });
-    // Navigate — the server route handles the redirect chain from here.
     window.location.href = `/api/auth/netsuite/authorize?${params}`;
+  }
+
+  function handleDynamicOAuth() {
+    if (!selected?.oauthAuthorizeEndpoint || !selected.oauthSourceField) return;
+    const orgId = String(values.ssoOrgId ?? "");
+    if (!orgId) {
+      setError("Please select an Organisation before signing in with Microsoft.");
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    const params = new URLSearchParams({
+      orgId,
+      serviceType: selected.type,
+      config: JSON.stringify(values),
+    });
+    window.location.href = `${selected.oauthAuthorizeEndpoint}?${params}`;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selected) return;
 
-    // OAuth plugins use a different flow: redirect to the authorize route.
-    if (selected.hasOAuth) {
-      handleOAuth();
-      return;
-    }
+    if (selected.hasOAuth) { handleNetSuiteOAuth(); return; }
+    if (isOAuthRedirect()) { handleDynamicOAuth(); return; }
 
     setSubmitting(true);
     setError(null);
@@ -100,6 +124,23 @@ export default function NewServiceClient({ plugins }: Props) {
       setSubmitting(false);
     }
   }
+
+  /** Admin consent URL for the current org — grants org-wide delegated permission. */
+  function adminConsentHref(): string | null {
+    if (!selected?.oauthAuthorizeEndpoint || !selected.oauthSourceField) return null;
+    if (String(values[selected.oauthSourceField] ?? "") !== "oauth") return null;
+    const orgId = String(values.ssoOrgId ?? "");
+    if (!orgId) return null;
+    const params = new URLSearchParams({
+      orgId,
+      serviceType: selected.type,
+      config: JSON.stringify(values),
+      adminConsent: "true",
+    });
+    return `${selected.oauthAuthorizeEndpoint}?${params}`;
+  }
+
+  const adminHref = adminConsentHref();
 
   return (
     <div className={styles.page}>
@@ -179,7 +220,51 @@ export default function NewServiceClient({ plugins }: Props) {
                 />
               </>
             )}
+
+            {/* Admin consent helper — shown when OAuth mode and an org is selected */}
+            {adminHref && (
+              <p style={{
+                fontSize: "var(--text-body-sm-size)",
+                color: "var(--color-text-secondary)",
+                marginTop: "var(--space-3)",
+                display: "flex",
+                gap: "var(--space-2)",
+                alignItems: "flex-start",
+              }}>
+                <Info size={14} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+                <span>
+                  To let everyone in your organisation connect without a consent dialog,{" "}
+                  <a
+                    href={adminHref}
+                    style={{ color: "var(--color-text-accent)", textDecoration: "underline" }}
+                  >
+                    grant admin consent for your organisation
+                  </a>{" "}
+                  (requires Global Admin). This is optional — you can still sign in individually below.
+                </span>
+              </p>
+            )}
           </div>
+
+          {info && (
+            <div
+              style={{
+                display: "flex",
+                gap: "var(--space-2)",
+                alignItems: "center",
+                padding: "var(--space-3) var(--space-4)",
+                borderRadius: "var(--radius-default)",
+                background: "color-mix(in srgb, var(--color-success-muted) 20%, transparent)",
+                color: "var(--color-success)",
+                fontSize: "var(--text-body-sm-size)",
+                marginBottom: "var(--space-3)",
+              }}
+              role="status"
+            >
+              <Info size={14} aria-hidden="true" />
+              {info}
+            </div>
+          )}
 
           {error && (
             <div className={styles.errorBanner} role="alert">
@@ -202,10 +287,14 @@ export default function NewServiceClient({ plugins }: Props) {
                     aria-hidden="true"
                     style={{ display: "inline-block", marginRight: "var(--space-2)", verticalAlign: "middle" }}
                   />
-                  {selected.hasOAuth ? "Redirecting…" : "Connecting…"}
+                  Redirecting…
                 </>
+              ) : isOAuthRedirect() ? (
+                "Sign in with Microsoft"
+              ) : selected.hasOAuth ? (
+                "Authorize with NetSuite"
               ) : (
-                selected.hasOAuth ? "Authorize with NetSuite" : "Connect"
+                "Connect"
               )}
             </button>
             <Link

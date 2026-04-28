@@ -15,6 +15,12 @@ export interface AzureAdCredentials {
   tenantId?: string;
   clientId?: string;
   clientSecret?: string;
+  /**
+   * Pre-obtained delegated OAuth access token.
+   * When present, client credentials are skipped entirely and this token
+   * is sent as-is in the Authorization header (delegated / on-behalf-of flow).
+   */
+  accessToken?: string;
 }
 
 interface TokenCache {
@@ -94,10 +100,9 @@ export async function getGraphAppToken(creds?: AzureAdCredentials): Promise<stri
 }
 
 /**
- * Build a descriptive error for a Graph 403 response.
- * Instructs the user on the Azure permission required for the client credentials flow.
+ * Build a descriptive error for a Graph 403 when using client credentials flow.
  */
-function graph403Error(path: string, body: string): Error {
+function graph403AppError(path: string, body: string): Error {
   return new Error(
     `Graph API access denied (403) for ${path}. ` +
     `The Azure AD app likely lacks an Application-level permission with admin consent. ` +
@@ -108,12 +113,23 @@ function graph403Error(path: string, body: string): Error {
 }
 
 /**
+ * Build a descriptive error for a Graph 403 when using a delegated OAuth token.
+ */
+function graph403DelegatedError(path: string, body: string): Error {
+  return new Error(
+    `Graph API access denied (403) for ${path}. ` +
+    `The OAuth token may lack the required scope (Mail.Read or Calendars.Read). ` +
+    `Try disconnecting and reconnecting the service to re-authorise. Original error: ${body}`
+  );
+}
+
+/**
  * Make an authenticated GET request to Microsoft Graph API.
  * Pass `creds` to use a specific Azure AD app registration instead of env vars.
  *
- * On 403: evicts the cached token and retries once. This handles the case
- * where an admin has just granted consent — the previously cached token
- * predates the grant and will be rejected until a fresh one is obtained.
+ * Delegated flow (creds.accessToken set): uses the token directly; no caching.
+ * Client credentials flow: caches tokens and retries once on 403 (handles the
+ * case where admin consent was just granted but the cached token predates it).
  */
 export async function graphGet<T = unknown>(
   path: string,
@@ -124,7 +140,7 @@ export async function graphGet<T = unknown>(
     ? path
     : `https://graph.microsoft.com/v1.0${path}`;
 
-  const doRequest = async (token: string): Promise<Response> =>
+  const doRequest = (token: string): Promise<Response> =>
     fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -133,6 +149,18 @@ export async function graphGet<T = unknown>(
       },
     });
 
+  // ── Delegated OAuth token path ─────────────────────────────────────────────
+  if (creds?.accessToken) {
+    const response = await doRequest(creds.accessToken);
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (response.status === 403) throw graph403DelegatedError(path, errorText);
+      throw new Error(`Graph API error (${path}): ${response.status} ${response.statusText} — ${errorText}`);
+    }
+    return response.json() as Promise<T>;
+  }
+
+  // ── Client credentials path (with cache + retry on 403) ───────────────────
   const token = await getGraphAppToken(creds);
   let response = await doRequest(token);
 
@@ -146,12 +174,8 @@ export async function graphGet<T = unknown>(
 
   if (!response.ok) {
     const errorText = await response.text();
-    if (response.status === 403) {
-      throw graph403Error(path, errorText);
-    }
-    throw new Error(
-      `Graph API error (${path}): ${response.status} ${response.statusText} — ${errorText}`
-    );
+    if (response.status === 403) throw graph403AppError(path, errorText);
+    throw new Error(`Graph API error (${path}): ${response.status} ${response.statusText} — ${errorText}`);
   }
 
   return response.json() as Promise<T>;

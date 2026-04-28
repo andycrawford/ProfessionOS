@@ -64,8 +64,10 @@ function isVisible(
   values: Record<string, string | number | boolean>
 ): boolean {
   if (!field.visibleWhen) return true;
-  const current = values[field.visibleWhen.field];
-  return String(current ?? "") === field.visibleWhen.value;
+  const current = String(values[field.visibleWhen.field] ?? "");
+  // values[] is an any-of (OR) match; value is a single exact match
+  if (field.visibleWhen.values) return field.visibleWhen.values.includes(current);
+  return current === (field.visibleWhen.value ?? "");
 }
 
 export default function ServiceConfigForm({

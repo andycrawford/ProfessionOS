@@ -48,8 +48,12 @@ export interface ConfigField {
    * The endpoint must return [{label: string, value: string}].
    */
   endpoint?: string;
-  /** Only render this field when another field equals the given value. */
-  visibleWhen?: { field: string; value: string };
+  /**
+   * Only render this field when another field matches.
+   * `value` — exact match (single value).
+   * `values` — any-of match (OR); takes precedence over `value`.
+   */
+  visibleWhen?: { field: string; value?: string; values?: string[] };
 }
 
 /**
@@ -76,6 +80,14 @@ export interface ServicePlugin {
   poll(config: ServiceConfig, credentials: ServiceConfig): Promise<ActivityItemData[]>;
   testConnection(config: ServiceConfig, credentials: ServiceConfig): Promise<boolean>;
   getAuthUrl?(redirectUri: string): string;
+  /**
+   * Config field key whose value "oauth" triggers an OAuth redirect on connect.
+   * When this field equals "oauth", the new-service form redirects to oauthAuthorizeEndpoint
+   * instead of calling the direct-connect API.
+   */
+  oauthSourceField?: string;
+  /** Server-side API route to redirect to when oauthSourceField equals "oauth". */
+  oauthAuthorizeEndpoint?: string;
   /**
    * Optional: refresh short-lived credentials (e.g. OAuth 2.0 access tokens).
    * Called by the polling orchestrator before `poll()` when credentials are

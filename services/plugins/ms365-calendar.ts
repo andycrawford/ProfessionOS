@@ -28,6 +28,11 @@ interface GraphEventResponse {
 }
 
 async function getAzureCreds(config: ServiceConfig, credentials: ServiceConfig): Promise<AzureAdCredentials> {
+  if (config.configSource === "oauth") {
+    const accessToken = credentials.access_token as string | undefined;
+    if (!accessToken) throw new Error("No OAuth access token found. Please disconnect and reconnect the service.");
+    return { accessToken };
+  }
   if (config.configSource === "sso_org") {
     const orgId = config.ssoOrgId as string | undefined;
     if (!orgId) throw new Error("An Organization must be selected when using SSO credentials");
@@ -39,6 +44,7 @@ async function getAzureCreds(config: ServiceConfig, credentials: ServiceConfig):
       clientSecret: ssoOrg.clientSecret,
     };
   }
+  // Manual mode (or legacy config without configSource)
   return {
     tenantId: (credentials.tenantId as string) || (config.tenantId as string) || undefined,
     clientId: (credentials.clientId as string) || (config.clientId as string) || undefined,
@@ -52,27 +58,30 @@ const ms365CalendarPlugin: ServicePlugin = {
   description: "Monitor Microsoft 365 / Outlook calendar events and meetings",
   icon: "Calendar",
   color: "#0078D4",
+  oauthSourceField: "configSource",
+  oauthAuthorizeEndpoint: "/api/auth/ms365-graph/authorize",
   configFields: [
     {
       key: "configSource",
       label: "Credential source",
       type: "select",
       required: true,
-      description: "Use manually entered credentials or pull from an Organization SSO configuration",
+      description: "How Profession OS authenticates to Microsoft Graph API",
       options: [
         { label: "Enter credentials manually", value: "manual" },
-        { label: "Use Organization SSO", value: "sso_org" },
+        { label: "Use Organization SSO (requires Application permission + admin consent)", value: "sso_org" },
+        { label: "Sign in with Microsoft (OAuth — no admin consent required)", value: "oauth" },
       ],
     },
-    // ── SSO path ──────────────────────────────────────────────────────────────
+    // ── SSO / OAuth org picker (shown for both sso_org and oauth modes) ────────
     {
       key: "ssoOrgId",
       label: "Organization",
       type: "dynamic-select",
       required: false,
       endpoint: "/api/organizations/sso-orgs",
-      description: "Organization whose SSO credentials will be used to access the calendar. The Azure AD app must also have the Calendars.Read Application permission (not Delegated) with admin consent granted in Azure Portal → App registrations → API permissions.",
-      visibleWhen: { field: "configSource", value: "sso_org" },
+      description: "Organization whose Azure AD app is used. For OAuth mode, also register the redirect URI shown below in your Azure app.",
+      visibleWhen: { field: "configSource", values: ["sso_org", "oauth"] },
     },
     // ── Manual path ───────────────────────────────────────────────────────────
     {
@@ -205,6 +214,57 @@ const ms365CalendarPlugin: ServicePlugin = {
     if (!userEmail) return false;
     const creds = await getAzureCreds(config, credentials);
     return testCalendarAccess(userEmail, creds);
+  },
+
+  async refreshCredentials(
+    config: ServiceConfig,
+    credentials: ServiceConfig
+  ): Promise<ServiceConfig | null> {
+    if (config.configSource !== "oauth") return null;
+
+    const refreshToken = credentials.refresh_token as string | undefined;
+    const expiresAt = credentials.expiresAt as number | undefined;
+    if (!refreshToken) return null;
+
+    // Skip refresh if the current token still has more than 5 minutes left
+    if (expiresAt && Date.now() < expiresAt - 5 * 60 * 1000) return null;
+
+    const orgId = config.ssoOrgId as string | undefined;
+    if (!orgId) return null;
+
+    const ssoOrg = await getOrgSsoConfigById(orgId);
+    if (!ssoOrg) return null;
+
+    const scope = (credentials.scope as string | undefined)
+      || "https://graph.microsoft.com/Calendars.Read offline_access";
+
+    const tokenUrl = `https://login.microsoftonline.com/${ssoOrg.tenantId}/oauth2/v2.0/token`;
+    const body = new URLSearchParams({
+      client_id: ssoOrg.clientId,
+      client_secret: ssoOrg.clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+      scope,
+    });
+
+    const res = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+
+    if (!res.ok) {
+      console.error(`[ms365-calendar] Token refresh failed: ${res.status} ${await res.text()}`);
+      return null;
+    }
+
+    const data = await res.json();
+    return {
+      access_token: data.access_token as string,
+      refresh_token: (data.refresh_token as string | undefined) || refreshToken,
+      expiresAt: Date.now() + ((data.expires_in as number) || 3600) * 1000,
+      scope,
+    };
   },
 };
 
