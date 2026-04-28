@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, AlertCircle, Loader2, Puzzle } from "lucide-react";
+import ServiceIcon from "@/components/ServiceIcon";
 import ServiceConfigForm from "@/components/ServiceConfigForm";
 import styles from "./new-service.module.css";
 import type { ConfigField, ServiceType } from "@/services/types";
@@ -15,6 +16,8 @@ interface PluginMeta {
   icon: string;
   color: string;
   configFields: ConfigField[];
+  /** True when the plugin uses OAuth — shows "Authorize" button instead of "Connect" */
+  hasOAuth?: boolean;
 }
 
 interface Props {
@@ -23,10 +26,12 @@ interface Props {
 
 export default function NewServiceClient({ plugins }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selected, setSelected] = useState<PluginMeta | null>(null);
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Seed error from query param — set by the OAuth callback on failure
+  const [error, setError] = useState<string | null>(searchParams.get("error"));
 
   function handleSelect(plugin: PluginMeta) {
     setSelected(plugin);
@@ -39,9 +44,30 @@ export default function NewServiceClient({ plugins }: Props) {
     setError(null);
   }
 
+  function handleOAuth() {
+    if (!selected) return;
+    setSubmitting(true);
+    setError(null);
+
+    // For OAuth plugins, redirect to the authorize route which will kick off
+    // the consent flow and eventually create the service record on callback.
+    const params = new URLSearchParams({
+      accountId: String(values.accountId ?? ""),
+      displayName: selected.displayName,
+    });
+    // Navigate — the server route handles the redirect chain from here.
+    window.location.href = `/api/auth/netsuite/authorize?${params}`;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selected) return;
+
+    // OAuth plugins use a different flow: redirect to the authorize route.
+    if (selected.hasOAuth) {
+      handleOAuth();
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -107,9 +133,8 @@ export default function NewServiceClient({ plugins }: Props) {
               <div
                 className={styles.pluginIcon}
                 style={{ color: plugin.color }}
-                aria-hidden="true"
               >
-                {plugin.icon}
+                <ServiceIcon name={plugin.icon} size={20} />
               </div>
               <div>
                 <div className={styles.pluginName}>{plugin.displayName}</div>
@@ -128,9 +153,8 @@ export default function NewServiceClient({ plugins }: Props) {
               <div
                 className={styles.configIconWrap}
                 style={{ color: selected.color }}
-                aria-hidden="true"
               >
-                {selected.icon}
+                <ServiceIcon name={selected.icon} size={20} />
               </div>
               <span className={styles.configTitle}>{selected.displayName}</span>
             </div>
@@ -175,10 +199,10 @@ export default function NewServiceClient({ plugins }: Props) {
                     aria-hidden="true"
                     style={{ display: "inline-block", marginRight: "var(--space-2)", verticalAlign: "middle" }}
                   />
-                  Connecting…
+                  {selected.hasOAuth ? "Redirecting…" : "Connecting…"}
                 </>
               ) : (
-                "Connect"
+                selected.hasOAuth ? "Authorize with NetSuite" : "Connect"
               )}
             </button>
             <Link

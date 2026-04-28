@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Plus, CheckCircle2, AlertCircle, Clock, Loader2, Plug } from "lucide-react";
+import ServiceIcon from "@/components/ServiceIcon";
 import styles from "./services.module.css";
 import type { ServiceStatus } from "@/services/types";
 
@@ -92,9 +93,8 @@ export default function ServicesListClient({
               <div
                 className={styles.iconWrap}
                 style={{ color: svc.color }}
-                aria-hidden="true"
               >
-                {svc.icon}
+                <ServiceIcon name={svc.icon} size={20} />
               </div>
 
               <div className={styles.info}>

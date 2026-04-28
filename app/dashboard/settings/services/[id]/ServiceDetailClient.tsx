@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Wifi,
 } from "lucide-react";
+import ServiceIcon from "@/components/ServiceIcon";
 import ServiceConfigForm from "@/components/ServiceConfigForm";
 import styles from "./service-detail.module.css";
 import type { ConfigField, ServiceStatus, ServiceType } from "@/services/types";
@@ -40,6 +41,7 @@ export default function ServiceDetailClient({
 }: ServiceDetailProps) {
   const router = useRouter();
 
+  const [name, setName] = useState(displayName);
   const [formValues, setFormValues] = useState<
     Record<string, string | number | boolean>
   >(initialConfig);
@@ -71,7 +73,7 @@ export default function ServiceDetailClient({
       const res = await fetch(`/api/services/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ config: formValues }),
+        body: JSON.stringify({ displayName: name, config: formValues }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -147,7 +149,7 @@ export default function ServiceDetailClient({
           className={styles.breadcrumbSep}
           aria-hidden="true"
         />
-        <span>{displayName}</span>
+        <span>{name}</span>
       </nav>
 
       {/* Header */}
@@ -155,18 +157,52 @@ export default function ServiceDetailClient({
         <div
           className={styles.iconWrap}
           style={{ color }}
-          aria-hidden="true"
         >
-          {icon}
+          <ServiceIcon name={icon} size={24} />
         </div>
         <div>
-          <h1 className={styles.heading}>{displayName}</h1>
+          <h1 className={styles.heading}>{name}</h1>
           <p className={styles.subheading}>{description}</p>
         </div>
       </div>
 
       {/* Config form */}
       <form onSubmit={handleSave}>
+        <div className={styles.card}>
+          <p className={styles.sectionTitle}>Display name</p>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--space-1)",
+              fontSize: "var(--text-body-sm-size)",
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            Name shown in the sidebar and settings
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setIsDirty(true);
+              }}
+              disabled={busy}
+              style={{
+                padding: "var(--space-2) var(--space-3)",
+                background: "var(--color-bg-raised)",
+                border: "1px solid var(--color-border-default)",
+                borderRadius: "var(--radius-default)",
+                color: "var(--color-text-primary)",
+                fontFamily: "var(--font-ui)",
+                fontSize: "var(--text-body-base-size)",
+                cursor: busy ? "not-allowed" : "text",
+                opacity: busy ? 0.5 : 1,
+              }}
+            />
+          </label>
+        </div>
+
         <div className={styles.card}>
           <p className={styles.sectionTitle}>Configuration</p>
           {configFields.length === 0 ? (
