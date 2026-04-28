@@ -177,12 +177,14 @@ export default function DashboardShell({
       router.push(`/dashboard/${id}`);
     } else if (id.startsWith("embed/")) {
       router.push(`/dashboard/${id}`);
+    } else if (id === "home") {
+      router.push("/");
+    } else if (id === "ai") {
+      setAiOpen((v) => !v);
     } else if (id === "settings") {
       router.push("/dashboard/settings/services");
     } else if (["mail", "calendar", "messaging", "code", "crm"].includes(id)) {
       router.push(`/dashboard/${id}`);
-    } else {
-      router.push("/");
     }
   }
 

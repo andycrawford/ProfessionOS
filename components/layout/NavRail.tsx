@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  Home,
   Mail,
   Calendar,
   MessageSquare,
@@ -63,6 +64,7 @@ export interface EmbedItem {
 }
 
 const topItems: NavItem[] = [
+  { id: "home", label: "Home", icon: <Home size={20} aria-hidden="true" /> },
   { id: "mail", label: "Mail", icon: <Mail size={20} aria-hidden="true" /> },
   { id: "calendar", label: "Calendar", icon: <Calendar size={20} aria-hidden="true" /> },
   { id: "messaging", label: "Messaging", icon: <MessageSquare size={20} aria-hidden="true" /> },
