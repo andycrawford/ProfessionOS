@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Bot, ChevronLeft, ChevronRight, Sparkles, X, Plus, MessageSquare } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight, Sparkles, X, Plus, MessageSquare, ChevronDown } from "lucide-react";
 import styles from "./AiPanel.module.css";
 
 export interface ChatMessage {
@@ -28,10 +28,12 @@ interface AiPanelProps {
   messages?: ChatMessage[];
   conversations?: ConversationSummary[];
   activeConversationId?: string | null;
+  forceVisible?: boolean;
   onSuggestionAction?: (suggestionId: string, action: string) => void;
   onSendMessage?: (content: string) => void;
   onNewChat?: () => void;
   onSelectConversation?: (conversationId: string) => void;
+  onClose?: () => void;
 }
 
 export default function AiPanel({
@@ -39,10 +41,12 @@ export default function AiPanel({
   messages = [],
   conversations = [],
   activeConversationId,
+  forceVisible,
   onSuggestionAction,
   onSendMessage,
   onNewChat,
   onSelectConversation,
+  onClose,
 }: AiPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [draft, setDraft] = useState("");
@@ -61,7 +65,7 @@ export default function AiPanel({
 
   return (
     <aside
-      className={`${styles.panel}${collapsed ? ` ${styles.collapsed}` : ""}`}
+      className={`${styles.panel}${collapsed ? ` ${styles.collapsed}` : ""}${forceVisible ? ` ${styles.forceVisible}` : ""}`}
       aria-label="AI Assistant"
     >
       <div className={styles.header}>
@@ -77,17 +81,27 @@ export default function AiPanel({
             <Plus size={13} aria-hidden="true" />
           </button>
         )}
-        <button
-          className={styles.collapseButton}
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? "Expand AI panel" : "Collapse AI panel"}
-        >
-          {collapsed ? (
-            <ChevronLeft size={14} aria-hidden="true" />
-          ) : (
-            <ChevronRight size={14} aria-hidden="true" />
-          )}
-        </button>
+        {forceVisible ? (
+          <button
+            className={styles.collapseButton}
+            onClick={onClose}
+            aria-label="Close AI assistant"
+          >
+            <ChevronDown size={14} aria-hidden="true" />
+          </button>
+        ) : (
+          <button
+            className={styles.collapseButton}
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? "Expand AI panel" : "Collapse AI panel"}
+          >
+            {collapsed ? (
+              <ChevronLeft size={14} aria-hidden="true" />
+            ) : (
+              <ChevronRight size={14} aria-hidden="true" />
+            )}
+          </button>
+        )}
       </div>
 
       {!collapsed && (

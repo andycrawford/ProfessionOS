@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import Topbar from "@/components/layout/Topbar";
 import NavRail, { type CrmSubItem, type EmbedItem } from "@/components/layout/NavRail";
+import AiPanel from "@/components/layout/AiPanel";
+import BottomTabNav from "@/components/layout/BottomTabNav";
 import KeyboardHelpDialog, { type PluginBinding } from "@/components/KeyboardHelpDialog";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import type { KeybindingOverrides } from "@/lib/types";
@@ -52,6 +54,7 @@ export default function DashboardShell({
   const router = useRouter();
   const pathname = usePathname();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
   const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
@@ -196,6 +199,8 @@ export default function DashboardShell({
           pollIntervalSeconds={pollIntervalSeconds}
           onPollIntervalChange={handlePollIntervalChange}
           onSignOut={() => signOut({ callbackUrl: "/" })}
+          onToggleAI={() => setAiOpen((v) => !v)}
+          aiOpen={aiOpen}
         />
         <div className={styles.body}>
           <NavRail
@@ -207,8 +212,16 @@ export default function DashboardShell({
             onNavigate={handleNavigate}
           />
           <div className={styles.content}>{children}</div>
+          <AiPanel forceVisible={aiOpen} onClose={() => setAiOpen(false)} />
         </div>
       </div>
+
+      <BottomTabNav
+        activeItemId={activeNav}
+        aiOpen={aiOpen}
+        onNavigate={handleNavigate}
+        onToggleAI={() => setAiOpen((v) => !v)}
+      />
 
       <KeyboardHelpDialog
         open={helpOpen}

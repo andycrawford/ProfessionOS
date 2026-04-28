@@ -26,3 +26,13 @@
   margin-left: var(--nav-rail-width);
   transition: margin-left var(--duration-default) var(--easing-default);
 }
+
+/* ── Mobile layout ── */
+@media (max-width: 767px) {
+  .content {
+    /* NavRail is hidden — no left offset needed */
+    margin-left: 0;
+    /* Reserve space for the fixed bottom tab bar */
+    padding-bottom: 56px;
+  }
+}

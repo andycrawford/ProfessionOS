@@ -39,6 +39,8 @@ interface TopbarProps {
   pollIntervalSeconds?: number;
   onPollIntervalChange?: (seconds: number) => void;
   onSignOut?: () => void;
+  onToggleAI?: () => void;
+  aiOpen?: boolean;
 }
 
 export default function Topbar({
@@ -52,6 +54,8 @@ export default function Topbar({
   pollIntervalSeconds = 30,
   onPollIntervalChange,
   onSignOut,
+  onToggleAI,
+  aiOpen,
 }: TopbarProps) {
   const { theme, toggle } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -233,8 +237,10 @@ export default function Topbar({
         )}
 
         <button
-          className={styles.iconButton}
+          className={`${styles.iconButton}${aiOpen ? ` ${styles.iconButtonActive}` : ""}`}
+          onClick={onToggleAI}
           aria-label="Toggle AI assistant"
+          aria-expanded={aiOpen}
         >
           <Bot size={16} aria-hidden="true" />
         </button>

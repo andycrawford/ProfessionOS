@@ -355,9 +355,21 @@
   }
 }
 
-/* Below 768px: no AI panel (mobile view) */
+/* Below 768px: hidden by default; shown as full-height drawer when forceVisible */
 @media (max-width: 767px) {
   .panel {
     display: none;
+  }
+
+  .panel.forceVisible {
+    display: flex;
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+    bottom: 56px; /* above bottom tab bar */
+    width: 100%;
+    z-index: 95;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
   }
 }

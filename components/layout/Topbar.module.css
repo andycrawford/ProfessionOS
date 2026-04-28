@@ -105,6 +105,10 @@
   background-color: var(--color-bg-raised);
 }
 
+.iconButtonActive {
+  color: var(--color-accent-brand);
+}
+
 .alertBadge {
   display: flex;
   align-items: center;
@@ -307,6 +311,39 @@
 .menuItem:hover {
   color: var(--color-text-primary);
   background: var(--color-bg-raised);
+}
+
+/* ── Mobile overrides ────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .topbar {
+    padding: 0 var(--space-3);
+    gap: var(--space-2);
+  }
+
+  /* Hide search bar — too wide for small screens */
+  .searchTrigger {
+    display: none;
+  }
+
+  /* Hide clock/date widget — not enough room */
+  .clockContainer {
+    display: none;
+  }
+
+  /* Prevent user menu from overflowing left edge of screen */
+  .userMenu {
+    right: 0;
+    left: auto;
+    max-width: calc(100vw - var(--space-6));
+  }
+
+  /* Prevent calendar dropdown from overflowing */
+  .calDropdown {
+    right: 0;
+    left: auto;
+    max-width: calc(100vw - var(--space-6));
+  }
 }
 
 /* ── Clock / date-time widget ────────────────────────────────────────────── */

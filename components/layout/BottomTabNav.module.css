@@ -1,0 +1,58 @@
+/* Hidden on desktop — only shown on mobile */
+.tabBar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .tabBar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--color-bg-base);
+    border-top: 1px solid var(--color-border-default);
+    z-index: 90;
+    align-items: stretch;
+    /* Safe area for notched phones */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 6px 2px;
+  min-width: 0;
+  transition: color var(--duration-fast) var(--easing-default);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tab.active {
+  color: var(--color-accent-brand);
+}
+
+.label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  line-height: 1;
+}
