@@ -23,7 +23,7 @@ export default function BlogPage() {
             <li><a href="/blog" className={`${styles.navLink} ${styles.navLinkActive}`}>Blog</a></li>
           </ul>
           <div className={styles.navActions}>
-            <a href="https://app.professionos.com" className={styles.navLinkSecondary}>Sign in</a>
+            <a href="https://app.professionos.com/sign-in" className={styles.navLinkSecondary}>Sign in</a>
             <a href="/sign-up" className={styles.navCta}>Get Started</a>
           </div>
         </div>

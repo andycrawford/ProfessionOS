@@ -41,7 +41,7 @@ export default function MarketingPage() {
           </ul>
 
           <div className={styles.navActions}>
-            <a href="https://app.professionos.com" className={styles.navLinkSecondary}>Sign in</a>
+            <a href="https://app.professionos.com/sign-in" className={styles.navLinkSecondary}>Sign in</a>
             <a href="/sign-up" className={styles.navCta}>Get Started</a>
           </div>
         </div>
