@@ -5,8 +5,6 @@
   bottom: 0;
   width: var(--nav-rail-width);
   background-color: var(--chrome-bg);
-  -webkit-backdrop-filter: blur(var(--panel-blur));
-  backdrop-filter: blur(var(--panel-blur));
   border-right: 1px solid var(--color-border-default);
   z-index: 90;
   display: flex;
