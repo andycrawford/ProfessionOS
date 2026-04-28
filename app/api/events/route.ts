@@ -55,7 +55,8 @@ function formatTime(date: Date | null): string {
 
 function toFeedItem(
   item: typeof activityItems.$inferSelect,
-  serviceType: string | null
+  serviceType: string | null,
+  serviceConfig: Record<string, unknown> | null
 ): FeedItem {
   const meta = item.metadata as Record<string, unknown> | null;
   // Derive Teams join URL. New records store onlineMeetingUrl in metadata directly.
@@ -70,6 +71,9 @@ function toFeedItem(
     }
   }
 
+  const linkBehavior =
+    serviceConfig?.linkBehavior === "embed" ? "embed" : "new_tab";
+
   return {
     id: item.id,
     severity: toSeverity(item.urgency),
@@ -79,6 +83,7 @@ function toFeedItem(
     timestamp: formatTime(item.occurredAt ?? item.createdAt),
     sourceUrl: item.sourceUrl ?? undefined,
     joinUrl,
+    linkBehavior,
   };
 }
 
@@ -301,6 +306,7 @@ export async function GET() {
           .select({
             item: activityItems,
             serviceType: connectedServices.type,
+            serviceConfig: connectedServices.config,
           })
           .from(activityItems)
           .leftJoin(
@@ -316,8 +322,8 @@ export async function GET() {
           .orderBy(desc(activityItems.createdAt))
           .limit(50);
 
-        for (const { item, serviceType } of rows) {
-          enqueue({ type: "feed_item", payload: toFeedItem(item, serviceType) });
+        for (const { item, serviceType, serviceConfig } of rows) {
+          enqueue({ type: "feed_item", payload: toFeedItem(item, serviceType, serviceConfig as Record<string, unknown> | null) });
         }
 
         // Advance cursor to the most recent item sent (rows ordered desc)
@@ -345,6 +351,7 @@ export async function GET() {
               .select({
                 item: activityItems,
                 serviceType: connectedServices.type,
+                serviceConfig: connectedServices.config,
               })
               .from(activityItems)
               .leftJoin(
@@ -360,10 +367,10 @@ export async function GET() {
               .orderBy(desc(activityItems.createdAt))
               .limit(50);
 
-            for (const { item, serviceType } of rows) {
+            for (const { item, serviceType, serviceConfig } of rows) {
               enqueue({
                 type: "feed_item",
-                payload: toFeedItem(item, serviceType),
+                payload: toFeedItem(item, serviceType, serviceConfig as Record<string, unknown> | null),
               });
             }
 

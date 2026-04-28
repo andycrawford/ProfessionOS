@@ -24,6 +24,8 @@ export interface FeedItem {
   sourceUrl?: string;
   /** Teams meeting join URL — shown as a "Join" button; only set for online meetings */
   joinUrl?: string;
+  /** How to open sourceUrl: new browser tab (default) or embedded dashboard iframe */
+  linkBehavior?: "new_tab" | "embed";
 }
 
 export interface Alert {

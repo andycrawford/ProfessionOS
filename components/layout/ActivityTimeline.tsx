@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Mail, Calendar, MessageSquare, Code2, Users, Video } from "lucide-react";
 import styles from "./ActivityTimeline.module.css";
 
@@ -18,6 +19,8 @@ export interface FeedItem {
   sourceUrl?: string;
   /** Teams meeting join URL — shown as a "Join" button; only set for online meetings */
   joinUrl?: string;
+  /** How to open sourceUrl: new browser tab (default) or embedded dashboard iframe */
+  linkBehavior?: "new_tab" | "embed";
 }
 
 interface ActivityTimelineProps {
@@ -49,10 +52,19 @@ export default function ActivityTimeline({
   activeFilter = "all",
   onFilterChange,
 }: ActivityTimelineProps) {
+  const router = useRouter();
   const filtered =
     activeFilter === "all"
       ? items
       : items.filter((item) => item.service === activeFilter);
+
+  function openItem(url: string, behavior: "new_tab" | "embed" | undefined) {
+    if (behavior === "embed") {
+      router.push(`/dashboard/embed?url=${encodeURIComponent(url)}`);
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  }
 
   return (
     <main className={styles.panel} aria-label="Activity timeline">
@@ -89,7 +101,7 @@ export default function ActivityTimeline({
               role="article"
               onClick={
                 item.sourceUrl
-                  ? () => window.open(item.sourceUrl, "_blank", "noopener,noreferrer")
+                  ? () => openItem(item.sourceUrl!, item.linkBehavior)
                   : undefined
               }
               tabIndex={item.sourceUrl ? 0 : undefined}
@@ -98,7 +110,7 @@ export default function ActivityTimeline({
                   ? (e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        window.open(item.sourceUrl, "_blank", "noopener,noreferrer");
+                        openItem(item.sourceUrl!, item.linkBehavior);
                       }
                     }
                   : undefined
