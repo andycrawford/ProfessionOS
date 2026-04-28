@@ -123,7 +123,7 @@ export async function PATCH(req: Request) {
       const key = p.key as string;
 
       const isBaseKey   = BASE_KEYS.includes(key as WidgetServiceKey);
-      const isNetsuite  = /^netsuite_[a-z0-9_]+$/.test(key);
+      const isNetsuite  = /^netsuite_[a-zA-Z0-9_]+$/.test(key);
       if ((!isBaseKey && !isNetsuite) || typeof p.enabled !== "boolean") {
         throw new Error(`Invalid preference: ${JSON.stringify(item)}`);
       }
