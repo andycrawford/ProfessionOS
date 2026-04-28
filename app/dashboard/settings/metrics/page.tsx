@@ -56,11 +56,15 @@ export default function MetricsSettingsPage() {
 
   useEffect(() => {
     fetch("/api/settings/widgets")
-      .then((r) => r.json())
-      .then((data) => {
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) {
+          setError(data?.error ?? "Failed to load preferences. Please refresh.");
+          return;
+        }
         if (Array.isArray(data)) setPrefs(data);
       })
-      .catch(() => {})
+      .catch(() => setError("Failed to load preferences. Please refresh."))
       .finally(() => setLoading(false));
   }, []);
 

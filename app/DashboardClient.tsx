@@ -377,7 +377,10 @@ export default function DashboardClient({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(prefs),
     });
-    if (!res.ok) throw new Error("Failed to save");
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      throw new Error(data?.error ?? "Failed to save");
+    }
     const saved: WidgetPreference[] = await res.json();
     setWidgetPrefs(saved);
     setMetricsSettingsOpen(false);

@@ -64,29 +64,42 @@ export async function GET() {
   const userId = session.user.id;
   const db = getDb();
 
-  const [row] = await db
-    .select({ widgetPreferences: userSettings.widgetPreferences })
-    .from(userSettings)
-    .where(eq(userSettings.userId, userId));
+  let savedPrefs: WidgetPreference[];
+  let nsService: { config: unknown } | undefined;
 
-  const savedPrefs = (row?.widgetPreferences as WidgetPreference[] | null) ?? DEFAULT_WIDGET_PREFS;
+  try {
+    const [row] = await db
+      .select({ widgetPreferences: userSettings.widgetPreferences })
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId));
 
-  // Fetch the user's enabled NetSuite service (if any) to determine available
-  // netsuite_* tiles and merge them in as opt-in (disabled by default).
-  const [nsService] = await db
-    .select({ config: connectedServices.config })
-    .from(connectedServices)
-    .where(
-      and(
-        eq(connectedServices.userId, userId),
-        eq(connectedServices.enabled, true),
-        eq(connectedServices.type, "netsuite_crm")
+    savedPrefs = (row?.widgetPreferences as WidgetPreference[] | null) ?? DEFAULT_WIDGET_PREFS;
+
+    // Fetch the user's enabled NetSuite service (if any) to determine available
+    // netsuite_* tiles and merge them in as opt-in (disabled by default).
+    [nsService] = await db
+      .select({ config: connectedServices.config })
+      .from(connectedServices)
+      .where(
+        and(
+          eq(connectedServices.userId, userId),
+          eq(connectedServices.enabled, true),
+          eq(connectedServices.type, "netsuite_crm")
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
+  } catch (err) {
+    console.error("[GET /api/settings/widgets] DB error:", err);
+    return Response.json(
+      { error: "Failed to load widget preferences" },
+      { status: 500 }
+    );
+  }
+
+  const noStore = { "Cache-Control": "no-store" };
 
   if (!nsService) {
-    return Response.json(savedPrefs);
+    return Response.json(savedPrefs, { headers: noStore });
   }
 
   const availableNetsuitePrefs = buildAvailableNetsuitePrefs(
@@ -94,14 +107,14 @@ export async function GET() {
   );
 
   if (availableNetsuitePrefs.length === 0) {
-    return Response.json(savedPrefs);
+    return Response.json(savedPrefs, { headers: noStore });
   }
 
   // Merge: saved prefs take precedence (preserve enabled state + order);
   // any available netsuite_* tile not yet in saved prefs is appended as disabled.
   const savedKeys = new Set(savedPrefs.map((p) => p.key));
   const newPrefs = availableNetsuitePrefs.filter((p) => !savedKeys.has(p.key));
-  return Response.json([...savedPrefs, ...newPrefs]);
+  return Response.json([...savedPrefs, ...newPrefs], { headers: noStore });
 }
 
 export async function PATCH(req: Request) {
@@ -140,13 +153,21 @@ export async function PATCH(req: Request) {
   }
 
   const db = getDb();
-  await db
-    .insert(userSettings)
-    .values({ userId: session.user.id, widgetPreferences: prefs })
-    .onConflictDoUpdate({
-      target: userSettings.userId,
-      set: { widgetPreferences: prefs },
-    });
+  try {
+    await db
+      .insert(userSettings)
+      .values({ userId: session.user.id, widgetPreferences: prefs })
+      .onConflictDoUpdate({
+        target: userSettings.userId,
+        set: { widgetPreferences: prefs },
+      });
+  } catch (err) {
+    console.error("[PATCH /api/settings/widgets] DB error:", err);
+    return Response.json(
+      { error: "Failed to save widget preferences" },
+      { status: 500 }
+    );
+  }
 
   return Response.json(prefs);
 }
