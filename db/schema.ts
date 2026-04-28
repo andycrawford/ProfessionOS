@@ -77,6 +77,8 @@ export const userSettings = pgTable("user_settings", {
   widgetPreferences: jsonb("widget_preferences"),
   // Record<actionId, customKey> — user overrides for keyboard shortcuts. Null = use defaults.
   keybindings: jsonb("keybindings"),
+  // UiPreferences shape — background and panel appearance. Null = use DEFAULT_UI_PREFERENCES.
+  uiPreferences: jsonb("ui_preferences"),
 });
 
 // ── Plugin system tables ──────────────────────────────────────────────────────
