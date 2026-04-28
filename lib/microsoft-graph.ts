@@ -3,29 +3,38 @@
  * Allows Profession OS to read user mailboxes/calendars without per-user OAuth,
  * provided the Azure AD app has admin-consented Mail.Read and Calendars.Read
  * application permissions.
+ *
+ * Credentials are resolved from the explicitly supplied `creds` argument first,
+ * falling back to the AZURE_AD_TENANT_ID / AZURE_AD_CLIENT_ID /
+ * AZURE_AD_CLIENT_SECRET environment variables. This lets each connected-service
+ * record carry its own Azure AD application credentials rather than requiring a
+ * shared server-side configuration.
  */
+
+export interface AzureAdCredentials {
+  tenantId?: string;
+  clientId?: string;
+  clientSecret?: string;
+}
 
 interface TokenCache {
   accessToken: string;
   expiresAt: number; // Unix ms
 }
 
-let cachedToken: TokenCache | null = null;
+// Token cache keyed by "tenantId:clientId" so different Azure AD apps don't
+// collide when multiple users connect their own app registrations.
+const tokenCache = new Map<string, TokenCache>();
 
 /**
  * Get an app-level access token for Microsoft Graph using client credentials.
+ * Explicit `creds` override environment variables.
  * Tokens are cached in memory and refreshed 5 minutes before expiry.
  */
-export async function getGraphAppToken(): Promise<string> {
-  const now = Date.now();
-
-  if (cachedToken && cachedToken.expiresAt - now > 5 * 60 * 1000) {
-    return cachedToken.accessToken;
-  }
-
-  const tenantId = process.env.AZURE_AD_TENANT_ID;
-  const clientId = process.env.AZURE_AD_CLIENT_ID;
-  const clientSecret = process.env.AZURE_AD_CLIENT_SECRET;
+export async function getGraphAppToken(creds?: AzureAdCredentials): Promise<string> {
+  const tenantId = creds?.tenantId || process.env.AZURE_AD_TENANT_ID;
+  const clientId = creds?.clientId || process.env.AZURE_AD_CLIENT_ID;
+  const clientSecret = creds?.clientSecret || process.env.AZURE_AD_CLIENT_SECRET;
 
   if (!tenantId || !clientId || !clientSecret) {
     const missing = [
@@ -34,6 +43,14 @@ export async function getGraphAppToken(): Promise<string> {
       !clientSecret && "AZURE_AD_CLIENT_SECRET",
     ].filter(Boolean);
     throw new Error(`Missing Azure AD credentials: ${missing.join(", ")}`);
+  }
+
+  const cacheKey = `${tenantId}:${clientId}`;
+  const now = Date.now();
+  const cached = tokenCache.get(cacheKey);
+
+  if (cached && cached.expiresAt - now > 5 * 60 * 1000) {
+    return cached.accessToken;
   }
 
   const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
@@ -62,22 +79,24 @@ export async function getGraphAppToken(): Promise<string> {
   const accessToken = data.access_token as string;
   const expiresIn = (data.expires_in as number) || 3600;
 
-  cachedToken = {
+  tokenCache.set(cacheKey, {
     accessToken,
     expiresAt: now + expiresIn * 1000,
-  };
+  });
 
   return accessToken;
 }
 
 /**
  * Make an authenticated GET request to Microsoft Graph API.
+ * Pass `creds` to use a specific Azure AD app registration instead of env vars.
  */
 export async function graphGet<T = unknown>(
   path: string,
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
+  creds?: AzureAdCredentials
 ): Promise<T> {
-  const token = await getGraphAppToken();
+  const token = await getGraphAppToken(creds);
 
   const url = path.startsWith("https://")
     ? path
@@ -104,15 +123,15 @@ export async function graphGet<T = unknown>(
 /**
  * Test connectivity to a specific user's mailbox.
  */
-export async function testMailboxAccess(mailbox: string): Promise<boolean> {
-  await graphGet(`/users/${mailbox}/mailFolders/inbox`);
+export async function testMailboxAccess(mailbox: string, creds?: AzureAdCredentials): Promise<boolean> {
+  await graphGet(`/users/${mailbox}/mailFolders/inbox`, undefined, creds);
   return true;
 }
 
 /**
  * Test connectivity to a specific user's calendar.
  */
-export async function testCalendarAccess(userEmail: string): Promise<boolean> {
-  await graphGet(`/users/${userEmail}/calendars`);
+export async function testCalendarAccess(userEmail: string, creds?: AzureAdCredentials): Promise<boolean> {
+  await graphGet(`/users/${userEmail}/calendars`, undefined, creds);
   return true;
 }

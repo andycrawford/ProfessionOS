@@ -1,6 +1,7 @@
 import type { ServicePlugin, ActivityItemData, ServiceConfig } from "@/services/types";
 import { ServiceType } from "@/services/types";
 import { graphGet, testCalendarAccess } from "@/lib/microsoft-graph";
+import type { AzureAdCredentials } from "@/lib/microsoft-graph";
 import { registerPlugin } from "@/services/registry";
 
 interface GraphEvent {
@@ -25,6 +26,14 @@ interface GraphEventResponse {
   "@odata.nextLink"?: string;
 }
 
+function getAzureCreds(config: ServiceConfig, credentials: ServiceConfig): AzureAdCredentials {
+  return {
+    tenantId: (credentials.tenantId as string) || (config.tenantId as string) || undefined,
+    clientId: (credentials.clientId as string) || (config.clientId as string) || undefined,
+    clientSecret: (credentials.clientSecret as string) || (config.clientSecret as string) || undefined,
+  };
+}
+
 const ms365CalendarPlugin: ServicePlugin = {
   type: ServiceType.Ms365Calendar,
   displayName: "Microsoft 365 Calendar",
@@ -32,6 +41,30 @@ const ms365CalendarPlugin: ServicePlugin = {
   icon: "Calendar",
   color: "#0078D4",
   configFields: [
+    {
+      key: "tenantId",
+      label: "Azure AD Tenant ID",
+      type: "text",
+      required: true,
+      placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      description: "Your Azure AD (Entra ID) tenant/directory ID",
+    },
+    {
+      key: "clientId",
+      label: "Azure AD Client ID",
+      type: "text",
+      required: true,
+      placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      description: "Application (client) ID of your registered Azure AD app",
+    },
+    {
+      key: "clientSecret",
+      label: "Azure AD Client Secret",
+      type: "password",
+      required: true,
+      placeholder: "your-client-secret-value",
+      description: "Client secret for your Azure AD app (requires Calendars.Read application permission)",
+    },
     {
       key: "userEmail",
       label: "User Email",
@@ -63,7 +96,7 @@ const ms365CalendarPlugin: ServicePlugin = {
 
   async poll(
     config: ServiceConfig,
-    _credentials: ServiceConfig
+    credentials: ServiceConfig
   ): Promise<ActivityItemData[]> {
     const userEmail = config.userEmail as string;
     if (!userEmail) throw new Error("User email is required");
@@ -75,9 +108,10 @@ const ms365CalendarPlugin: ServicePlugin = {
 
     const endpoint = `/users/${userEmail}/calendarview?startDateTime=${now.toISOString()}&endDateTime=${end.toISOString()}&$top=50&$orderby=start/dateTime&$select=id,subject,start,end,importance,isAllDay,location,organizer,webLink,isCancelled,isOnlineMeeting,onlineMeetingUrl,responseStatus,sensitivity`;
 
+    const creds = getAzureCreds(config, credentials);
     const data = await graphGet<GraphEventResponse>(endpoint, {
       Prefer: 'outlook.timezone="UTC"',
-    });
+    }, creds);
 
     let events = data.value || [];
 
@@ -128,10 +162,11 @@ const ms365CalendarPlugin: ServicePlugin = {
     });
   },
 
-  async testConnection(config: ServiceConfig): Promise<boolean> {
+  async testConnection(config: ServiceConfig, credentials: ServiceConfig): Promise<boolean> {
     const userEmail = config.userEmail as string;
     if (!userEmail) return false;
-    return testCalendarAccess(userEmail);
+    const creds = getAzureCreds(config, credentials);
+    return testCalendarAccess(userEmail, creds);
   },
 };
 

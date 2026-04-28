@@ -1,6 +1,7 @@
 import type { ServicePlugin, ActivityItemData, ServiceConfig } from "@/services/types";
 import { ServiceType } from "@/services/types";
 import { graphGet, testMailboxAccess } from "@/lib/microsoft-graph";
+import type { AzureAdCredentials } from "@/lib/microsoft-graph";
 import { registerPlugin } from "@/services/registry";
 
 interface GraphMessage {
@@ -21,6 +22,14 @@ interface GraphMessageResponse {
   "@odata.nextLink"?: string;
 }
 
+function getAzureCreds(config: ServiceConfig, credentials: ServiceConfig): AzureAdCredentials {
+  return {
+    tenantId: (credentials.tenantId as string) || (config.tenantId as string) || undefined,
+    clientId: (credentials.clientId as string) || (config.clientId as string) || undefined,
+    clientSecret: (credentials.clientSecret as string) || (config.clientSecret as string) || undefined,
+  };
+}
+
 const ms365EmailPlugin: ServicePlugin = {
   type: ServiceType.Ms365Email,
   displayName: "Microsoft 365 Email",
@@ -28,6 +37,30 @@ const ms365EmailPlugin: ServicePlugin = {
   icon: "Mail",
   color: "#0078D4",
   configFields: [
+    {
+      key: "tenantId",
+      label: "Azure AD Tenant ID",
+      type: "text",
+      required: true,
+      placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      description: "Your Azure AD (Entra ID) tenant/directory ID",
+    },
+    {
+      key: "clientId",
+      label: "Azure AD Client ID",
+      type: "text",
+      required: true,
+      placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      description: "Application (client) ID of your registered Azure AD app",
+    },
+    {
+      key: "clientSecret",
+      label: "Azure AD Client Secret",
+      type: "password",
+      required: true,
+      placeholder: "your-client-secret-value",
+      description: "Client secret for your Azure AD app (requires Mail.Read application permission)",
+    },
     {
       key: "mailbox",
       label: "Mailbox Address",
@@ -68,7 +101,7 @@ const ms365EmailPlugin: ServicePlugin = {
 
   async poll(
     config: ServiceConfig,
-    _credentials: ServiceConfig
+    credentials: ServiceConfig
   ): Promise<ActivityItemData[]> {
     const mailbox = config.mailbox as string;
     if (!mailbox) throw new Error("Mailbox address is required");
@@ -84,7 +117,8 @@ const ms365EmailPlugin: ServicePlugin = {
 
     const endpoint = `/users/${mailbox}/messages?$filter=${encodeURIComponent(filter)}&$top=50&$orderby=receivedDateTime desc&$select=id,subject,from,receivedDateTime,importance,isRead,bodyPreview,webLink,hasAttachments,flag`;
 
-    const data = await graphGet<GraphMessageResponse>(endpoint);
+    const creds = getAzureCreds(config, credentials);
+    const data = await graphGet<GraphMessageResponse>(endpoint, undefined, creds);
     const messages = data.value || [];
 
     return messages.map((msg): ActivityItemData => {
@@ -117,10 +151,11 @@ const ms365EmailPlugin: ServicePlugin = {
     });
   },
 
-  async testConnection(config: ServiceConfig): Promise<boolean> {
+  async testConnection(config: ServiceConfig, credentials: ServiceConfig): Promise<boolean> {
     const mailbox = config.mailbox as string;
     if (!mailbox) return false;
-    return testMailboxAccess(mailbox);
+    const creds = getAzureCreds(config, credentials);
+    return testMailboxAccess(mailbox, creds);
   },
 };
 
