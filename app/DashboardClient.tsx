@@ -124,10 +124,14 @@ export default function DashboardClient({
   userInitials,
   userName,
   userEmail,
+  orgLogoUrl,
+  orgName,
 }: {
   userInitials: string;
   userName?: string;
   userEmail?: string;
+  orgLogoUrl?: string | null;
+  orgName?: string | null;
 }) {
   const router = useRouter();
 
@@ -541,6 +545,8 @@ export default function DashboardClient({
           userInitials={userInitials}
           userName={userName}
           userEmail={userEmail}
+          orgLogoUrl={orgLogoUrl}
+          orgName={orgName}
           onSignOut={() => signOut({ callbackUrl: "/sign-in" })}
           onSettings={() => router.push("/dashboard/settings/services")}
           onToggleAI={() => setAiOpen((v) => !v)}
