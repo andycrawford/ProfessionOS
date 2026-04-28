@@ -131,6 +131,41 @@ export const DEFAULT_KEYBINDINGS: KeybindingDef[] = [
   },
 ];
 
+// ── UI Preferences ────────────────────────────────────────────────────────────
+
+/**
+ * User-configurable background image setting.
+ * 'url' and 'upload' types are reserved for future tracks.
+ */
+export interface UiBackground {
+  type: 'none' | 'preset';
+  presetKey?: string; // e.g. "mountains-dusk" → /wallpapers/mountains-dusk.jpg
+}
+
+/**
+ * User-configurable panel appearance.
+ * tintColor: undefined means "use theme default" (auto-resets on theme change).
+ */
+export interface UiPanelStyle {
+  opacity: number;     // 0.0–1.0, default 1.0; floor at 0.3 for accessibility
+  tintColor?: string;  // hex override; falls back to theme surface color when absent
+  blur: number;        // px, 0–16, default 0 (backdrop-filter intensity)
+}
+
+/**
+ * Stored in userSettings.uiPreferences (JSONB) and mirrored in localStorage.
+ * Shape matches GET/PATCH /api/settings/ui (Track A, DVI-159).
+ */
+export interface UiPreferences {
+  background?: UiBackground;
+  panels?: UiPanelStyle;
+}
+
+export const DEFAULT_UI_PREFERENCES: UiPreferences = {
+  background: { type: 'none' },
+  panels: { opacity: 1.0, blur: 0 },
+};
+
 // Discriminated union of all SSE event shapes
 export type SSEEvent =
   | { type: "ping"; payload: { ts: number } }

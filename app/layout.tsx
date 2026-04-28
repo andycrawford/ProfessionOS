@@ -59,10 +59,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <head>
-        {/* Runs before first paint to avoid flash of wrong theme */}
+        {/* Runs before first paint to avoid flash of wrong theme/panel styles */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){document.documentElement.dataset.theme=s;}else if(!window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.dataset.theme='light';}})();`,
+            __html: `(function(){var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){document.documentElement.dataset.theme=s;}else if(!window.matchMedia('(prefers-color-scheme: dark)').matches){document.documentElement.dataset.theme='light';}try{var u=localStorage.getItem('uiPreferences');if(u){var p=JSON.parse(u),el=document.documentElement,th=el.dataset.theme||'dark';if(p.panels){var h=p.panels.tintColor||(th==='dark'?'#161A1F':'#FFFFFF'),op=typeof p.panels.opacity==='number'?p.panels.opacity:1,r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);el.style.setProperty('--panel-bg','rgba('+r+','+g+','+b+','+op+')');el.style.setProperty('--panel-blur',(p.panels.blur||0)+'px');}if(p.background&&p.background.type==='preset'&&p.background.presetKey){el.style.setProperty('--bg-image','url(/wallpapers/'+p.background.presetKey+')');}}}catch(e){}})();`,
           }}
         />
       </head>
