@@ -37,7 +37,29 @@ async function pollServices(userId?: string) {
 
     try {
       const config = service.config as Record<string, unknown>;
-      const credentials = service.credentials as Record<string, unknown>;
+      let credentials = service.credentials as Record<string, unknown>;
+
+      // Give the plugin a chance to refresh short-lived OAuth tokens before polling.
+      // If new credentials are returned, persist them so the next run uses them.
+      if (plugin.refreshCredentials) {
+        try {
+          const refreshed = await plugin.refreshCredentials(config, credentials);
+          if (refreshed) {
+            credentials = refreshed as Record<string, unknown>;
+            await db
+              .update(connectedServices)
+              .set({ credentials })
+              .where(eq(connectedServices.id, service.id));
+          }
+        } catch (refreshErr) {
+          // A failed refresh is non-fatal — log and attempt poll with existing token.
+          console.error(
+            `[cron/poll] Token refresh failed for service ${service.id}:`,
+            refreshErr instanceof Error ? refreshErr.message : refreshErr
+          );
+        }
+      }
+
       const items = await plugin.poll(config, credentials);
       summary.polled++;
 

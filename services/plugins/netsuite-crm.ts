@@ -1,4 +1,4 @@
-// NetSuite CRM service plugin — OAuth 2 Bearer token auth.
+// NetSuite CRM service plugin — OAuth 2.0 Authorization Code flow.
 //
 // Monitors configurable transaction types (POs, RMAs, Vendor Bills, Sales Orders,
 // and up to 3 custom record types) and surfaces pending-approval records as
@@ -6,13 +6,16 @@
 // record via the NetSuite REST Record API.
 //
 // Auth setup in NetSuite:
-//   Setup > Integration > OAuth 2.0 Access Tokens
-//   Create an Integration record with OAuth 2.0 Auth Flow enabled,
-//   then generate an access token for the target role.
+//   Setup > Integration > Manage Integrations > New
+//   Enable "Authorization Code Grant" under OAuth 2.0.
+//   Set redirect URI to: {AUTH_URL}/api/auth/netsuite/callback
+//   Add NETSUITE_CLIENT_ID + NETSUITE_CLIENT_SECRET to your environment.
+//   Users connect via "Authorize with NetSuite" — no manual token pasting required.
 
 import type { ServicePlugin, ActivityItemData, ServiceConfig } from "@/services/types";
 import { ServiceType } from "@/services/types";
 import { registerPlugin } from "@/services/registry";
+import { refreshAccessToken } from "@/lib/netsuite-oauth";
 
 // ── NetSuite REST API helpers ─────────────────────────────────────────────────
 
@@ -97,7 +100,7 @@ const STANDARD_MONITORS = [
   },
   {
     configKey: "monitorVendorBill",
-    label: "Accounts Payable",
+    label: "Monitor Accounts Payable (Vendor Bills)",
     recordType: "vendorBill",
     queryParam: '?q=approvalStatus IS "1"&limit=50',
     itemType: "netsuite_vendor_bill",
@@ -130,16 +133,8 @@ const netSuiteCRMPlugin: ServicePlugin = {
       type: "text",
       required: true,
       placeholder: "1234567 or TSTDRV1234567",
-      description: "Found in Setup > Company > Company Information",
-    },
-    {
-      key: "accessToken",
-      label: "OAuth 2.0 Access Token",
-      type: "password",
-      required: true,
-      placeholder: "Paste your Bearer access token",
       description:
-        "Generate via Setup > Integration > OAuth 2.0 Access Tokens. Requires rest_webservices scope.",
+        'Found in Setup > Company > Company Information. Click "Authorize with NetSuite" after entering this.',
     },
     // ── Standard monitors ──────────────────────────────────────────────────────
     {
@@ -217,9 +212,43 @@ const netSuiteCRMPlugin: ServicePlugin = {
     },
   ],
 
-  async poll(config: ServiceConfig): Promise<ActivityItemData[]> {
+  // getAuthUrl signals to the UI that this plugin uses OAuth instead of
+  // manual credential entry. The redirect URI is built by the authorize route;
+  // this method is used by the UI to determine flow type (not called server-side).
+  getAuthUrl(_redirectUri: string): string {
+    // Actual auth URL construction happens in /api/auth/netsuite/authorize
+    // because it requires the accountId from the form. Return a sentinel value
+    // so callers can detect OAuth capability via `typeof plugin.getAuthUrl`.
+    return "/api/auth/netsuite/authorize";
+  },
+
+  // Refresh the OAuth access token if it is expired or close to expiry.
+  // Returns updated credentials when a refresh occurs, null otherwise.
+  async refreshCredentials(
+    config: ServiceConfig,
+    credentials: ServiceConfig
+  ): Promise<ServiceConfig | null> {
     const accountId = config.accountId as string;
-    const accessToken = config.accessToken as string;
+    const refreshToken = credentials.refreshToken as string | undefined;
+    const expiresAt = credentials.expiresAt as number | undefined;
+
+    if (!accountId || !refreshToken) return null;
+
+    // Refresh if token is expired or missing an expiry timestamp
+    const needsRefresh = !expiresAt || Date.now() >= expiresAt;
+    if (!needsRefresh) return null;
+
+    const tokens = await refreshAccessToken(accountId, refreshToken);
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresAt: tokens.expiresAt,
+    };
+  },
+
+  async poll(config: ServiceConfig, credentials: ServiceConfig): Promise<ActivityItemData[]> {
+    const accountId = config.accountId as string;
+    const accessToken = credentials.accessToken as string;
     if (!accountId || !accessToken) return [];
 
     const items: ActivityItemData[] = [];
@@ -311,9 +340,9 @@ const netSuiteCRMPlugin: ServicePlugin = {
     return items;
   },
 
-  async testConnection(config: ServiceConfig): Promise<boolean> {
+  async testConnection(config: ServiceConfig, credentials: ServiceConfig): Promise<boolean> {
     const accountId = config.accountId as string;
-    const accessToken = config.accessToken as string;
+    const accessToken = credentials.accessToken as string;
     if (!accountId || !accessToken) return false;
     try {
       // Minimal read — fetch 1 PO to validate credentials and REST access
@@ -324,8 +353,14 @@ const netSuiteCRMPlugin: ServicePlugin = {
     }
   },
 
-  async approveItem(config: ServiceConfig, externalId: string): Promise<boolean> {
+  async approveItem(
+    config: ServiceConfig,
+    externalId: string,
+    _action: string
+  ): Promise<boolean> {
     const accountId = config.accountId as string;
+    // The approve route merges config + credentials before calling this, so
+    // accessToken (from credentials) is available directly on the config param.
     const accessToken = config.accessToken as string;
     if (!accountId || !accessToken) return false;
 
@@ -337,7 +372,6 @@ const netSuiteCRMPlugin: ServicePlugin = {
     if (!recordType || !recordId) return false;
 
     // approvalStatus id "2" = Approved across PO, vendor bill, and most approval-workflow records.
-    // For record types that use a different field, a more targeted PATCH body would be needed.
     return nsPatch(accountId, accessToken, `/${recordType}/${recordId}`, {
       approvalStatus: { id: "2" },
     });

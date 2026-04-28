@@ -16,6 +16,7 @@ interface ConnectedService {
   type: string;
   displayName: string;
   status: string;
+  config: Record<string, unknown> | null;
 }
 
 export default function CrmClient() {
@@ -165,6 +166,11 @@ export default function CrmClient() {
                       key={item.id}
                       item={item}
                       serviceId={service!.id}
+                      linkBehavior={
+                        typeof service!.config?.linkBehavior === "string"
+                          ? service!.config.linkBehavior
+                          : undefined
+                      }
                       onApproved={handleApproved}
                     />
                   ))}

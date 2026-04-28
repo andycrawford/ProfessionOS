@@ -14,10 +14,15 @@ import {
   Filter,
   BellOff,
   SlidersHorizontal,
+  ShoppingCart,
+  RotateCcw,
+  Receipt,
+  TrendingUp,
+  Box,
 } from "lucide-react";
 
 import Topbar from "@/components/layout/Topbar";
-import NavRail from "@/components/layout/NavRail";
+import NavRail, { type CrmSubItem, type EmbedItem } from "@/components/layout/NavRail";
 import AlertBar, { type Alert } from "@/components/layout/AlertBar";
 import ActivityTimeline, {
   type FeedItem,
@@ -150,6 +155,10 @@ export default function DashboardClient({
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
 
+  // ── Sidebar nav items from connected services ────────────────────────────────
+  const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
+  const [embedItems, setEmbedItems] = useState<EmbedItem[]>([]);
+
   // ── Load widget preferences + keybindings ────────────────────────────────────
   useEffect(() => {
     fetch("/api/settings/widgets")
@@ -164,6 +173,49 @@ export default function DashboardClient({
       .then((data) => {
         setKeybindingOverrides(data.overrides ?? {});
         setPluginBindings(data.pluginBindings ?? []);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/services")
+      .then((r) => r.json())
+      .then((services: Array<{ id: string; type: string; displayName: string; config: Record<string, unknown> }>) => {
+        // ── NetSuite CRM sub-items ────────────────────────────────────────────
+        const ns = services.find((s) => s.type === "netsuite_crm");
+        if (ns?.config) {
+          const subItems: CrmSubItem[] = [];
+          const MONITORS = [
+            { configKey: "monitorPO",         itemType: "netsuite_po",          label: "Purchase Orders",       Icon: ShoppingCart },
+            { configKey: "monitorRMA",        itemType: "netsuite_rma",         label: "Return Authorizations", Icon: RotateCcw },
+            { configKey: "monitorVendorBill", itemType: "netsuite_vendor_bill", label: "Accounts Payable",      Icon: Receipt },
+            { configKey: "monitorSalesOrder", itemType: "netsuite_sales_order", label: "Sales Orders",          Icon: TrendingUp },
+          ] as const;
+          for (const m of MONITORS) {
+            if (ns.config[m.configKey]) {
+              subItems.push({ id: m.itemType, label: m.label, icon: <m.Icon size={16} aria-hidden="true" /> });
+            }
+          }
+          for (let i = 1; i <= 3; i++) {
+            const label = ns.config[`custom${i}Label`] as string | undefined;
+            const recordType = ns.config[`custom${i}RecordType`] as string | undefined;
+            if (label && recordType) {
+              subItems.push({ id: `netsuite_custom_${recordType}`, label, icon: <Box size={16} aria-hidden="true" /> });
+            }
+          }
+          setCrmSubItems(subItems);
+        }
+
+        // ── Embed website items ───────────────────────────────────────────────
+        const embeds = services
+          .filter((s) => s.type === "embed_website")
+          .map((s) => ({
+            id: s.id,
+            label: s.displayName,
+            url: typeof s.config?.url === "string" ? s.config.url : undefined,
+            openMode: (s.config?.openMode === "new_tab" ? "new_tab" : "embed") as "embed" | "new_tab",
+          }));
+        setEmbedItems(embeds);
       })
       .catch(() => {});
   }, []);
@@ -489,6 +541,8 @@ export default function DashboardClient({
         <div className={styles.body}>
           <NavRail
             activeItemId={activeNav}
+            crmSubItems={crmSubItems}
+            embedItems={embedItems}
             onNavigate={(id) => {
               if (id === "settings") {
                 router.push("/dashboard/settings/services");

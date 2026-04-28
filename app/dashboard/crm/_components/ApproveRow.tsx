@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Check, ExternalLink, Loader2 } from "lucide-react";
 import crmStyles from "../crm.module.css";
 
@@ -41,12 +42,15 @@ export function labelForItemType(itemType: string): string {
 export function ApproveRow({
   item,
   serviceId,
+  linkBehavior,
   onApproved,
 }: {
   item: ActivityItem;
   serviceId: string;
+  linkBehavior?: string;
   onApproved: (itemId: string) => void;
 }) {
+  const router = useRouter();
   const [approving, setApproving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(item.status === "actioned");
@@ -107,15 +111,29 @@ export function ApproveRow({
 
       <div className={crmStyles.rowActions}>
         {item.sourceUrl && (
-          <a
-            href={item.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={crmStyles.viewLink}
-            aria-label="Open in NetSuite"
-          >
-            <ExternalLink size={12} aria-hidden="true" />
-          </a>
+          linkBehavior === "embed" ? (
+            <button
+              className={crmStyles.viewLink}
+              aria-label="View source"
+              onClick={() =>
+                router.push(
+                  `/dashboard/embed?url=${encodeURIComponent(item.sourceUrl!)}`
+                )
+              }
+            >
+              <ExternalLink size={12} aria-hidden="true" />
+            </button>
+          ) : (
+            <a
+              href={item.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={crmStyles.viewLink}
+              aria-label="Open in NetSuite"
+            >
+              <ExternalLink size={12} aria-hidden="true" />
+            </a>
+          )
         )}
 
         {done ? (
