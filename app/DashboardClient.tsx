@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   Mail,
   Calendar,
@@ -539,6 +540,7 @@ export default function DashboardClient({
           userInitials={userInitials}
           userName={userName}
           userEmail={userEmail}
+          onSignOut={() => signOut({ callbackUrl: "/sign-in" })}
         />
 
         <div className={styles.body}>
