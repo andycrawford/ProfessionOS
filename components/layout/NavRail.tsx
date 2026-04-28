@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Mail,
   Calendar,
@@ -11,6 +12,33 @@ import {
   Globe,
 } from "lucide-react";
 import styles from "./NavRail.module.css";
+
+function EmbedFavicon({ url }: { url?: string }) {
+  const [error, setError] = useState(false);
+
+  if (!url || error) {
+    return <Globe size={20} aria-hidden="true" />;
+  }
+
+  let faviconUrl: string;
+  try {
+    const { hostname } = new URL(url);
+    faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+  } catch {
+    return <Globe size={20} aria-hidden="true" />;
+  }
+
+  return (
+    <img
+      src={faviconUrl}
+      alt=""
+      width={20}
+      height={20}
+      onError={() => setError(true)}
+      style={{ borderRadius: 2 }}
+    />
+  );
+}
 
 interface NavItem {
   id: string;
@@ -116,7 +144,7 @@ export default function NavRail({
               aria-current={item.id === activeEmbedItemId ? "page" : undefined}
             >
               <span className={styles.navIcon}>
-                <Globe size={20} aria-hidden="true" />
+                <EmbedFavicon url={item.url} />
               </span>
               <span className={styles.navLabel}>{item.label}</span>
             </button>
