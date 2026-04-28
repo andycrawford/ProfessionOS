@@ -39,7 +39,19 @@ export async function GET() {
       )
     );
 
-  const events: CalendarEventDTO[] = rows.map((row) => {
+  // Deduplicate by (serviceId, occurredAt): if the same meeting was inserted
+  // multiple times before the delete-then-reinsert fix, keep only the most
+  // recently created row so the calendar view doesn't show phantom duplicates.
+  const seen = new Map<string, typeof rows[0]>();
+  for (const row of rows) {
+    const key = `${row.serviceId ?? ""}:${(row.occurredAt ?? row.createdAt).toISOString()}`;
+    const existing = seen.get(key);
+    if (!existing || row.createdAt > existing.createdAt) {
+      seen.set(key, row);
+    }
+  }
+
+  const events: CalendarEventDTO[] = Array.from(seen.values()).map((row) => {
     const meta = (row.metadata ?? {}) as Record<string, unknown>;
     return {
       id: row.id,
