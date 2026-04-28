@@ -298,7 +298,7 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label}>Redirect URI</label>
+              <label className={styles.label}>Redirect URI — SSO sign-in</label>
               <input
                 className={styles.input}
                 readOnly
@@ -308,6 +308,20 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
               <p className={styles.hint}>
                 Add this URI to your Azure App Registration under{" "}
                 <strong>Authentication → Redirect URIs</strong> before enabling SSO.
+              </p>
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.label}>Redirect URI — Email &amp; Calendar OAuth</label>
+              <input
+                className={styles.input}
+                readOnly
+                value={`${typeof window !== "undefined" ? window.location.origin : ""}/api/auth/ms365-graph/callback`}
+                onFocus={(e) => e.target.select()}
+              />
+              <p className={styles.hint}>
+                Also add this URI if you want to use the <strong>Sign in with Microsoft (OAuth)</strong>{" "}
+                option when connecting email or calendar services.
               </p>
             </div>
 
