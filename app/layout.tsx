@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -68,6 +69,7 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
