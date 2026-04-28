@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
-import { ExternalLink, Shield, Building2 } from "lucide-react";
+import { ExternalLink, Shield, Building2, Upload, X } from "lucide-react";
 import styles from "./organization.module.css";
 
 export type OrgData = {
@@ -37,6 +37,9 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const logoFileRef = useRef<HTMLInputElement>(null);
 
   // SSO form state
   const [ssoEnabled, setSsoEnabled] = useState(initialOrg?.ssoEnabled ?? false);
@@ -104,6 +107,37 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
       setProfileError("Network error");
     } finally {
       setProfileSaving(false);
+    }
+  }
+
+  // ── Upload logo file ────────────────────────────────────────────────────────
+
+  async function handleLogoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !org) return;
+    setLogoUploadError(null);
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`/api/organizations/${org.id}/logo`, {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLogoUploadError(data.error ?? "Upload failed");
+        return;
+      }
+      // Replace the URL field with the uploaded file URL — file takes precedence
+      setProfileLogoUrl(data.logoUrl);
+      setOrg((prev) => prev ? { ...prev, logoUrl: data.logoUrl } : prev);
+    } catch {
+      setLogoUploadError("Network error");
+    } finally {
+      setLogoUploading(false);
+      // Reset the file input so the same file can be re-uploaded if needed
+      if (logoFileRef.current) logoFileRef.current.value = "";
     }
   }
 
@@ -248,7 +282,48 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
             <p className={styles.hint}>Used to match employees by email address.</p>
           </div>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="org-logo-url">Logo URL</label>
+            <label className={styles.label} htmlFor="org-logo-url">Logo</label>
+            {isAdmin && (
+              <div className={styles.logoUploadRow}>
+                <input
+                  ref={logoFileRef}
+                  id="org-logo-file"
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/svg+xml,image/webp"
+                  className={styles.fileInputHidden}
+                  onChange={handleLogoFileChange}
+                  disabled={logoUploading}
+                />
+                <button
+                  type="button"
+                  className={styles.uploadButton}
+                  onClick={() => logoFileRef.current?.click()}
+                  disabled={logoUploading}
+                >
+                  <Upload size={14} aria-hidden="true" />
+                  {logoUploading ? "Uploading…" : "Upload file"}
+                </button>
+                {profileLogoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profileLogoUrl}
+                    alt="Logo preview"
+                    className={styles.logoPreview}
+                  />
+                )}
+                {profileLogoUrl && isAdmin && (
+                  <button
+                    type="button"
+                    className={styles.logoRemoveButton}
+                    onClick={() => setProfileLogoUrl("")}
+                    title="Remove logo"
+                  >
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            )}
+            {logoUploadError && <p className={styles.error}>{logoUploadError}</p>}
             <input
               id="org-logo-url"
               className={styles.input}
@@ -258,7 +333,9 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
               disabled={!isAdmin}
               placeholder="https://example.com/logo.png"
             />
-            <p className={styles.hint}>Displayed in the header alongside your organization name. Leave blank to use the default logo.</p>
+            <p className={styles.hint}>
+              Upload a file or paste a URL. Displayed in the header alongside your organization name. Leave blank to use the default logo.
+            </p>
           </div>
           {profileError && <p className={styles.error}>{profileError}</p>}
           {profileSuccess && <p className={styles.success}>Saved.</p>}
