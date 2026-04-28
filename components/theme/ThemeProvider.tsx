@@ -131,7 +131,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const value =
       background.type === "preset" && background.presetKey
-        ? `url(/wallpapers/${background.presetKey})`
+        ? `url(/wallpapers/${background.presetKey}.svg)`
         : "none";
     document.documentElement.style.setProperty("--bg-image", value);
   }, [background]);
