@@ -26,6 +26,12 @@ interface TokenCache {
 // collide when multiple users connect their own app registrations.
 const tokenCache = new Map<string, TokenCache>();
 
+function tokenCacheKey(creds?: AzureAdCredentials): string {
+  const tenantId = creds?.tenantId || process.env.AZURE_AD_TENANT_ID || "";
+  const clientId = creds?.clientId || process.env.AZURE_AD_CLIENT_ID || "";
+  return `${tenantId}:${clientId}`;
+}
+
 /**
  * Get an app-level access token for Microsoft Graph using client credentials.
  * Explicit `creds` override environment variables.
@@ -45,7 +51,7 @@ export async function getGraphAppToken(creds?: AzureAdCredentials): Promise<stri
     throw new Error(`Missing Azure AD credentials: ${missing.join(", ")}`);
   }
 
-  const cacheKey = `${tenantId}:${clientId}`;
+  const cacheKey = tokenCacheKey(creds);
   const now = Date.now();
   const cached = tokenCache.get(cacheKey);
 
@@ -88,40 +94,60 @@ export async function getGraphAppToken(creds?: AzureAdCredentials): Promise<stri
 }
 
 /**
+ * Build a descriptive error for a Graph 403 response.
+ * Instructs the user on the Azure permission required for the client credentials flow.
+ */
+function graph403Error(path: string, body: string): Error {
+  return new Error(
+    `Graph API access denied (403) for ${path}. ` +
+    `The Azure AD app likely lacks an Application-level permission with admin consent. ` +
+    `In Azure Portal → App registrations → API permissions, add: ` +
+    `"Mail.Read" (Application) for email, or "Calendars.Read" (Application) for calendar, ` +
+    `then click "Grant admin consent". Original error: ${body}`
+  );
+}
+
+/**
  * Make an authenticated GET request to Microsoft Graph API.
  * Pass `creds` to use a specific Azure AD app registration instead of env vars.
+ *
+ * On 403: evicts the cached token and retries once. This handles the case
+ * where an admin has just granted consent — the previously cached token
+ * predates the grant and will be rejected until a fresh one is obtained.
  */
 export async function graphGet<T = unknown>(
   path: string,
   headers?: Record<string, string>,
   creds?: AzureAdCredentials
 ): Promise<T> {
-  const token = await getGraphAppToken(creds);
-
   const url = path.startsWith("https://")
     ? path
     : `https://graph.microsoft.com/v1.0${path}`;
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...headers,
-    },
-  });
+  const doRequest = async (token: string): Promise<Response> =>
+    fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    });
+
+  const token = await getGraphAppToken(creds);
+  let response = await doRequest(token);
+
+  if (response.status === 403) {
+    // Evict the cached token — it may predate a recent admin consent grant.
+    // A fresh token will reflect any newly added application permissions.
+    tokenCache.delete(tokenCacheKey(creds));
+    const freshToken = await getGraphAppToken(creds);
+    response = await doRequest(freshToken);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
     if (response.status === 403) {
-      // Surface a concrete remediation hint — the most common cause is that the
-      // Azure AD app is missing the required Application (not Delegated) permission.
-      throw new Error(
-        `Graph API access denied (403) for ${path}. ` +
-        `The Azure AD app likely lacks an Application-level permission with admin consent. ` +
-        `In Azure Portal → App registrations → API permissions, add: ` +
-        `"Mail.Read" (Application) for email, or "Calendars.Read" (Application) for calendar, ` +
-        `then click "Grant admin consent". Original error: ${errorText}`
-      );
+      throw graph403Error(path, errorText);
     }
     throw new Error(
       `Graph API error (${path}): ${response.status} ${response.statusText} — ${errorText}`
