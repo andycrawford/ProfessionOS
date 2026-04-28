@@ -25,6 +25,17 @@ const embedWebsitePlugin: ServicePlugin = {
       placeholder: "https://example.com",
       description: "The URL to embed. Must be HTTPS and allow framing (no X-Frame-Options: deny).",
     },
+    {
+      key: "openMode",
+      label: "Open mode",
+      type: "select",
+      required: false,
+      options: [
+        { value: "embed", label: "Embed in dashboard" },
+        { value: "new_tab", label: "Open in new tab" },
+      ],
+      description: "How the URL opens when you click this item in the sidebar.",
+    },
   ],
 
   async poll(_config: ServiceConfig, _credentials: ServiceConfig): Promise<ActivityItemData[]> {

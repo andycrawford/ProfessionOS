@@ -117,7 +117,12 @@ export default function DashboardShell({
         // ── Embed website items ─────────────────────────────────────────────
         const embeds = services
           .filter((s) => s.type === "embed_website")
-          .map((s) => ({ id: s.id, label: s.displayName }));
+          .map((s) => ({
+            id: s.id,
+            label: s.displayName,
+            url: typeof s.config?.url === "string" ? s.config.url : undefined,
+            openMode: (s.config?.openMode === "new_tab" ? "new_tab" : "embed") as "embed" | "new_tab",
+          }));
         setEmbedItems(embeds);
       })
       .catch(() => {});

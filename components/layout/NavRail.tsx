@@ -28,6 +28,10 @@ export interface EmbedItem {
   /** Connected service ID used to build the route: /dashboard/embed/{id} */
   id: string;
   label: string;
+  /** The embed URL — required when openMode is "new_tab" */
+  url?: string;
+  /** "embed" renders in-dashboard (default); "new_tab" opens the URL in a new browser tab */
+  openMode?: "embed" | "new_tab";
 }
 
 const topItems: NavItem[] = [
@@ -101,7 +105,13 @@ export default function NavRail({
             <button
               key={item.id}
               className={`${styles.navItem}${item.id === activeEmbedItemId ? ` ${styles.active}` : ""}`}
-              onClick={() => onNavigate?.(`embed/${item.id}`)}
+              onClick={() => {
+                if (item.openMode === "new_tab" && item.url) {
+                  window.open(item.url, "_blank", "noopener,noreferrer");
+                } else {
+                  onNavigate?.(`embed/${item.id}`);
+                }
+              }}
               aria-label={item.label}
               aria-current={item.id === activeEmbedItemId ? "page" : undefined}
             >
