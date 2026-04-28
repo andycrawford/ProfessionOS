@@ -2,9 +2,23 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Bell, Bot, LogOut, Moon, Search, Sun, Timer } from "lucide-react";
+import { Bell, Bot, ChevronLeft, ChevronRight, LogOut, Moon, Search, Sun, Timer } from "lucide-react";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import styles from "./Topbar.module.css";
+
+const DAY_NAMES = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function buildCalendarDays(year: number, month: number): (number | null)[] {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: (number | null)[] = Array(firstDay).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  return cells;
+}
 
 const REFRESH_OPTIONS = [
   { label: "15s", seconds: 15 },
@@ -42,6 +56,21 @@ export default function Topbar({
   const { theme, toggle } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [calOpen, setCalOpen] = useState(false);
+  const calRef = useRef<HTMLDivElement>(null);
+  const [now, setNow] = useState<Date | null>(null);
+  const [calYear, setCalYear] = useState(0);
+  const [calMonth, setCalMonth] = useState(0);
+
+  // Initialise on client only to avoid SSR hydration mismatch
+  useEffect(() => {
+    const d = new Date();
+    setNow(d);
+    setCalYear(d.getFullYear());
+    setCalMonth(d.getMonth());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -53,6 +82,51 @@ export default function Topbar({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!calOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (calRef.current && !calRef.current.contains(e.target as Node)) {
+        setCalOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [calOpen]);
+
+  function openCal() {
+    if (!calOpen && now) {
+      setCalYear(now.getFullYear());
+      setCalMonth(now.getMonth());
+    }
+    setCalOpen((v) => !v);
+  }
+
+  function prevMonth() {
+    setCalMonth((m) => {
+      if (m === 0) { setCalYear((y) => y - 1); return 11; }
+      return m - 1;
+    });
+  }
+
+  function nextMonth() {
+    setCalMonth((m) => {
+      if (m === 11) { setCalYear((y) => y + 1); return 0; }
+      return m + 1;
+    });
+  }
+
+  const todayY = now?.getFullYear();
+  const todayM = now?.getMonth();
+  const todayD = now?.getDate();
+  const calDays = now ? buildCalendarDays(calYear, calMonth) : [];
+
+  const timeStr = now
+    ? now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "";
+  const dateStr = now
+    ? now.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })
+    : "";
 
   return (
     <header className={styles.topbar} role="banner">
@@ -92,6 +166,62 @@ export default function Topbar({
       </div>
 
       <div className={styles.actions}>
+        {now && (
+          <div ref={calRef} className={styles.clockContainer}>
+            <button
+              className={styles.clockButton}
+              aria-label="Date and time — click to open calendar"
+              aria-expanded={calOpen}
+              aria-haspopup="dialog"
+              onClick={openCal}
+            >
+              <span className={styles.clockTime}>{timeStr}</span>
+              <span className={styles.clockDate}>{dateStr}</span>
+            </button>
+
+            {calOpen && (
+              <div className={styles.calDropdown} role="dialog" aria-label="Calendar">
+                <div className={styles.calHeader}>
+                  <button
+                    className={styles.calNavBtn}
+                    onClick={prevMonth}
+                    aria-label="Previous month"
+                  >
+                    <ChevronLeft size={14} aria-hidden="true" />
+                  </button>
+                  <span className={styles.calMonthLabel}>
+                    {MONTH_NAMES[calMonth]} {calYear}
+                  </span>
+                  <button
+                    className={styles.calNavBtn}
+                    onClick={nextMonth}
+                    aria-label="Next month"
+                  >
+                    <ChevronRight size={14} aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className={styles.calGrid}>
+                  {DAY_NAMES.map((d) => (
+                    <span key={d} className={styles.calDayName}>{d}</span>
+                  ))}
+                  {calDays.map((day, i) => {
+                    const isToday = day !== null && day === todayD && calMonth === todayM && calYear === todayY;
+                    return (
+                      <span
+                        key={i}
+                        className={`${styles.calDay} ${day === null ? styles.calDayEmpty : ""} ${isToday ? styles.calDayToday : ""}`}
+                      >
+                        {day ?? ""}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {alertCount > 0 && (
           <button
             className={styles.alertBadge}
