@@ -198,3 +198,148 @@
   outline: none;
   border-color: var(--color-border-focus);
 }
+
+/* ── Wallpaper grid ───────────────────────────────────────────────────── */
+
+.wallpaperGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.wallpaperTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-bg-surface);
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--easing-default),
+    background var(--duration-fast) var(--easing-default);
+  font-family: var(--font-ui);
+  width: 80px;
+}
+
+.wallpaperTile:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.wallpaperTile:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.wallpaperTile.wallpaperTileActive {
+  border-color: var(--color-accent-brand);
+  background: var(--color-bg-raised);
+}
+
+.wallpaperThumb {
+  width: 64px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: calc(var(--radius-default) - 2px);
+  display: block;
+}
+
+.wallpaperNone {
+  width: 64px;
+  height: 44px;
+  border-radius: calc(var(--radius-default) - 2px);
+  background: var(--color-bg-raised);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    var(--color-border-default) 4px,
+    var(--color-border-default) 5px
+  );
+}
+
+.wallpaperLabel {
+  font-size: var(--text-body-xs-size, 11px);
+  color: var(--color-text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72px;
+}
+
+.wallpaperTileActive .wallpaperLabel {
+  color: var(--color-accent-brand);
+}
+
+/* ── Sliders ──────────────────────────────────────────────────────────── */
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.sliderLabel {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  width: 52px;
+}
+
+.slider {
+  flex: 1;
+  height: 4px;
+  accent-color: var(--color-accent-brand);
+  cursor: pointer;
+}
+
+.sliderValue {
+  font-size: var(--text-body-sm-size);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  width: 40px;
+  text-align: right;
+}
+
+/* ── Contrast warning ─────────────────────────────────────────────────── */
+
+.contrastWarning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-body-xs-size, 11px);
+  color: var(--color-status-warning, #F5A623);
+  margin-bottom: var(--space-3);
+  margin-top: calc(var(--space-1) * -1);
+}
+
+/* ── Reset button ─────────────────────────────────────────────────────── */
+
+.resetButton {
+  font-size: var(--text-body-xs-size, 11px);
+  color: var(--color-text-secondary);
+  background: none;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-default);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition:
+    color var(--duration-fast) var(--easing-default),
+    border-color var(--duration-fast) var(--easing-default);
+}
+
+.resetButton:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+.resetButton:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
