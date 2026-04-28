@@ -124,9 +124,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const tint = panelStyle.tintColor ?? PANEL_TINT_DEFAULTS[theme];
     document.documentElement.style.setProperty("--panel-bg", hexToRgba(tint, panelStyle.opacity));
-    // --chrome-bg: header and sidebar use 2× opacity so they read consistently
-    // against the wallpaper whether or not content is behind them.
-    document.documentElement.style.setProperty("--chrome-bg", hexToRgba(tint, Math.min(panelStyle.opacity * 2, 1)));
+    // --chrome-bg: header/sidebar compound two tint layers (opacity × (2 - opacity))
+    // — the natural result of stacking two identical translucent layers.
+    // Stays below 1.0 unless panel opacity itself is 1.0, avoiding solid-black chrome.
+    document.documentElement.style.setProperty("--chrome-bg", hexToRgba(tint, panelStyle.opacity * (2 - panelStyle.opacity)));
     document.documentElement.style.setProperty("--panel-blur", `${panelStyle.blur}px`);
   }, [panelStyle, theme]);
 
