@@ -67,7 +67,7 @@ const ms365EmailPlugin: ServicePlugin = {
       type: "dynamic-select",
       required: false,
       endpoint: "/api/organizations/sso-orgs",
-      description: "Organization whose SSO credentials will be used to access the mailbox",
+      description: "Organization whose SSO credentials will be used to access the mailbox. The Azure AD app must also have the Mail.Read Application permission (not Delegated) with admin consent granted in Azure Portal → App registrations → API permissions.",
       visibleWhen: { field: "configSource", value: "sso_org" },
     },
     // ── Manual path ───────────────────────────────────────────────────────────

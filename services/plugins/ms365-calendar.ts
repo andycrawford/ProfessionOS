@@ -71,7 +71,7 @@ const ms365CalendarPlugin: ServicePlugin = {
       type: "dynamic-select",
       required: false,
       endpoint: "/api/organizations/sso-orgs",
-      description: "Organization whose SSO credentials will be used to access the calendar",
+      description: "Organization whose SSO credentials will be used to access the calendar. The Azure AD app must also have the Calendars.Read Application permission (not Delegated) with admin consent granted in Azure Portal → App registrations → API permissions.",
       visibleWhen: { field: "configSource", value: "sso_org" },
     },
     // ── Manual path ───────────────────────────────────────────────────────────

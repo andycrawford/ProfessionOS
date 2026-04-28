@@ -112,6 +112,17 @@ export async function graphGet<T = unknown>(
 
   if (!response.ok) {
     const errorText = await response.text();
+    if (response.status === 403) {
+      // Surface a concrete remediation hint — the most common cause is that the
+      // Azure AD app is missing the required Application (not Delegated) permission.
+      throw new Error(
+        `Graph API access denied (403) for ${path}. ` +
+        `The Azure AD app likely lacks an Application-level permission with admin consent. ` +
+        `In Azure Portal → App registrations → API permissions, add: ` +
+        `"Mail.Read" (Application) for email, or "Calendars.Read" (Application) for calendar, ` +
+        `then click "Grant admin consent". Original error: ${errorText}`
+      );
+    }
     throw new Error(
       `Graph API error (${path}): ${response.status} ${response.statusText} — ${errorText}`
     );
