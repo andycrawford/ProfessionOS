@@ -175,7 +175,9 @@
   top: calc(100% + 6px);
   right: 0;
   width: 200px;
-  background: var(--color-bg-surface);
+  background: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-default);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
@@ -397,7 +399,9 @@
   top: calc(100% + 6px);
   right: 0;
   width: 224px;
-  background: var(--color-bg-surface);
+  background: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-default);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);

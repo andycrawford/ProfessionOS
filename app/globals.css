@@ -155,6 +155,10 @@ body {
 
 body {
   background-color: var(--color-bg-base);
+  background-image: var(--bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-ui);
   font-size: var(--text-body-base-size);
