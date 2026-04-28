@@ -542,6 +542,7 @@ export default function DashboardClient({
           userName={userName}
           userEmail={userEmail}
           onSignOut={() => signOut({ callbackUrl: "/sign-in" })}
+          onSettings={() => router.push("/dashboard/settings/services")}
           onToggleAI={() => setAiOpen((v) => !v)}
           aiOpen={aiOpen}
         />
