@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   height: var(--topbar-height);
-  background-color: var(--panel-bg);
+  background-color: var(--chrome-bg);
   -webkit-backdrop-filter: blur(var(--panel-blur));
   backdrop-filter: blur(var(--panel-blur));
   border-bottom: 1px solid var(--color-border-default);
@@ -175,7 +175,7 @@
   top: calc(100% + 6px);
   right: 0;
   width: 200px;
-  background: var(--panel-bg);
+  background: var(--chrome-bg);
   -webkit-backdrop-filter: blur(var(--panel-blur));
   backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--color-border-default);
@@ -399,7 +399,7 @@
   top: calc(100% + 6px);
   right: 0;
   width: 224px;
-  background: var(--panel-bg);
+  background: var(--chrome-bg);
   -webkit-backdrop-filter: blur(var(--panel-blur));
   backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--color-border-default);

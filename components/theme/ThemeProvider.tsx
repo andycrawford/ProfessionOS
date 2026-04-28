@@ -124,6 +124,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const tint = panelStyle.tintColor ?? PANEL_TINT_DEFAULTS[theme];
     document.documentElement.style.setProperty("--panel-bg", hexToRgba(tint, panelStyle.opacity));
+    // --chrome-bg: header and sidebar use 2× opacity so they read consistently
+    // against the wallpaper whether or not content is behind them.
+    document.documentElement.style.setProperty("--chrome-bg", hexToRgba(tint, Math.min(panelStyle.opacity * 2, 1)));
     document.documentElement.style.setProperty("--panel-blur", `${panelStyle.blur}px`);
   }, [panelStyle, theme]);
 
