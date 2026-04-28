@@ -4,10 +4,16 @@
   left: 0;
   bottom: 0;
   width: var(--nav-rail-width);
-  /* Solid backing prevents widget content from bleeding through the tint
-     layer when expanded, making collapsed and expanded states look identical. */
+  /* Wallpaper applied directly to the sidebar (viewport-fixed) so both
+     collapsed and expanded states always show the same wallpaper behind the
+     tint — independent of widget content that may be behind the element. */
   background-color: var(--color-bg-base);
-  background-image: linear-gradient(var(--chrome-bg), var(--chrome-bg));
+  background-image:
+    linear-gradient(var(--chrome-bg), var(--chrome-bg)),
+    var(--bg-image, none);
+  background-size: 100% 100%, cover;
+  background-position: 0 0, center;
+  background-attachment: scroll, fixed;
   border-right: 1px solid var(--color-border-default);
   z-index: 90;
   display: flex;

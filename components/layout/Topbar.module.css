@@ -4,9 +4,13 @@
   left: 0;
   right: 0;
   height: var(--topbar-height);
-  background-color: var(--chrome-bg);
-  -webkit-backdrop-filter: blur(var(--panel-blur));
-  backdrop-filter: blur(var(--panel-blur));
+  background-color: var(--color-bg-base);
+  background-image:
+    linear-gradient(var(--chrome-bg), var(--chrome-bg)),
+    var(--bg-image, none);
+  background-size: 100% 100%, cover;
+  background-position: 0 0, center;
+  background-attachment: scroll, fixed;
   border-bottom: 1px solid var(--color-border-default);
   z-index: 100;
   display: flex;
