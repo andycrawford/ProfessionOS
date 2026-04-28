@@ -146,6 +146,7 @@ export default function DashboardClient({
 
   // ── UI state ────────────────────────────────────────────────────────────────
   const [activeNav, setActiveNav] = useState("code");
+  const [aiOpen, setAiOpen] = useState(false);
   const [feedFilter, setFeedFilter] = useState<FeedService | "all">("all");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -517,7 +518,7 @@ export default function DashboardClient({
     [k("cmd+k", "open-command-palette")]: () => setPaletteOpen(true),
     [k("/", "open-command-line")]: () => setPaletteOpen(true),
     [k("shift+?", "show-shortcuts")]: () => setHelpOpen(true),
-    [k("cmd+/", "toggle-ai")]: () => setActiveNav((n) => (n === "ai" ? "code" : "ai")),
+    [k("cmd+/", "toggle-ai")]: () => setAiOpen((v) => !v),
     [k("e", "nav-mail")]: () => router.push("/dashboard/mail"),
     [k("c", "nav-calendar")]: () => router.push("/dashboard/calendar"),
     [k("m", "nav-messaging")]: () => router.push("/dashboard/messaging"),
@@ -541,6 +542,8 @@ export default function DashboardClient({
           userName={userName}
           userEmail={userEmail}
           onSignOut={() => signOut({ callbackUrl: "/sign-in" })}
+          onToggleAI={() => setAiOpen((v) => !v)}
+          aiOpen={aiOpen}
         />
 
         <div className={styles.body}>
@@ -606,9 +609,11 @@ export default function DashboardClient({
                   messages={messages}
                   conversations={conversations}
                   activeConversationId={activeConversationId}
+                  forceVisible={aiOpen}
                   onSendMessage={handleSendMessage}
                   onNewChat={handleNewChat}
                   onSelectConversation={handleSelectConversation}
+                  onClose={() => setAiOpen(false)}
                   onSuggestionAction={(_id, action) => {
                     if (action === "dismiss" || action === "Snooze") {
                       setSuggestion(undefined);
