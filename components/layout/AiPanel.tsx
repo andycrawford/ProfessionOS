@@ -52,6 +52,11 @@ export default function AiPanel({
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Reset collapsed state whenever the panel is opened via forceVisible
+  useEffect(() => {
+    if (forceVisible) setCollapsed(false);
+  }, [forceVisible]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);

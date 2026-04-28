@@ -1,19 +1,22 @@
 .panel {
-  width: var(--ai-panel-width);
-  min-width: var(--ai-panel-min-width);
-  max-width: var(--ai-panel-max-width);
-  display: flex;
+  display: none; /* hidden at all sizes until explicitly opened */
   flex-direction: column;
   background-color: var(--color-bg-base);
   border-left: 1px solid var(--color-border-default);
-  flex-shrink: 0;
-  transition: width var(--duration-default) var(--easing-default);
   overflow: hidden;
 }
 
-.panel.collapsed {
-  width: var(--ai-panel-collapsed-width);
-  min-width: var(--ai-panel-collapsed-width);
+.panel.forceVisible {
+  display: flex;
+  position: fixed;
+  top: var(--topbar-height);
+  right: 0;
+  bottom: 0;
+  width: var(--ai-panel-width);
+  min-width: var(--ai-panel-min-width);
+  max-width: var(--ai-panel-max-width);
+  z-index: 80;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Panel header ── */
@@ -329,46 +332,14 @@
 
 /* ── Responsive ── */
 
-/* 1280–1439px: collapsed by default */
-@media (max-width: 1439px) {
-  .panel {
-    width: var(--ai-panel-collapsed-width);
-    min-width: var(--ai-panel-collapsed-width);
-  }
-}
-
-/* 1024–1279px and below: hidden, accessible via button */
-@media (max-width: 1279px) {
-  .panel {
-    display: none;
-  }
-
-  .panel.forceVisible {
-    display: flex;
-    position: fixed;
-    top: var(--topbar-height);
-    right: 0;
-    bottom: 0;
-    width: var(--ai-panel-width);
-    z-index: 80;
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* Below 768px: hidden by default; shown as full-height drawer when forceVisible */
+/* Mobile: full-width overlay above bottom tab bar */
 @media (max-width: 767px) {
-  .panel {
-    display: none;
-  }
-
   .panel.forceVisible {
-    display: flex;
-    position: fixed;
-    top: var(--topbar-height);
     left: 0;
     right: 0;
     bottom: 56px; /* above bottom tab bar */
     width: 100%;
+    max-width: 100%;
     z-index: 95;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
   }
