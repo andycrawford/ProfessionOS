@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { Calendar, ChevronLeft, ChevronRight, X, Video, Monitor } from "lucide-react";
 import Link from "next/link";
 import styles from "./CalendarView.module.css";
 
@@ -19,6 +21,9 @@ interface CalEvent {
   endHour: number;
   endMin: number;
   source: EventSource;
+  joinUrl?: string;
+  sourceUrl?: string;
+  linkBehavior?: "new_tab" | "embed";
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -89,12 +94,103 @@ function formatTime(h: number, m: number): string {
   return `${hour}:${String(m).padStart(2, "0")}${period}`;
 }
 
+// ── Calendar event popup ──────────────────────────────────────────────────────
+
+interface CalendarPopupProps {
+  event: CalEvent;
+  onClose: () => void;
+  onOpen: (url: string, behavior?: "new_tab" | "embed") => void;
+}
+
+function CalendarPopup({ event, onClose, onOpen }: CalendarPopupProps) {
+  return (
+    <div
+      className={styles.popupBackdrop}
+      onClick={onClose}
+      role="presentation"
+      onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+    >
+      <div
+        className={styles.popupDialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cal-popup-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={styles.popupHeader}>
+          <span className={styles.popupHeaderIcon}>
+            <Calendar size={15} aria-hidden="true" />
+          </span>
+          <h2 id="cal-popup-title" className={styles.popupTitle}>{event.title}</h2>
+          <button className={styles.popupCloseBtn} onClick={onClose} aria-label="Close">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Body — clicking opens the calendar entry following linkBehavior */}
+        <div
+          className={`${styles.popupBody}${event.sourceUrl ? ` ${styles.popupBodyClickable}` : ""}`}
+          onClick={
+            event.sourceUrl
+              ? () => { onOpen(event.sourceUrl!, event.linkBehavior); onClose(); }
+              : undefined
+          }
+          role={event.sourceUrl ? "button" : undefined}
+          tabIndex={event.sourceUrl ? 0 : undefined}
+          onKeyDown={
+            event.sourceUrl
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onOpen(event.sourceUrl!, event.linkBehavior);
+                    onClose();
+                  }
+                }
+              : undefined
+          }
+          aria-label={event.sourceUrl ? "Open calendar event" : undefined}
+        >
+          <time className={styles.popupTime}>
+            {formatTime(event.startHour, event.startMin)}–{formatTime(event.endHour, event.endMin)}
+          </time>
+        </div>
+
+        <div className={styles.popupFooter}>
+          <button
+            className={styles.popupJoinBtn}
+            onClick={() => {
+              if (event.joinUrl) {
+                window.open(event.joinUrl, "_blank", "noopener,noreferrer");
+              }
+            }}
+            disabled={!event.joinUrl}
+            aria-label={event.joinUrl ? "Join meeting" : "No meeting link available"}
+          >
+            <Video size={14} aria-hidden="true" />
+            Join Meeting
+          </button>
+          <button
+            className={styles.popupMonitorBtn}
+            disabled
+            aria-label="Monitor meeting (not available)"
+          >
+            <Monitor size={14} aria-hidden="true" />
+            Monitor Meeting
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Root component ────────────────────────────────────────────────────────────
 
 export default function CalendarView() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [eventsByDate, setEventsByDate] = useState<Record<string, CalEvent[]>>({});
+  const [popupEvent, setPopupEvent] = useState<CalEvent | null>(null);
 
   useEffect(() => {
     fetch("/api/calendar-events")
@@ -102,7 +198,16 @@ export default function CalendarView() {
       .then((data: unknown) => {
         if (!Array.isArray(data)) return;
         const map: Record<string, CalEvent[]> = {};
-        for (const ev of data as Array<{ id: string; title: string; startIso: string; endIso: string | null; source: string }>) {
+        for (const ev of data as Array<{
+          id: string;
+          title: string;
+          startIso: string;
+          endIso: string | null;
+          source: string;
+          joinUrl?: string;
+          sourceUrl?: string;
+          linkBehavior?: "new_tab" | "embed";
+        }>) {
           const start = new Date(ev.startIso);
           const end = ev.endIso ? new Date(ev.endIso) : new Date(start.getTime() + 30 * 60 * 1000);
           const key = toDateKey(start);
@@ -115,6 +220,9 @@ export default function CalendarView() {
             endHour: end.getHours(),
             endMin: end.getMinutes(),
             source: "calendar",
+            joinUrl: ev.joinUrl,
+            sourceUrl: ev.sourceUrl,
+            linkBehavior: ev.linkBehavior,
           };
           if (!map[key]) map[key] = [];
           map[key].push(event);
@@ -134,6 +242,14 @@ export default function CalendarView() {
 
   function goToday() {
     setCurrentDate(new Date());
+  }
+
+  function openEvent(url: string, behavior?: "new_tab" | "embed") {
+    if (behavior === "embed") {
+      router.push(`/dashboard/embed?url=${encodeURIComponent(url)}`);
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   }
 
   const navTitle = useMemo(() => {
@@ -230,19 +346,38 @@ export default function CalendarView() {
             grid={monthGrid}
             today={today}
             eventsByDate={eventsByDate}
+            onEventClick={setPopupEvent}
           />
         )}
         {viewMode === "week" && (
-          <WeekView days={weekDays} today={today} eventsByDate={eventsByDate} />
+          <WeekView
+            days={weekDays}
+            today={today}
+            eventsByDate={eventsByDate}
+            onEventClick={setPopupEvent}
+          />
         )}
         {viewMode === "day" && (
           <DayView
             date={currentDate}
             today={today}
             events={eventsByDate[toDateKey(currentDate)] || []}
+            onEventClick={setPopupEvent}
           />
         )}
       </div>
+
+      {/* Calendar event popup — rendered via portal to escape stacking context */}
+      {popupEvent && typeof document !== "undefined" &&
+        createPortal(
+          <CalendarPopup
+            event={popupEvent}
+            onClose={() => setPopupEvent(null)}
+            onOpen={openEvent}
+          />,
+          document.body
+        )
+      }
     </div>
   );
 }
@@ -253,10 +388,12 @@ function MonthView({
   grid,
   today,
   eventsByDate,
+  onEventClick,
 }: {
   grid: Array<{ date: Date; isCurrentMonth: boolean }>;
   today: Date;
   eventsByDate: Record<string, CalEvent[]>;
+  onEventClick: (event: CalEvent) => void;
 }) {
   return (
     <div className={styles.monthGrid}>
@@ -281,7 +418,7 @@ function MonthView({
             </span>
             <div className={styles.monthEvents}>
               {events.slice(0, 3).map((evt) => (
-                <EventChip key={evt.id} event={evt} />
+                <EventChip key={evt.id} event={evt} onClick={() => onEventClick(evt)} />
               ))}
               {events.length > 3 && (
                 <span className={styles.monthMore}>+{events.length - 3} more</span>
@@ -300,10 +437,12 @@ function WeekView({
   days,
   today,
   eventsByDate,
+  onEventClick,
 }: {
   days: Date[];
   today: Date;
   eventsByDate: Record<string, CalEvent[]>;
+  onEventClick: (event: CalEvent) => void;
 }) {
   return (
     <div className={styles.timeGridRoot}>
@@ -347,7 +486,7 @@ function WeekView({
                 <div key={h} className={styles.hourLine} style={{ top: (h - START_HOUR) * SLOT_PX }} />
               ))}
               {dayEvents.map((evt) => (
-                <TimeBlock key={evt.id} event={evt} />
+                <TimeBlock key={evt.id} event={evt} onClick={() => onEventClick(evt)} />
               ))}
             </div>
           );
@@ -363,10 +502,12 @@ function DayView({
   date,
   today,
   events,
+  onEventClick,
 }: {
   date: Date;
   today: Date;
   events: CalEvent[];
+  onEventClick: (event: CalEvent) => void;
 }) {
   const isToday = isSameDay(date, today);
   const visibleEvents = events.filter(
@@ -403,7 +544,7 @@ function DayView({
             <div key={h} className={styles.hourLine} style={{ top: (h - START_HOUR) * SLOT_PX }} />
           ))}
           {visibleEvents.map((evt) => (
-            <TimeBlock key={evt.id} event={evt} wide />
+            <TimeBlock key={evt.id} event={evt} wide onClick={() => onEventClick(evt)} />
           ))}
         </div>
       </div>
@@ -413,24 +554,34 @@ function DayView({
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
-function EventChip({ event }: { event: CalEvent }) {
+function EventChip({ event, onClick }: { event: CalEvent; onClick: () => void }) {
   return (
     <div
       className={`${styles.eventChip} ${styles[`eventChip_${event.source}`]}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
       title={event.title}
+      aria-label={`Open event: ${event.title}`}
     >
       {event.title}
     </div>
   );
 }
 
-function TimeBlock({ event, wide = false }: { event: CalEvent; wide?: boolean }) {
+function TimeBlock({ event, wide = false, onClick }: { event: CalEvent; wide?: boolean; onClick: () => void }) {
   const top = getEventTop(event);
   const height = getEventHeight(event);
   return (
     <div
       className={`${styles.timeBlock} ${styles[`timeBlock_${event.source}`]}`}
       style={{ top, height, left: 3, right: wide ? 3 : 6 }}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+      aria-label={`Open event: ${event.title}`}
       title={`${event.title} · ${formatTime(event.startHour, event.startMin)}–${formatTime(event.endHour, event.endMin)}`}
     >
       <span className={styles.timeBlockTitle}>{event.title}</span>
