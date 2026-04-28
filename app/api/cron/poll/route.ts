@@ -8,7 +8,7 @@ import "@/services/plugins"; // populate plugin registry
 import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
 import { connectedServices, activityItems } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte } from "drizzle-orm";
 import { getPlugin } from "@/services/registry";
 import type { ServiceType } from "@/services/types";
 
@@ -64,18 +64,28 @@ async function pollServices(userId?: string) {
       summary.polled++;
 
       if (items.length > 0) {
-        // Fetch existing external IDs for this service to avoid duplicates
-        const existing = await db
-          .select({ externalId: activityItems.externalId })
-          .from(activityItems)
-          .where(eq(activityItems.serviceId, service.id));
+        const now = new Date();
 
-        const existingIds = new Set(existing.map((r) => r.externalId));
-        const newItems = items.filter((item) => !existingIds.has(item.externalId));
+        // ── Calendar events: delete-then-reinsert upcoming occurrences ──────────
+        // Microsoft Graph's /calendarview assigns a new occurrence ID each time a
+        // recurring meeting enters the lookahead window, so insert-only dedup
+        // would accumulate one row per occurrence per series per poll. Instead,
+        // wipe all future calendar_event rows for this service and reinsert fresh.
+        const calendarItems = items.filter((i) => i.itemType === "calendar_event");
+        const otherItems = items.filter((i) => i.itemType !== "calendar_event");
 
-        if (newItems.length > 0) {
+        if (calendarItems.length > 0) {
+          await db
+            .delete(activityItems)
+            .where(
+              and(
+                eq(activityItems.serviceId, service.id),
+                eq(activityItems.itemType, "calendar_event"),
+                gte(activityItems.occurredAt, now)
+              )
+            );
           await db.insert(activityItems).values(
-            newItems.map((item) => ({
+            calendarItems.map((item) => ({
               userId: service.userId,
               serviceId: service.id,
               externalId: item.externalId,
@@ -86,10 +96,40 @@ async function pollServices(userId?: string) {
               status: "new" as const,
               sourceUrl: item.sourceUrl ?? null,
               metadata: item.metadata,
-              occurredAt: item.occurredAt ?? new Date(),
+              occurredAt: item.occurredAt ?? now,
             }))
           );
-          summary.inserted += newItems.length;
+          summary.inserted += calendarItems.length;
+        }
+
+        // ── Other item types: insert-if-not-exists ──────────────────────────────
+        if (otherItems.length > 0) {
+          const existing = await db
+            .select({ externalId: activityItems.externalId })
+            .from(activityItems)
+            .where(eq(activityItems.serviceId, service.id));
+
+          const existingIds = new Set(existing.map((r) => r.externalId));
+          const newItems = otherItems.filter((item) => !existingIds.has(item.externalId));
+
+          if (newItems.length > 0) {
+            await db.insert(activityItems).values(
+              newItems.map((item) => ({
+                userId: service.userId,
+                serviceId: service.id,
+                externalId: item.externalId,
+                itemType: item.itemType,
+                title: item.title,
+                body: item.summary ?? null,
+                urgency: item.urgency,
+                status: "new" as const,
+                sourceUrl: item.sourceUrl ?? null,
+                metadata: item.metadata,
+                occurredAt: item.occurredAt ?? now,
+              }))
+            );
+            summary.inserted += newItems.length;
+          }
         }
       }
 
