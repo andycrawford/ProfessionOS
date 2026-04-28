@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Calendar, MessageSquare, Code2, Users } from "lucide-react";
+import { Mail, Calendar, MessageSquare, Code2, Users, Video } from "lucide-react";
 import styles from "./ActivityTimeline.module.css";
 
 export type FeedItemSeverity = "critical" | "warning" | "info" | "neutral";
@@ -14,6 +14,10 @@ export interface FeedItem {
   title: string;
   subtitle?: string;
   timestamp: string;
+  /** OWA or service URL — makes the item row clickable (opens in new tab) */
+  sourceUrl?: string;
+  /** Teams meeting join URL — shown as a "Join" button; only set for online meetings */
+  joinUrl?: string;
 }
 
 interface ActivityTimelineProps {
@@ -81,8 +85,24 @@ export default function ActivityTimeline({
           {filtered.map((item) => (
             <div
               key={item.id}
-              className={`${styles.feedItem}${item.severity === "critical" ? ` ${styles.critical}` : ""}`}
+              className={`${styles.feedItem}${item.severity === "critical" ? ` ${styles.critical}` : ""}${item.sourceUrl ? ` ${styles.clickable}` : ""}`}
               role="article"
+              onClick={
+                item.sourceUrl
+                  ? () => window.open(item.sourceUrl, "_blank", "noopener,noreferrer")
+                  : undefined
+              }
+              tabIndex={item.sourceUrl ? 0 : undefined}
+              onKeyDown={
+                item.sourceUrl
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        window.open(item.sourceUrl, "_blank", "noopener,noreferrer");
+                      }
+                    }
+                  : undefined
+              }
             >
               <span
                 className={`${styles.dot} ${styles[item.severity]}`}
@@ -104,6 +124,19 @@ export default function ActivityTimeline({
                   >
                     {item.title}
                   </span>
+                  {item.joinUrl && (
+                    <button
+                      className={styles.joinButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(item.joinUrl, "_blank", "noopener,noreferrer");
+                      }}
+                      aria-label="Join Teams meeting"
+                    >
+                      <Video size={11} aria-hidden="true" />
+                      Join
+                    </button>
+                  )}
                   <time className={styles.feedItemTimestamp} dateTime={item.timestamp}>
                     {item.timestamp}
                   </time>

@@ -20,6 +20,10 @@ export interface FeedItem {
   subtitle?: string;
   /** HH:MM display string */
   timestamp: string;
+  /** OWA or service URL — makes the item row clickable (opens in new tab) */
+  sourceUrl?: string;
+  /** Teams meeting join URL — shown as a "Join" button; only set for online meetings */
+  joinUrl?: string;
 }
 
 export interface Alert {

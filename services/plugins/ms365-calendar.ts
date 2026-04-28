@@ -201,6 +201,7 @@ const ms365CalendarPlugin: ServicePlugin = {
           organizerEmail: evt.organizer?.emailAddress?.address,
           isCancelled: evt.isCancelled,
           isOnlineMeeting: evt.isOnlineMeeting,
+          onlineMeetingUrl: evt.onlineMeetingUrl,
           responseStatus: evt.responseStatus?.response,
           sensitivity: evt.sensitivity,
         },

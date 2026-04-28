@@ -57,6 +57,12 @@ function toFeedItem(
   item: typeof activityItems.$inferSelect,
   serviceType: string | null
 ): FeedItem {
+  const meta = item.metadata as Record<string, unknown> | null;
+  const joinUrl =
+    meta?.isOnlineMeeting && typeof meta.onlineMeetingUrl === "string"
+      ? meta.onlineMeetingUrl
+      : undefined;
+
   return {
     id: item.id,
     severity: toSeverity(item.urgency),
@@ -64,6 +70,8 @@ function toFeedItem(
     title: item.title,
     subtitle: item.body ?? undefined,
     timestamp: formatTime(item.occurredAt ?? item.createdAt),
+    sourceUrl: item.sourceUrl ?? undefined,
+    joinUrl,
   };
 }
 
