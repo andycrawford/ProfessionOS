@@ -239,9 +239,13 @@ export default function InterfaceSettingsPage() {
               type="color"
               className={styles.colorPicker}
               value={effectiveTint}
-              onChange={(e) =>
-                setPanelStyle({ ...panelStyle, tintColor: e.target.value })
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+                // Store undefined if user picks the current theme default so
+                // that tintColor stays unpinned and follows theme changes.
+                const isDefault = val.toLowerCase() === PANEL_TINT_DEFAULTS[theme].toLowerCase();
+                setPanelStyle({ ...panelStyle, tintColor: isDefault ? undefined : val });
+              }}
               aria-label="Panel tint color picker"
             />
             <input
@@ -250,8 +254,10 @@ export default function InterfaceSettingsPage() {
               value={effectiveTint.toUpperCase()}
               onChange={(e) => {
                 const val = e.target.value;
-                if (/^#[0-9A-Fa-f]{6}$/.test(val))
-                  setPanelStyle({ ...panelStyle, tintColor: val });
+                if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                  const isDefault = val.toLowerCase() === PANEL_TINT_DEFAULTS[theme].toLowerCase();
+                  setPanelStyle({ ...panelStyle, tintColor: isDefault ? undefined : val });
+                }
               }}
               maxLength={7}
               spellCheck={false}

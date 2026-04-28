@@ -142,6 +142,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // ── Public setters ──────────────────────────────────────────────────────────
   function toggle() {
+    // If tintColor is pinned to the current theme's default (e.g. accidentally
+    // set by the color picker), unpin it so --panel-bg tracks the new theme's
+    // default automatically after the switch.
+    setPanelStyleState((prev) => {
+      if (prev.tintColor?.toLowerCase() === PANEL_TINT_DEFAULTS[theme].toLowerCase()) {
+        return { ...prev, tintColor: undefined };
+      }
+      return prev;
+    });
     setTheme((t) => (t === "dark" ? "light" : "dark"));
   }
 
