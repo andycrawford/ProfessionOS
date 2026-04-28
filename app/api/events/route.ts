@@ -58,10 +58,17 @@ function toFeedItem(
   serviceType: string | null
 ): FeedItem {
   const meta = item.metadata as Record<string, unknown> | null;
-  const joinUrl =
-    meta?.isOnlineMeeting && typeof meta.onlineMeetingUrl === "string"
-      ? meta.onlineMeetingUrl
-      : undefined;
+  // Derive Teams join URL. New records store onlineMeetingUrl in metadata directly.
+  // Fall back to sourceUrl for older records polled before that field was added —
+  // in those cases sourceUrl was set to the Teams URL when no webLink was available.
+  let joinUrl: string | undefined;
+  if (meta?.isOnlineMeeting) {
+    if (typeof meta.onlineMeetingUrl === "string") {
+      joinUrl = meta.onlineMeetingUrl;
+    } else if (item.sourceUrl?.includes("teams.microsoft.com")) {
+      joinUrl = item.sourceUrl;
+    }
+  }
 
   return {
     id: item.id,
