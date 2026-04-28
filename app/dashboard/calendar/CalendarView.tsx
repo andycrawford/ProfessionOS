@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import styles from "./CalendarView.module.css";
@@ -94,8 +94,35 @@ function formatTime(h: number, m: number): string {
 export default function CalendarView() {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
+  const [eventsByDate, setEventsByDate] = useState<Record<string, CalEvent[]>>({});
 
-  const eventsByDate: Record<string, CalEvent[]> = {};
+  useEffect(() => {
+    fetch("/api/calendar-events")
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) return;
+        const map: Record<string, CalEvent[]> = {};
+        for (const ev of data as Array<{ id: string; title: string; startIso: string; endIso: string | null; source: string }>) {
+          const start = new Date(ev.startIso);
+          const end = ev.endIso ? new Date(ev.endIso) : new Date(start.getTime() + 30 * 60 * 1000);
+          const key = toDateKey(start);
+          const event: CalEvent = {
+            id: ev.id,
+            title: ev.title,
+            date: key,
+            startHour: start.getHours(),
+            startMin: start.getMinutes(),
+            endHour: end.getHours(),
+            endMin: end.getMinutes(),
+            source: "calendar",
+          };
+          if (!map[key]) map[key] = [];
+          map[key].push(event);
+        }
+        setEventsByDate(map);
+      })
+      .catch(() => {});
+  }, []);
 
   function navigate(dir: -1 | 1) {
     const next = new Date(currentDate);

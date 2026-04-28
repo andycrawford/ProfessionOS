@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Wifi,
+  RefreshCw,
 } from "lucide-react";
 import ServiceIcon from "@/components/ServiceIcon";
 import ServiceConfigForm from "@/components/ServiceConfigForm";
@@ -55,6 +56,9 @@ export default function ServiceDetailClient({
   const [testResult, setTestResult] = useState<TestResult>(null);
 
   const [disconnecting, setDisconnecting] = useState(false);
+
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<"success" | "failure" | null>(null);
 
   function handleFieldChange(key: string, value: string | number | boolean) {
     setFormValues((prev) => ({ ...prev, [key]: value }));
@@ -113,6 +117,20 @@ export default function ServiceDetailClient({
     }
   }
 
+  async function handleSync() {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/cron/poll", { method: "POST" });
+      setSyncResult(res.ok ? "success" : "failure");
+      if (res.ok) setTimeout(() => setSyncResult(null), 4000);
+    } catch {
+      setSyncResult("failure");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   async function handleDisconnect() {
     if (
       !window.confirm(
@@ -132,7 +150,7 @@ export default function ServiceDetailClient({
     }
   }
 
-  const busy = saving || testing || disconnecting;
+  const busy = saving || testing || disconnecting || syncing;
 
   return (
     <div className={styles.page}>
@@ -291,6 +309,26 @@ export default function ServiceDetailClient({
           </div>
         )}
 
+        {syncResult && (
+          <div
+            className={`${styles.testResult} ${syncResult === "success" ? styles.success : styles.failure}`}
+            role="status"
+            aria-live="polite"
+          >
+            {syncResult === "success" ? (
+              <>
+                <CheckCircle2 size={14} aria-hidden="true" />
+                Sync complete — new items will appear shortly
+              </>
+            ) : (
+              <>
+                <AlertCircle size={14} aria-hidden="true" />
+                Sync failed — check your connection settings
+              </>
+            )}
+          </div>
+        )}
+
         {testResult && (
           <div
             className={`${styles.testResult} ${
@@ -339,6 +377,21 @@ export default function ServiceDetailClient({
               <Wifi size={14} aria-hidden="true" />
             )}
             {testing ? "Testing…" : "Test connection"}
+          </button>
+
+          <button
+            type="button"
+            className={styles.testButton}
+            onClick={handleSync}
+            disabled={busy}
+            aria-label="Sync now"
+          >
+            {syncing ? (
+              <Loader2 size={14} className={styles.spinner} aria-hidden="true" />
+            ) : (
+              <RefreshCw size={14} aria-hidden="true" />
+            )}
+            {syncing ? "Syncing…" : "Sync now"}
           </button>
 
           <button
