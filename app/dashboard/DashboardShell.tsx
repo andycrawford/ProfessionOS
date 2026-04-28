@@ -199,6 +199,7 @@ export default function DashboardShell({
           pollIntervalSeconds={pollIntervalSeconds}
           onPollIntervalChange={handlePollIntervalChange}
           onSignOut={() => signOut({ callbackUrl: "/" })}
+          onSettings={() => handleNavigate("settings")}
           onToggleAI={() => setAiOpen((v) => !v)}
           aiOpen={aiOpen}
         />

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Bell, Bot, ChevronLeft, ChevronRight, LogOut, Moon, Search, Sun, Timer } from "lucide-react";
+import { Bell, Bot, ChevronLeft, ChevronRight, LogOut, Moon, Search, Settings, Sun, Timer } from "lucide-react";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import styles from "./Topbar.module.css";
 
@@ -39,6 +39,7 @@ interface TopbarProps {
   pollIntervalSeconds?: number;
   onPollIntervalChange?: (seconds: number) => void;
   onSignOut?: () => void;
+  onSettings?: () => void;
   onToggleAI?: () => void;
   aiOpen?: boolean;
 }
@@ -54,6 +55,7 @@ export default function Topbar({
   pollIntervalSeconds = 30,
   onPollIntervalChange,
   onSignOut,
+  onSettings,
   onToggleAI,
   aiOpen,
 }: TopbarProps) {
@@ -314,6 +316,18 @@ export default function Topbar({
               </div>
 
               <div className={styles.menuDivider} />
+
+              <button
+                className={styles.menuItem}
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onSettings?.();
+                }}
+              >
+                <Settings size={14} aria-hidden="true" />
+                Settings
+              </button>
 
               <button
                 className={styles.menuItem}
