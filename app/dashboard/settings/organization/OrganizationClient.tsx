@@ -298,6 +298,20 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
             </div>
 
             <div className={styles.field}>
+              <label className={styles.label}>Redirect URI</label>
+              <input
+                className={styles.input}
+                readOnly
+                value={`${typeof window !== "undefined" ? window.location.origin : ""}/api/auth/callback/microsoft-entra-id-${org.id}`}
+                onFocus={(e) => e.target.select()}
+              />
+              <p className={styles.hint}>
+                Add this URI to your Azure App Registration under{" "}
+                <strong>Authentication → Redirect URIs</strong> before enabling SSO.
+              </p>
+            </div>
+
+            <div className={styles.field}>
               <label className={styles.label} htmlFor="tenant-id">
                 Entra ID Tenant ID
               </label>
