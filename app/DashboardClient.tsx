@@ -553,10 +553,12 @@ export default function DashboardClient({
             crmSubItems={crmSubItems}
             embedItems={embedItems}
             onNavigate={(id) => {
-              if (id === "settings") {
+              if (id === "home") {
+                // already on the main page — no-op
+              } else if (id === "settings") {
                 router.push("/dashboard/settings/services");
               } else if (id === "ai") {
-                setActiveNav("ai");
+                setAiOpen((v) => !v);
               } else {
                 router.push(`/dashboard/${id}`);
               }
