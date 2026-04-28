@@ -38,7 +38,10 @@ export default function NewServiceClient({ plugins }: Props) {
     // Seed defaults: empty strings for text fields, false for checkboxes
     const defaults: Record<string, string | number | boolean> = {};
     for (const f of plugin.configFields) {
-      defaults[f.key] = f.type === "checkbox" ? false : f.type === "number" ? 0 : "";
+      if (f.type === "checkbox") defaults[f.key] = false;
+      else if (f.type === "number") defaults[f.key] = 0;
+      else if ((f.type === "select" || f.type === "dynamic-select") && f.options?.[0]) defaults[f.key] = f.options[0].value;
+      else defaults[f.key] = "";
     }
     setValues(defaults);
     setError(null);

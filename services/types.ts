@@ -38,11 +38,18 @@ export interface ActivityItemData {
 export interface ConfigField {
   key: string;
   label: string;
-  type: "text" | "email" | "password" | "select" | "number" | "checkbox";
+  type: "text" | "email" | "password" | "select" | "number" | "checkbox" | "dynamic-select";
   required: boolean;
   placeholder?: string;
   description?: string;
   options?: { label: string; value: string }[];
+  /**
+   * For type="dynamic-select": URL to fetch options from.
+   * The endpoint must return [{label: string, value: string}].
+   */
+  endpoint?: string;
+  /** Only render this field when another field equals the given value. */
+  visibleWhen?: { field: string; value: string };
 }
 
 /**

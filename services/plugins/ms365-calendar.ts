@@ -2,6 +2,7 @@ import type { ServicePlugin, ActivityItemData, ServiceConfig } from "@/services/
 import { ServiceType } from "@/services/types";
 import { graphGet, testCalendarAccess } from "@/lib/microsoft-graph";
 import type { AzureAdCredentials } from "@/lib/microsoft-graph";
+import { getOrgSsoConfigById } from "@/lib/sso";
 import { registerPlugin } from "@/services/registry";
 
 interface GraphEvent {
@@ -26,7 +27,18 @@ interface GraphEventResponse {
   "@odata.nextLink"?: string;
 }
 
-function getAzureCreds(config: ServiceConfig, credentials: ServiceConfig): AzureAdCredentials {
+async function getAzureCreds(config: ServiceConfig, credentials: ServiceConfig): Promise<AzureAdCredentials> {
+  if (config.configSource === "sso_org") {
+    const orgId = config.ssoOrgId as string | undefined;
+    if (!orgId) throw new Error("An Organization must be selected when using SSO credentials");
+    const ssoOrg = await getOrgSsoConfigById(orgId);
+    if (!ssoOrg) throw new Error(`SSO organization not found or not configured (id: ${orgId})`);
+    return {
+      tenantId: ssoOrg.tenantId,
+      clientId: ssoOrg.clientId,
+      clientSecret: ssoOrg.clientSecret,
+    };
+  }
   return {
     tenantId: (credentials.tenantId as string) || (config.tenantId as string) || undefined,
     clientId: (credentials.clientId as string) || (config.clientId as string) || undefined,
@@ -42,29 +54,55 @@ const ms365CalendarPlugin: ServicePlugin = {
   color: "#0078D4",
   configFields: [
     {
+      key: "configSource",
+      label: "Credential source",
+      type: "select",
+      required: true,
+      description: "Use manually entered credentials or pull from an Organization SSO configuration",
+      options: [
+        { label: "Enter credentials manually", value: "manual" },
+        { label: "Use Organization SSO", value: "sso_org" },
+      ],
+    },
+    // ── SSO path ──────────────────────────────────────────────────────────────
+    {
+      key: "ssoOrgId",
+      label: "Organization",
+      type: "dynamic-select",
+      required: false,
+      endpoint: "/api/organizations/sso-orgs",
+      description: "Organization whose SSO credentials will be used to access the calendar",
+      visibleWhen: { field: "configSource", value: "sso_org" },
+    },
+    // ── Manual path ───────────────────────────────────────────────────────────
+    {
       key: "tenantId",
       label: "Azure AD Tenant ID",
       type: "text",
-      required: true,
+      required: false,
       placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       description: "Your Azure AD (Entra ID) tenant/directory ID",
+      visibleWhen: { field: "configSource", value: "manual" },
     },
     {
       key: "clientId",
       label: "Azure AD Client ID",
       type: "text",
-      required: true,
+      required: false,
       placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
       description: "Application (client) ID of your registered Azure AD app",
+      visibleWhen: { field: "configSource", value: "manual" },
     },
     {
       key: "clientSecret",
       label: "Azure AD Client Secret",
       type: "password",
-      required: true,
+      required: false,
       placeholder: "your-client-secret-value",
       description: "Client secret for your Azure AD app (requires Calendars.Read application permission)",
+      visibleWhen: { field: "configSource", value: "manual" },
     },
+    // ── Common fields (always shown) ──────────────────────────────────────────
     {
       key: "userEmail",
       label: "User Email",
@@ -108,7 +146,7 @@ const ms365CalendarPlugin: ServicePlugin = {
 
     const endpoint = `/users/${userEmail}/calendarview?startDateTime=${now.toISOString()}&endDateTime=${end.toISOString()}&$top=50&$orderby=start/dateTime&$select=id,subject,start,end,importance,isAllDay,location,organizer,webLink,isCancelled,isOnlineMeeting,onlineMeetingUrl,responseStatus,sensitivity`;
 
-    const creds = getAzureCreds(config, credentials);
+    const creds = await getAzureCreds(config, credentials);
     const data = await graphGet<GraphEventResponse>(endpoint, {
       Prefer: 'outlook.timezone="UTC"',
     }, creds);
@@ -165,7 +203,7 @@ const ms365CalendarPlugin: ServicePlugin = {
   async testConnection(config: ServiceConfig, credentials: ServiceConfig): Promise<boolean> {
     const userEmail = config.userEmail as string;
     if (!userEmail) return false;
-    const creds = getAzureCreds(config, credentials);
+    const creds = await getAzureCreds(config, credentials);
     return testCalendarAccess(userEmail, creds);
   },
 };

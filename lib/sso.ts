@@ -77,6 +77,35 @@ export async function loadAllSsoOrgs(): Promise<OrgSsoConfig[]> {
 }
 
 /**
+ * Look up SSO configuration for a specific org ID.
+ * Returns null if the org is not found, not SSO-enabled, or lacks credentials.
+ */
+export async function getOrgSsoConfigById(
+  orgId: string
+): Promise<OrgSsoConfig | null> {
+  const db = getDb();
+  const [org] = await db
+    .select()
+    .from(organizations)
+    .where(eq(organizations.id, orgId))
+    .limit(1);
+
+  if (!org?.ssoEnabled) return null;
+  if (!org.entraIdTenantId || !org.ssoClientId || !org.ssoClientSecret) {
+    return null;
+  }
+
+  return {
+    orgId: org.id,
+    name: org.name,
+    domain: org.domain,
+    tenantId: org.entraIdTenantId,
+    clientId: org.ssoClientId,
+    clientSecret: decryptSecret(org.ssoClientSecret),
+  };
+}
+
+/**
  * Decrypt a stored SSO secret.
  * Falls back to returning the raw value if decryption fails — this allows
  * secrets entered as plain text during development to still work.

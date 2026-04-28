@@ -48,7 +48,19 @@ export default async function ServiceDetailPage({
       status={service.status as import("@/services/types").ServiceStatus}
       configFields={plugin?.configFields ?? []}
       config={
-        (service.config ?? {}) as Record<string, string | number | boolean>
+        (() => {
+          const stored = (service.config ?? {}) as Record<string, string | number | boolean>;
+          // Seed defaults for any fields not yet in stored config (e.g. new configSource field
+          // on existing services — defaults to the first option so visibleWhen still works).
+          const defaults: Record<string, string | number | boolean> = {};
+          for (const f of plugin?.configFields ?? []) {
+            if (f.type === "checkbox") defaults[f.key] = false;
+            else if (f.type === "number") defaults[f.key] = 0;
+            else if (f.type === "select" && f.options?.[0]) defaults[f.key] = f.options[0].value;
+            else defaults[f.key] = "";
+          }
+          return { ...defaults, ...stored };
+        })()
       }
     />
   );

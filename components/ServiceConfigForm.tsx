@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import type { ConfigField } from "@/services/types";
 import styles from "./ServiceConfigForm.module.css";
 
@@ -8,15 +11,74 @@ interface ServiceConfigFormProps {
   disabled?: boolean;
 }
 
+/** Fetches label/value options from an endpoint for a dynamic-select field. */
+function useDynamicOptions(endpoint: string | undefined) {
+  const [options, setOptions] = useState<{ label: string; value: string }[]>([]);
+  useEffect(() => {
+    if (!endpoint) return;
+    fetch(endpoint)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setOptions(data);
+      })
+      .catch(() => {});
+  }, [endpoint]);
+  return options;
+}
+
+function DynamicSelectField({
+  field,
+  value,
+  onChange,
+  disabled,
+}: {
+  field: ConfigField;
+  value: string;
+  onChange: (key: string, value: string) => void;
+  disabled: boolean;
+}) {
+  const options = useDynamicOptions(field.endpoint);
+
+  return (
+    <select
+      id={field.key}
+      className={styles.select}
+      value={value}
+      onChange={(e) => onChange(field.key, e.target.value)}
+      disabled={disabled}
+      required={field.required}
+    >
+      <option value="">Select…</option>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+/** Returns true if the field should be rendered given the current form values. */
+function isVisible(
+  field: ConfigField,
+  values: Record<string, string | number | boolean>
+): boolean {
+  if (!field.visibleWhen) return true;
+  const current = values[field.visibleWhen.field];
+  return String(current ?? "") === field.visibleWhen.value;
+}
+
 export default function ServiceConfigForm({
   fields,
   values,
   onChange,
   disabled = false,
 }: ServiceConfigFormProps) {
+  const visibleFields = fields.filter((f) => isVisible(f, values));
+
   return (
     <div className={styles.form}>
-      {fields.map((field) => (
+      {visibleFields.map((field) => (
         <div key={field.key} className={styles.field}>
           {field.type === "checkbox" ? (
             <div className={styles.checkboxRow}>
@@ -66,6 +128,13 @@ export default function ServiceConfigForm({
                     </option>
                   ))}
                 </select>
+              ) : field.type === "dynamic-select" ? (
+                <DynamicSelectField
+                  field={field}
+                  value={String(values[field.key] ?? "")}
+                  onChange={onChange}
+                  disabled={disabled}
+                />
               ) : (
                 <input
                   id={field.key}
