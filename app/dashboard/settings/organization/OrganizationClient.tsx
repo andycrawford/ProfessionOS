@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { ExternalLink, Shield, Building2 } from "lucide-react";
 import styles from "./organization.module.css";
 
@@ -344,18 +345,16 @@ export default function OrganizationClient({ org: initialOrg }: Props) {
               <button type="submit" className={styles.primaryButton} disabled={ssoSaving}>
                 {ssoSaving ? "Saving…" : "Save SSO Config"}
               </button>
-              <a
-                href={`https://login.microsoftonline.com/${org.entraIdTenantId || "common"}/oauth2/v2.0/authorize`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${styles.testLink}${!org.entraIdTenantId ? ` ${styles.testLinkDisabled}` : ""}`}
-                aria-disabled={!org.entraIdTenantId}
-                title={!org.entraIdTenantId ? "Save SSO config first" : undefined}
-                onClick={!org.entraIdTenantId ? (e) => e.preventDefault() : undefined}
+              <button
+                type="button"
+                className={`${styles.testLink}${(!org.entraIdTenantId || !org.ssoClientId || !org.ssoClientSecretSet) ? ` ${styles.testLinkDisabled}` : ""}`}
+                disabled={!org.entraIdTenantId || !org.ssoClientId || !org.ssoClientSecretSet}
+                title={(!org.entraIdTenantId || !org.ssoClientId || !org.ssoClientSecretSet) ? "Save complete SSO config first" : undefined}
+                onClick={() => signIn(`microsoft-entra-id-${org.id}`, { callbackUrl: "/dashboard/settings/organization" })}
               >
                 Test SSO Login
                 <ExternalLink size={13} aria-hidden="true" />
-              </a>
+              </button>
             </div>
           </form>
         </section>

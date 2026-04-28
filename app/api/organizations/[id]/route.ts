@@ -4,10 +4,11 @@
 
 export const dynamic = "force-dynamic";
 
-import { safeAuth } from "@/auth";
+import { safeAuth, invalidateOrgProvidersCache } from "@/auth";
 import { getDb } from "@/db";
 import { organizations, organizationMembers, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { encrypt } from "@/lib/encrypt";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -89,7 +90,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   if (ssoClientId !== undefined) updates.ssoClientId = ssoClientId || null;
   // Only update the secret when the caller explicitly provides a non-empty value
   if (ssoClientSecret !== undefined && ssoClientSecret !== "") {
-    updates.ssoClientSecret = ssoClientSecret;
+    updates.ssoClientSecret = encrypt(ssoClientSecret);
   }
 
   if (Object.keys(updates).length === 0) {
@@ -106,6 +107,12 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
   if (!updated) {
     return Response.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // If SSO config changed, bust the in-process provider cache so new settings
+  // are picked up on the next auth request without waiting for the 5-min TTL.
+  if (ssoEnabled !== undefined || entraIdTenantId !== undefined || ssoClientId !== undefined || ssoClientSecret !== undefined) {
+    invalidateOrgProvidersCache();
   }
 
   const { ssoClientSecret: _secret, ...safeOrg } = updated;

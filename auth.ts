@@ -56,6 +56,15 @@ let _orgProviders: Provider[] = [];
 let _orgProvidersLoadedAt = 0;
 const ORG_PROVIDERS_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Reset the org provider cache so the next auth request reloads from DB.
+ * Useful after SSO config changes. Note: in serverless environments each
+ * function instance has its own cache; this only resets the current instance.
+ */
+export function invalidateOrgProvidersCache(): void {
+  _orgProvidersLoadedAt = 0;
+}
+
 async function getOrgProviders(): Promise<Provider[]> {
   const now = Date.now();
   if (now - _orgProvidersLoadedAt < ORG_PROVIDERS_TTL_MS) {
