@@ -4,7 +4,10 @@
   left: 0;
   bottom: 0;
   width: var(--nav-rail-width);
-  background-color: var(--chrome-bg);
+  /* Solid backing prevents widget content from bleeding through the tint
+     layer when expanded, making collapsed and expanded states look identical. */
+  background-color: var(--color-bg-base);
+  background-image: linear-gradient(var(--chrome-bg), var(--chrome-bg));
   border-right: 1px solid var(--color-border-default);
   z-index: 90;
   display: flex;
