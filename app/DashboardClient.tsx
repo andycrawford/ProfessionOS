@@ -145,7 +145,7 @@ export default function DashboardClient({
   const [metricsSettingsOpen, setMetricsSettingsOpen] = useState(false);
 
   // ── UI state ────────────────────────────────────────────────────────────────
-  const [activeNav, setActiveNav] = useState("code");
+  const [activeNav, setActiveNav] = useState("home");
   const [aiOpen, setAiOpen] = useState(false);
   const [feedFilter, setFeedFilter] = useState<FeedService | "all">("all");
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -554,7 +554,7 @@ export default function DashboardClient({
             embedItems={embedItems}
             onNavigate={(id) => {
               if (id === "home") {
-                // already on the main page — no-op
+                setActiveNav("home");
               } else if (id === "settings") {
                 router.push("/dashboard/settings/services");
               } else if (id === "ai") {
