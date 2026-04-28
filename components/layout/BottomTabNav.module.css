@@ -11,7 +11,9 @@
     left: 0;
     right: 0;
     height: 56px;
-    background: var(--color-bg-base);
+    background: var(--panel-bg);
+    -webkit-backdrop-filter: blur(var(--panel-blur));
+    backdrop-filter: blur(var(--panel-blur));
     border-top: 1px solid var(--color-border-default);
     z-index: 90;
     align-items: stretch;

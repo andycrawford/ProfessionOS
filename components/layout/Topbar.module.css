@@ -4,7 +4,9 @@
   left: 0;
   right: 0;
   height: var(--topbar-height);
-  background-color: var(--color-bg-base);
+  background-color: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
   border-bottom: 1px solid var(--color-border-default);
   z-index: 100;
   display: flex;
