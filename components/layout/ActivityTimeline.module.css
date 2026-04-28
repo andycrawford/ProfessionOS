@@ -240,3 +240,174 @@
     border-right: none;
   }
 }
+
+/* ── Calendar event popup ── */
+
+.popupBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  animation: popupFadeIn var(--duration-fast) var(--easing-default);
+}
+
+@keyframes popupFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.popupDialog {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-modal);
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  animation: popupScaleIn var(--duration-default) var(--easing-spring);
+}
+
+@keyframes popupScaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.popupHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.popupHeaderIcon {
+  display: flex;
+  align-items: center;
+  color: var(--color-accent-brand);
+  flex-shrink: 0;
+}
+
+.popupTitle {
+  font-size: var(--text-body-base-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popupCloseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--duration-fast) var(--easing-default),
+              color var(--duration-fast) var(--easing-default);
+}
+
+.popupCloseBtn:hover {
+  background: var(--color-bg-raised);
+  color: var(--color-text-primary);
+}
+
+.popupBody {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.popupBodyClickable {
+  cursor: pointer;
+  border-radius: 0;
+  transition: background-color var(--duration-fast) var(--easing-default);
+}
+
+.popupBodyClickable:hover {
+  background-color: var(--color-bg-raised);
+}
+
+.popupBodyClickable:focus-visible {
+  outline: 2px solid var(--color-accent-brand);
+  outline-offset: -2px;
+}
+
+.popupTimestamp {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+}
+
+.popupSubtitle {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.popupFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+}
+
+.popupJoinBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-accent-brand);
+  background: rgba(0, 201, 167, 0.1);
+  color: var(--color-accent-brand);
+  font-size: var(--text-body-sm-size);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-default);
+}
+
+.popupJoinBtn:hover:not(:disabled) {
+  background: rgba(0, 201, 167, 0.2);
+}
+
+.popupJoinBtn:disabled {
+  border-color: var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.popupMonitorBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  background: transparent;
+  color: var(--color-text-disabled);
+  font-size: var(--text-body-sm-size);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: not-allowed;
+}
