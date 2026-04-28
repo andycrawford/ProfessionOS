@@ -1,7 +1,9 @@
 .panel {
   display: none; /* hidden at all sizes until explicitly opened */
   flex-direction: column;
-  background-color: var(--color-bg-base);
+  background: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
   border-left: 1px solid var(--color-border-default);
   overflow: hidden;
 }

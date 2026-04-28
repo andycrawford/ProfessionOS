@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#040C08"/>
+      <stop offset="50%"  stop-color="#071A0E"/>
+      <stop offset="100%" stop-color="#030806"/>
+    </linearGradient>
+    <radialGradient id="canopy" cx="50%" cy="20%" r="60%">
+      <stop offset="0%"  stop-color="#0D3320" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#040C08" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="light" cx="50%" cy="80%" r="35%">
+      <stop offset="0%"  stop-color="#1A5C30" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#040C08" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#canopy)"/>
+  <rect width="1920" height="1080" fill="url(#light)"/>
+</svg>

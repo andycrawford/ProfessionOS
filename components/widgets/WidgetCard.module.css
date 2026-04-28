@@ -2,7 +2,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-bg-surface);
+  background-color: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-default);
   padding: 10px var(--space-3);

@@ -18,12 +18,16 @@
  */
 
 .shell {
-  display:        flex;
-  flex-direction: column;
-  height:         100vh;
-  height:         100dvh;
-  overflow:       hidden;
-  background:     var(--color-bg-base);
+  display:            flex;
+  flex-direction:     column;
+  height:             100vh;
+  height:             100dvh;
+  overflow:           hidden;
+  background-color:   var(--color-bg-base);
+  background-image:   var(--bg-image, none);
+  background-size:    cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 /* Area below the fixed topbar */
@@ -409,7 +413,9 @@
   flex:          1 0 160px;
   max-width:     260px;
   height:        var(--widget-row-height);
-  background:    var(--color-bg-surface);
+  background:    var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
   border:        1px solid var(--color-border-default);
   border-radius: var(--radius-default);
   padding:       10px var(--space-3);
@@ -548,13 +554,15 @@
   min-width:      0;
 }
 .timelineHeader {
-  flex-shrink:   0;
-  display:       flex;
-  align-items:   center;
-  gap:           var(--space-4);
-  padding:       var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--color-border-default);
-  background:    var(--color-bg-base);
+  flex-shrink:          0;
+  display:              flex;
+  align-items:          center;
+  gap:                  var(--space-4);
+  padding:              var(--space-2) var(--space-4);
+  border-bottom:        1px solid var(--color-border-default);
+  background:           var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter:      blur(var(--panel-blur));
 }
 
 .sectionLabel {
@@ -622,7 +630,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color:          var(--color-text-disabled);
-  background:     var(--color-bg-base);
+  background:     var(--panel-bg);
   position:       sticky;
   top:            0;
   z-index:        1;
@@ -718,14 +726,16 @@
 /* Spec §8: 320px, collapsible, min 240px, max 480px */
 
 .aiPanel {
-  flex-shrink:    0;
-  width:          var(--ai-panel-width);
-  min-width:      var(--ai-panel-min-width);
-  max-width:      var(--ai-panel-max-width);
-  display:        flex;
-  flex-direction: column;
-  background:     var(--color-bg-surface);
-  overflow:       hidden;
+  flex-shrink:          0;
+  width:                var(--ai-panel-width);
+  min-width:            var(--ai-panel-min-width);
+  max-width:            var(--ai-panel-max-width);
+  display:              flex;
+  flex-direction:       column;
+  background:           var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter:      blur(var(--panel-blur));
+  overflow:             hidden;
 }
 
 .aiPanelHeader {

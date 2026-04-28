@@ -5,6 +5,9 @@
   min-width: 0;
   overflow: hidden;
   border-right: 1px solid var(--color-border-default);
+  background: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
 }
 
 /* ── Section header ── */
@@ -89,7 +92,7 @@
   color: var(--color-text-secondary);
   position: sticky;
   top: 0;
-  background: var(--color-bg-base);
+  background: var(--panel-bg);
   z-index: 1;
   border-bottom: 1px solid var(--color-border-subtle);
 }
