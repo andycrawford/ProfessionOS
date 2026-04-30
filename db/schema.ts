@@ -244,6 +244,67 @@ export const customPlugins = pgTable("custom_plugins", {
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
+// ── Automation tables ─────────────────────────────────────────────────────────
+
+// One row per user-created automation on a code_automation plugin instance.
+// triggerType: "manual" | "schedule" | "event"
+// writeMode: "read_only" | "read_write" — read_write is reserved for Phase 2
+export const automations = pgTable("automations", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  pluginServiceId: text("plugin_service_id")
+    .notNull()
+    .references(() => connectedServices.id, { onDelete: "cascade" }),
+  aiServiceId: text("ai_service_id").references(() => connectedServices.id, {
+    onDelete: "set null",
+  }),
+  aiConversationId: text("ai_conversation_id").references(
+    () => aiConversations.id,
+    { onDelete: "set null" }
+  ),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  triggerType: text("trigger_type").notNull().default("manual"),
+  // Schedule: { cron: "0 9 * * 1" }; Event: { serviceType, conditions: [...] }
+  triggerConfig: jsonb("trigger_config").notNull().default({}),
+  targetServiceIds: jsonb("target_service_ids").notNull().default([]),
+  // Structured action config — no eval; validated against allowed action types
+  actionConfig: jsonb("action_config").notNull().default({}),
+  enabled: boolean("enabled").notNull().default(true),
+  // "read_only" | "read_write" — read_write greyed out in Phase 1
+  writeMode: text("write_mode").notNull().default("read_only"),
+  lastRunAt: timestamp("last_run_at", { mode: "date" }),
+  lastRunStatus: text("last_run_status"),
+  lastRunOutput: jsonb("last_run_output"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// One row per automation execution (dry-run or live).
+export const automationRuns = pgTable("automation_runs", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  automationId: text("automation_id")
+    .notNull()
+    .references(() => automations.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  isDryRun: boolean("is_dry_run").notNull().default(false),
+  // "pending" | "running" | "success" | "error"
+  status: text("status").notNull().default("pending"),
+  output: jsonb("output"),
+  error: text("error"),
+  startedAt: timestamp("started_at", { mode: "date" }),
+  completedAt: timestamp("completed_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
 // Audit trail — records significant user and system actions.
 export const activityLog = pgTable("activity_log", {
   id: text("id")
@@ -274,4 +335,6 @@ export const schema = {
   organizations,
   organizationMembers,
   customPlugins,
+  automations,
+  automationRuns,
 };

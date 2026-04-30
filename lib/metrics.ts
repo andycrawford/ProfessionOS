@@ -35,7 +35,7 @@ export const WIDGET_SERVICE_TYPES: Record<BaseWidgetServiceKey, string[]> = {
   mail:     ["ms365_email"],
   calendar: ["ms365_calendar", "google_calendar"],
   messaging: [], // no service type mapped yet
-  code:     ["clickup", "ziflow"],
+  code:     ["clickup", "ziflow", "code_automation"],
   crm:      ["netsuite_invoices", "netsuite_rma"],
 };
 

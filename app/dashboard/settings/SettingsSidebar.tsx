@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plug, Building2, Puzzle, Palette, LayoutDashboard, Keyboard } from "lucide-react";
+import { Plug, Building2, Puzzle, Palette, LayoutDashboard, Keyboard, Zap } from "lucide-react";
 import styles from "./settings.module.css";
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/dashboard/settings/keybindings", label: "Keybindings", icon: Keyboard },
   { href: "/dashboard/settings/services", label: "Services", icon: Plug },
   { href: "/dashboard/settings/plugins", label: "Plugins", icon: Puzzle },
+  { href: "/dashboard/settings/automations", label: "Automations", icon: Zap },
   { href: "/dashboard/settings/organization", label: "Organization", icon: Building2 },
 ];
 

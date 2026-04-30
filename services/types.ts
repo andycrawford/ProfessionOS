@@ -12,6 +12,7 @@ export enum ServiceType {
   ClaudeAi = "claude_ai",
   MSTeams = "ms_teams",
   EmbedWebsite = "embed_website",
+  CodeAutomation = "code_automation",
 }
 
 export type UrgencyLevel = 0 | 1 | 2; // 0=normal, 1=important, 2=urgent

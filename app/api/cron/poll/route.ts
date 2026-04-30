@@ -1,14 +1,16 @@
 // Cron polling orchestrator — runs on a 5-minute schedule via Vercel Cron.
 // GET: called by Vercel Cron (validates CRON_SECRET bearer token)
 // POST: manual trigger scoped to the authenticated user
+//
+// Also checks enabled schedule-triggered automations and fires them when due.
 
 export const dynamic = "force-dynamic";
 
 import "@/services/plugins"; // populate plugin registry
 import { safeAuth } from "@/auth";
 import { getDb } from "@/db";
-import { connectedServices, activityItems } from "@/db/schema";
-import { eq, and, gte } from "drizzle-orm";
+import { connectedServices, activityItems, automations } from "@/db/schema";
+import { eq, and, gte, lte, isNull, or } from "drizzle-orm";
 import { getPlugin } from "@/services/registry";
 import type { ServiceType } from "@/services/types";
 
@@ -152,6 +154,86 @@ async function pollServices(userId?: string) {
   return summary;
 }
 
+// ─── Automation scheduler ──────────────────────────────────────────────────────
+
+// Simple cron expression checker — supports minute/hour/day-of-month/month/day-of-week.
+// Returns true when the given Date matches the cron expression (minute-level precision).
+function cronMatches(expr: string, now: Date): boolean {
+  try {
+    const parts = expr.trim().split(/\s+/);
+    if (parts.length !== 5) return false;
+    const [minP, hourP, domP, monP, dowP] = parts;
+    const check = (part: string, value: number): boolean => {
+      if (part === "*") return true;
+      return part.split(",").some((seg) => {
+        if (seg.includes("/")) {
+          const [, step] = seg.split("/");
+          return value % parseInt(step) === 0;
+        }
+        if (seg.includes("-")) {
+          const [lo, hi] = seg.split("-").map(Number);
+          return value >= lo && value <= hi;
+        }
+        return parseInt(seg) === value;
+      });
+    };
+    return (
+      check(minP, now.getUTCMinutes()) &&
+      check(hourP, now.getUTCHours()) &&
+      check(domP, now.getUTCDate()) &&
+      check(monP, now.getUTCMonth() + 1) &&
+      check(dowP, now.getUTCDay())
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function runDueAutomations(userId?: string) {
+  const db = getDb();
+  const now = new Date();
+  // Look back 6 minutes so a cron firing at 4:59 still catches a "* * * * *" that was due at 5:00
+  const windowStart = new Date(now.getTime() - 6 * 60 * 1000);
+
+  const where = and(
+    eq(automations.enabled, true),
+    eq(automations.triggerType, "schedule"),
+    userId ? eq(automations.userId, userId) : undefined,
+    // Only run if not run in the last window (prevents double-firing within same 5-min tick)
+    or(isNull(automations.lastRunAt), lte(automations.lastRunAt, windowStart))
+  );
+
+  const due = await db.select().from(automations).where(where);
+
+  let fired = 0;
+  for (const auto of due) {
+    const config = auto.triggerConfig as Record<string, unknown>;
+    const cronExpr = typeof config.cron === "string" ? config.cron : null;
+    if (!cronExpr || !cronMatches(cronExpr, now)) continue;
+
+    // Fire via the run API internally
+    try {
+      const baseUrl = process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000";
+      await fetch(`${baseUrl}/api/automations/${auto.id}/run`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Internal cron token so the route can trust the call
+          "X-Cron-Secret": process.env.CRON_SECRET ?? "",
+        },
+        body: JSON.stringify({ dryRun: false }),
+      });
+      fired++;
+    } catch {
+      // Non-fatal — the automation's lastRunStatus will remain as-is
+    }
+  }
+
+  return fired;
+}
+
 // ─── Route handlers ────────────────────────────────────────────────────────────
 
 // Called by Vercel Cron — validates the CRON_SECRET bearer token.
@@ -164,8 +246,11 @@ export async function GET(req: Request) {
     }
   }
 
-  const summary = await pollServices();
-  return Response.json({ ok: true, ...summary });
+  const [summary, automationsFired] = await Promise.all([
+    pollServices(),
+    runDueAutomations(),
+  ]);
+  return Response.json({ ok: true, ...summary, automationsFired });
 }
 
 // Manual trigger — scoped to the authenticated user's services only.
@@ -175,6 +260,9 @@ export async function POST() {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const summary = await pollServices(session.user.id);
-  return Response.json({ ok: true, ...summary });
+  const [summary, automationsFired] = await Promise.all([
+    pollServices(session.user.id),
+    runDueAutomations(session.user.id),
+  ]);
+  return Response.json({ ok: true, ...summary, automationsFired });
 }
