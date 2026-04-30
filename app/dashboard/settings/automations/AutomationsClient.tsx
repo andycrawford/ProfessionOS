@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Zap, Play, FlaskConical, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Zap, Play, FlaskConical, ToggleLeft, ToggleRight, Trash2, Pencil } from "lucide-react";
 import styles from "./automations.module.css";
 
 export interface AutomationRow {
@@ -162,6 +163,16 @@ export default function AutomationsClient({
                     <ToggleLeft size={18} className={styles.toggleOff} />
                   )}
                 </button>
+
+                {/* Edit/Continue — navigates to Code dashboard with this automation open */}
+                <Link
+                  href={`/dashboard/code?editId=${row.id}`}
+                  className={styles.actionButton}
+                  title="Edit automation with AI chat"
+                >
+                  <Pencil size={14} aria-hidden="true" />
+                  Edit
+                </Link>
 
                 {/* Dry run */}
                 <button

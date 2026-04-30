@@ -45,6 +45,7 @@ export default async function CodePage() {
     enabled: r.enabled,
     writeMode: r.writeMode,
     actionConfig: r.actionConfig as Record<string, unknown>,
+    aiConversationId: r.aiConversationId ?? null,
     lastRunAt: r.lastRunAt?.toISOString() ?? null,
     lastRunStatus: r.lastRunStatus ?? null,
     createdAt: r.createdAt.toISOString(),

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft, Zap, Plus, Play, FlaskConical, Trash2,
-  SendHorizonal, Loader2, ToggleLeft, ToggleRight, History,
+  SendHorizonal, Loader2, ToggleLeft, ToggleRight, History, Pencil,
 } from "lucide-react";
 import styles from "./AutomationPanel.module.css";
 
@@ -16,6 +17,7 @@ export interface AutomationRow {
   enabled: boolean;
   writeMode: string;
   actionConfig: Record<string, unknown>;
+  aiConversationId: string | null;
   lastRunAt: string | null;
   lastRunStatus: string | null;
   createdAt: string;
@@ -29,7 +31,7 @@ interface Props {
 }
 
 type ActiveTab = "automations" | "history";
-type PanelMode = "list" | "create";
+type PanelMode = "list" | "create" | "edit";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -63,28 +65,63 @@ function statusColor(status: string | null) {
   return "";
 }
 
-// ─── Chat panel for creating an automation ────────────────────────────────────
+// ─── Unified chat panel — handles both create and edit ───────────────────────
 
-function CreateAutomationPanel({
+function AutomationChatPanel({
   pluginServiceId,
   aiServiceId,
+  editAutomation,
   onCreated,
+  onUpdated,
   onCancel,
 }: {
   pluginServiceId: string;
   aiServiceId: string | null;
+  /** When set, the panel is in edit mode for this automation. */
+  editAutomation?: AutomationRow;
   onCreated: (automation: AutomationRow) => void;
+  onUpdated: (automation: AutomationRow) => void;
   onCancel: () => void;
 }) {
-  const [name, setName] = useState("");
+  const isEditing = editAutomation !== undefined;
+
+  const [name, setName] = useState(editAutomation?.name ?? "");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingConfig, setPendingConfig] = useState<Record<string, unknown> | null>(null);
+  const [pendingConfig, setPendingConfig] = useState<Record<string, unknown> | null>(
+    editAutomation?.actionConfig && Object.keys(editAutomation.actionConfig).length > 0
+      ? editAutomation.actionConfig
+      : null
+  );
   const [saving, setSaving] = useState(false);
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    editAutomation?.aiConversationId ?? undefined
+  );
   const endRef = useRef<HTMLDivElement>(null);
+
+  // Load existing conversation history when editing an automation that has one
+  useEffect(() => {
+    if (!isEditing || !editAutomation?.aiConversationId) return;
+    setHistoryLoading(true);
+    fetch(`/api/ai/conversations/${editAutomation.aiConversationId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { messages?: Array<{ role: string; content: string }> } | null) => {
+        if (data?.messages && data.messages.length > 0) {
+          setMessages(
+            data.messages.map((m) => ({
+              role: m.role as "user" | "assistant",
+              content: m.content,
+            }))
+          );
+        }
+      })
+      .catch(() => {/* non-fatal */})
+      .finally(() => setHistoryLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -101,18 +138,22 @@ function CreateAutomationPanel({
     setStreaming(true);
 
     try {
-      // Build the full conversation history for context
       const history = [...messages, { role: "user" as const, content: userMsg }];
 
-      // Check if this looks like an automation description
+      // Treat as automation prompt if it's the first message, or mentions key words
       const isAutomationPrompt =
-        history.length === 1 ||
+        history.filter((m) => m.role === "user").length === 1 ||
         userMsg.toLowerCase().includes("automat") ||
         userMsg.toLowerCase().includes("when ") ||
-        userMsg.toLowerCase().includes("trigger");
+        userMsg.toLowerCase().includes("trigger") ||
+        userMsg.toLowerCase().includes("change") ||
+        userMsg.toLowerCase().includes("update") ||
+        userMsg.toLowerCase().includes("instead") ||
+        userMsg.toLowerCase().includes("also") ||
+        userMsg.toLowerCase().includes("add ") ||
+        userMsg.toLowerCase().includes("remove ");
 
       if (isAutomationPrompt && aiServiceId) {
-        // Generate action config via the run endpoint
         const res = await fetch(`/api/automations/preview-config`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -121,21 +162,20 @@ function CreateAutomationPanel({
         if (res.ok) {
           const data = await res.json() as { actionConfig: Record<string, unknown>; summary: string };
           setPendingConfig(data.actionConfig);
-          const reply = data.summary || `I've generated an automation config based on your description. Review the steps below and click Save to create it, or refine your description.`;
+          const reply = data.summary
+            ? `${data.summary} Review the updated steps below, then click ${isEditing ? "Update" : "Save"}.`
+            : `I've ${isEditing ? "updated" : "generated"} the automation config. Review the steps below and click ${isEditing ? "Update" : "Save"}.`;
           setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
           setStreaming(false);
           return;
         }
       }
 
-      // Fall through to general AI chat
+      // General AI chat (for follow-up questions, clarifications, etc.)
       const chatRes = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: history,
-          conversationId,
-        }),
+        body: JSON.stringify({ messages: history, conversationId }),
       });
 
       if (!chatRes.ok) throw new Error("Chat request failed");
@@ -177,23 +217,40 @@ function CreateAutomationPanel({
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/automations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pluginServiceId,
-          aiServiceId,
-          name: name.trim(),
-          description: messages.find((m) => m.role === "user")?.content?.slice(0, 200) ?? "",
-          triggerType: "manual",
-          triggerConfig: {},
-          targetServiceIds: [],
-          actionConfig: pendingConfig ?? {},
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to save");
-      onCreated(data as AutomationRow);
+      if (isEditing && editAutomation) {
+        // PATCH existing automation
+        const res = await fetch(`/api/automations/${editAutomation.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            description: messages.find((m) => m.role === "user")?.content?.slice(0, 200) ?? editAutomation.description,
+            actionConfig: pendingConfig ?? editAutomation.actionConfig,
+          }),
+        });
+        const data = await res.json() as AutomationRow & { error?: string };
+        if (!res.ok) throw new Error(data.error ?? "Failed to update");
+        onUpdated({ ...data, aiConversationId: data.aiConversationId ?? editAutomation.aiConversationId });
+      } else {
+        // POST new automation
+        const res = await fetch("/api/automations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pluginServiceId,
+            aiServiceId,
+            name: name.trim(),
+            description: messages.find((m) => m.role === "user")?.content?.slice(0, 200) ?? "",
+            triggerType: "manual",
+            triggerConfig: {},
+            targetServiceIds: [],
+            actionConfig: pendingConfig ?? {},
+          }),
+        });
+        const data = await res.json() as AutomationRow & { error?: string };
+        if (!res.ok) throw new Error(data.error ?? "Failed to save");
+        onCreated(data);
+      }
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -201,13 +258,19 @@ function CreateAutomationPanel({
     }
   }
 
+  const title = isEditing ? `Edit: ${editAutomation!.name}` : "New Automation";
+  const saveLabel = isEditing ? "Update Automation" : "Save Automation";
+  const hasChanges = isEditing
+    ? name.trim() !== editAutomation!.name || pendingConfig !== null
+    : pendingConfig !== null;
+
   return (
     <div className={styles.createPanel}>
       <div className={styles.createHeader}>
         <button className={styles.backButton} onClick={onCancel}>
           <ChevronLeft size={14} /> Back
         </button>
-        <h2 className={styles.createTitle}>New Automation</h2>
+        <h2 className={styles.createTitle}>{title}</h2>
       </div>
 
       <div className={styles.nameRow}>
@@ -221,11 +284,18 @@ function CreateAutomationPanel({
       </div>
 
       <div className={styles.chatArea}>
-        {messages.length === 0 && (
+        {historyLoading ? (
+          <div className={styles.chatLoadingHistory}>
+            <Loader2 size={16} className={styles.spin} /> Loading conversation history…
+          </div>
+        ) : messages.length === 0 ? (
           <p className={styles.chatHint}>
-            Describe what you want this automation to do. For example: &ldquo;When I get an email from my manager, mark it as urgent and tag it &lsquo;boss&rsquo;.&rdquo;
+            {isEditing
+              ? "Describe what you'd like to change. For example: \"Also tag items as 'urgent-email'\" or \"Only trigger on emails from external senders\"."
+              : "Describe what you want this automation to do. For example: \"When I get an email from my manager, mark it as urgent and tag it 'boss'.\""
+            }
           </p>
-        )}
+        ) : null}
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -240,7 +310,9 @@ function CreateAutomationPanel({
 
       {pendingConfig && (
         <div className={styles.configPreview}>
-          <p className={styles.configPreviewTitle}>Generated action steps:</p>
+          <p className={styles.configPreviewTitle}>
+            {isEditing ? "Updated action steps:" : "Generated action steps:"}
+          </p>
           <pre className={styles.configPreviewCode}>
             {JSON.stringify(pendingConfig, null, 2)}
           </pre>
@@ -253,15 +325,21 @@ function CreateAutomationPanel({
         <input
           className={styles.chatInput}
           type="text"
-          placeholder={aiServiceId ? "Describe your automation…" : "Connect an AI service to enable AI assistance"}
+          placeholder={
+            aiServiceId
+              ? isEditing
+                ? "Describe what to change…"
+                : "Describe your automation…"
+              : "Connect an AI service to enable AI assistance"
+          }
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={streaming}
+          disabled={streaming || historyLoading}
         />
         <button
           type="submit"
           className={styles.sendButton}
-          disabled={streaming || !input.trim()}
+          disabled={streaming || !input.trim() || historyLoading}
           aria-label="Send"
         >
           {streaming ? <Loader2 size={16} className={styles.spin} /> : <SendHorizonal size={16} />}
@@ -269,16 +347,14 @@ function CreateAutomationPanel({
       </form>
 
       <div className={styles.createActions}>
-        {pendingConfig && (
-          <>
-            <button
-              className={`${styles.actionButton} ${styles.primary}`}
-              onClick={handleSave}
-              disabled={saving || !name.trim()}
-            >
-              {saving ? "Saving…" : "Save Automation"}
-            </button>
-          </>
+        {(hasChanges || isEditing) && (
+          <button
+            className={`${styles.actionButton} ${styles.primary}`}
+            onClick={handleSave}
+            disabled={saving || !name.trim()}
+          >
+            {saving ? "Saving…" : saveLabel}
+          </button>
         )}
         <button className={styles.actionButton} onClick={onCancel} disabled={saving}>
           Cancel
@@ -296,14 +372,29 @@ export default function AutomationPanel({
   aiServiceId,
   initialAutomations,
 }: Props) {
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<ActiveTab>("automations");
   const [mode, setMode] = useState<PanelMode>("list");
   const [rows, setRows] = useState<AutomationRow[]>(initialAutomations);
+  const [editingAutomation, setEditingAutomation] = useState<AutomationRow | undefined>();
   const [running, setRunning] = useState<Record<string, "run" | "dry_run">>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [history, setHistory] = useState<RunHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // If navigated here with ?editId=<id>, open edit panel for that automation
+  useEffect(() => {
+    const editId = searchParams.get("editId");
+    if (editId) {
+      const target = initialAutomations.find((r) => r.id === editId);
+      if (target) {
+        setEditingAutomation(target);
+        setMode("edit");
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadHistory(automationId: string) {
     setHistoryLoading(true);
@@ -370,16 +461,31 @@ export default function AutomationPanel({
     }
   }
 
-  if (mode === "create") {
+  function openEdit(row: AutomationRow) {
+    setEditingAutomation(row);
+    setMode("edit");
+  }
+
+  if (mode === "create" || mode === "edit") {
     return (
-      <CreateAutomationPanel
+      <AutomationChatPanel
         pluginServiceId={pluginServiceId}
         aiServiceId={aiServiceId}
+        editAutomation={mode === "edit" ? editingAutomation : undefined}
         onCreated={(automation) => {
           setRows((prev) => [automation, ...prev]);
           setMode("list");
+          setEditingAutomation(undefined);
         }}
-        onCancel={() => setMode("list")}
+        onUpdated={(updated) => {
+          setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+          setMode("list");
+          setEditingAutomation(undefined);
+        }}
+        onCancel={() => {
+          setMode("list");
+          setEditingAutomation(undefined);
+        }}
       />
     );
   }
@@ -403,7 +509,7 @@ export default function AutomationPanel({
         </div>
         <button
           className={`${styles.actionButton} ${styles.primary}`}
-          onClick={() => setMode("create")}
+          onClick={() => { setEditingAutomation(undefined); setMode("create"); }}
         >
           <Plus size={14} aria-hidden="true" />
           New Automation
@@ -486,6 +592,16 @@ export default function AutomationPanel({
                           {row.enabled
                             ? <ToggleRight size={18} className={styles.toggleOn} />
                             : <ToggleLeft size={18} className={styles.toggleOff} />}
+                        </button>
+                        {/* Edit/Continue button */}
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => openEdit(row)}
+                          disabled={!!isRunning}
+                          title="Edit automation with AI chat"
+                        >
+                          <Pencil size={13} aria-hidden="true" />
+                          Edit
                         </button>
                         <button
                           className={styles.actionButton}
