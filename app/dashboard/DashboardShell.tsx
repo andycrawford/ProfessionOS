@@ -11,12 +11,12 @@ import {
   Box,
 } from "lucide-react";
 import Topbar from "@/components/layout/Topbar";
-import NavRail, { type CrmSubItem, type EmbedItem } from "@/components/layout/NavRail";
+import NavRail, { type CrmSubItem, type EmbedItem, type DashboardSubItem } from "@/components/layout/NavRail";
 import AiPanel from "@/components/layout/AiPanel";
 import BottomTabNav from "@/components/layout/BottomTabNav";
 import KeyboardHelpDialog, { type PluginBinding } from "@/components/KeyboardHelpDialog";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
-import type { KeybindingOverrides } from "@/lib/types";
+import type { KeybindingOverrides, Dashboard } from "@/lib/types";
 import styles from "./dashboard.module.css";
 
 // ── NetSuite CRM monitor → nav sub-item mapping ───────────────────────────────
@@ -59,6 +59,7 @@ export default function DashboardShell({
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
   const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
   const [embedItems, setEmbedItems] = useState<EmbedItem[]>([]);
+  const [dashboardSubItems, setDashboardSubItems] = useState<DashboardSubItem[]>([]);
   const [pollIntervalSeconds, setPollIntervalSeconds] = useState(30);
 
   useEffect(() => {
@@ -77,6 +78,17 @@ export default function DashboardShell({
       .then((data) => {
         if (typeof data.pollIntervalSeconds === "number") {
           setPollIntervalSeconds(data.pollIntervalSeconds);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/settings/dashboards")
+      .then((r) => r.json())
+      .then((data: Dashboard[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setDashboardSubItems(data.map((d) => ({ id: d.id, label: d.name })));
         }
       })
       .catch(() => {});
@@ -173,7 +185,11 @@ export default function DashboardShell({
     : undefined;
 
   function handleNavigate(id: string) {
-    if (id.startsWith("crm/")) {
+    if (id === "dashboards") {
+      router.push("/");
+    } else if (id.startsWith("dashboard:")) {
+      router.push("/");
+    } else if (id.startsWith("crm/")) {
       router.push(`/dashboard/${id}`);
     } else if (id.startsWith("embed/")) {
       router.push(`/dashboard/${id}`);
@@ -208,6 +224,7 @@ export default function DashboardShell({
         <div className={styles.body}>
           <NavRail
             activeItemId={activeNav}
+            dashboardSubItems={dashboardSubItems}
             activeCrmSubItemId={activeCrmSubItemId}
             crmSubItems={crmSubItems}
             embedItems={embedItems}

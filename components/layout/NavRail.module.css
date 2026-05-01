@@ -95,8 +95,12 @@
 /* ── CRM sub-items (per record type) ─────────────────────────────────────── */
 
 .navSubList {
-  display: flex;
+  display: none;
   flex-direction: column;
+}
+
+.navRail:hover .navSubList {
+  display: flex;
 }
 
 .navSubItem {
