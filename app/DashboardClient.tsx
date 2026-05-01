@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 import Topbar from "@/components/layout/Topbar";
-import NavRail, { type CrmSubItem, type EmbedItem } from "@/components/layout/NavRail";
+import NavRail, { type CrmSubItem, type EmbedItem, type DashboardSubItem } from "@/components/layout/NavRail";
 import AlertBar, { type Alert } from "@/components/layout/AlertBar";
 import ActivityTimeline, {
   type FeedItem,
@@ -43,7 +43,7 @@ import KeyboardHelpDialog, { type PluginBinding } from "@/components/KeyboardHel
 
 import { useEventStream } from "@/lib/hooks/useEventStream";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
-import type { WidgetMetrics, WidgetPreference, WidgetServiceKey, KeybindingOverrides, DashboardWidget } from "@/lib/types";
+import type { WidgetMetrics, WidgetPreference, WidgetServiceKey, KeybindingOverrides, DashboardWidget, Dashboard } from "@/lib/types";
 import { DEFAULT_WIDGET_PREFS } from "@/lib/types";
 import { getAllWidgetDefs } from "@/components/widgets/registry";
 import { netsuiteKeyLabel } from "@/lib/metrics";
@@ -190,9 +190,22 @@ export default function DashboardClient({
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
 
-  // ── Dashboard widgets (free-form tiles in center area) ──────────────────────
-  const [dashboardWidgets, setDashboardWidgets] = useState<DashboardWidget[]>([]);
+  // ── Multi-dashboard state ────────────────────────────────────────────────────
+  const [dashboards, setDashboards] = useState<Dashboard[]>([]);
+  const [activeDashboardId, setActiveDashboardId] = useState<string | null>(null);
   const widgetSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Derived: active dashboard's widgets
+  const activeDashboard = dashboards.find((d) => d.id === activeDashboardId)
+    ?? dashboards.find((d) => d.isDefault)
+    ?? dashboards[0];
+  const dashboardWidgets = activeDashboard?.widgets ?? [];
+
+  // Sidebar sub-items for the Dashboards menu
+  const dashboardSubItems: DashboardSubItem[] = dashboards.map((d) => ({
+    id: d.id,
+    label: d.name,
+  }));
 
   // ── Sidebar nav items from connected services ────────────────────────────────
   const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
@@ -215,33 +228,35 @@ export default function DashboardClient({
       })
       .catch(() => {});
 
-    fetch("/api/settings/dashboard-widgets")
+    fetch("/api/settings/dashboards")
       .then((r) => r.json())
-      .then((data) => {
+      .then((data: Dashboard[]) => {
         if (Array.isArray(data) && data.length > 0) {
-          setDashboardWidgets(data);
-        } else {
-          // Seed built-in widgets (Clock + Weather) on first visit
-          const defs = getAllWidgetDefs();
-          const defaults: DashboardWidget[] = defs.map((def, i) => ({
-            id: crypto.randomUUID(),
-            title: def.displayName,
-            content: "",
-            type: def.type,
-            x: 16 + i * 240,
-            y: 16,
-            width: def.defaultWidth,
-            height: def.defaultHeight,
-            collapsed: false,
-            config: { ...def.defaultConfig },
-          }));
-          setDashboardWidgets(defaults);
-          // Persist the defaults
-          fetch("/api/settings/dashboard-widgets", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(defaults),
-          }).catch(() => {});
+          // Seed built-in widgets on the default dashboard if it has none
+          const defaultDb = data.find((d) => d.isDefault) ?? data[0];
+          if (defaultDb && defaultDb.widgets.length === 0) {
+            const defs = getAllWidgetDefs();
+            defaultDb.widgets = defs.map((def, i) => ({
+              id: crypto.randomUUID(),
+              title: def.displayName,
+              content: "",
+              type: def.type,
+              x: 16 + i * 240,
+              y: 16,
+              width: def.defaultWidth,
+              height: def.defaultHeight,
+              collapsed: false,
+              config: { ...def.defaultConfig },
+            }));
+            // Persist the seeded defaults
+            fetch("/api/settings/dashboards", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            }).catch(() => {});
+          }
+          setDashboards(data);
+          setActiveDashboardId(defaultDb?.id ?? data[0].id);
         }
       })
       .catch(() => {});
@@ -326,50 +341,51 @@ export default function DashboardClient({
   }, []);
 
   // ── Dashboard widget handlers ────────────────────────────────────────────────
-  const saveDashboardWidgets = useCallback((next: DashboardWidget[]) => {
-    if (widgetSaveTimer.current) clearTimeout(widgetSaveTimer.current);
-    widgetSaveTimer.current = setTimeout(() => {
-      fetch("/api/settings/dashboard-widgets", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
-      }).catch(() => {});
-    }, 800);
-  }, []);
-
-  const handleWidgetChange = useCallback(
-    (id: string, changes: Partial<DashboardWidget>) => {
-      setDashboardWidgets((prev) => {
-        const next = prev.map((w) => (w.id === id ? { ...w, ...changes } : w));
-        saveDashboardWidgets(next);
+  /** Update the active dashboard's widgets in the dashboards array and debounce-save. */
+  const updateActiveDashboardWidgets = useCallback(
+    (updater: (widgets: DashboardWidget[]) => DashboardWidget[]) => {
+      setDashboards((prev) => {
+        const dbId = activeDashboardId ?? prev.find((d) => d.isDefault)?.id ?? prev[0]?.id;
+        const next = prev.map((d) =>
+          d.id === dbId ? { ...d, widgets: updater(d.widgets) } : d,
+        );
+        if (widgetSaveTimer.current) clearTimeout(widgetSaveTimer.current);
+        widgetSaveTimer.current = setTimeout(() => {
+          fetch("/api/settings/dashboards", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(next),
+          }).catch(() => {});
+        }, 800);
         return next;
       });
     },
-    [saveDashboardWidgets],
+    [activeDashboardId],
+  );
+
+  const handleWidgetChange = useCallback(
+    (id: string, changes: Partial<DashboardWidget>) => {
+      updateActiveDashboardWidgets((ws) =>
+        ws.map((w) => (w.id === id ? { ...w, ...changes } : w)),
+      );
+    },
+    [updateActiveDashboardWidgets],
   );
 
   const handleWidgetClose = useCallback(
     (id: string) => {
-      setDashboardWidgets((prev) => {
-        const next = prev.filter((w) => w.id !== id);
-        saveDashboardWidgets(next);
-        return next;
-      });
+      updateActiveDashboardWidgets((ws) => ws.filter((w) => w.id !== id));
     },
-    [saveDashboardWidgets],
+    [updateActiveDashboardWidgets],
   );
 
   const handleWidgetToggleCollapse = useCallback(
     (id: string) => {
-      setDashboardWidgets((prev) => {
-        const next = prev.map((w) =>
-          w.id === id ? { ...w, collapsed: !w.collapsed } : w,
-        );
-        saveDashboardWidgets(next);
-        return next;
-      });
+      updateActiveDashboardWidgets((ws) =>
+        ws.map((w) => (w.id === id ? { ...w, collapsed: !w.collapsed } : w)),
+      );
     },
-    [saveDashboardWidgets],
+    [updateActiveDashboardWidgets],
   );
 
   // ── Conversation history ─────────────────────────────────────────────────────
@@ -667,11 +683,21 @@ export default function DashboardClient({
         <div className={styles.body}>
           <NavRail
             activeItemId={activeNav}
+            activeDashboardId={activeDashboard?.id}
+            dashboardSubItems={dashboardSubItems}
             crmSubItems={crmSubItems}
             embedItems={embedItems}
             onNavigate={(id) => {
-              if (id === "home") {
-                setActiveNav("home");
+              if (id === "dashboards") {
+                // Click on "Dashboards" top-level → go to default dashboard
+                setActiveNav("dashboards");
+                const def = dashboards.find((d) => d.isDefault) ?? dashboards[0];
+                if (def) setActiveDashboardId(def.id);
+              } else if (id.startsWith("dashboard:")) {
+                // Click on a specific dashboard sub-item
+                const dbId = id.replace("dashboard:", "");
+                setActiveNav("dashboards");
+                setActiveDashboardId(dbId);
               } else if (id === "settings") {
                 router.push("/dashboard/settings/services");
               } else if (id === "ai") {

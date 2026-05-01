@@ -10,10 +10,13 @@ import {
   Zap,
   Trash2,
   Bot,
+  Plus,
+  Star,
+  Pencil,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import type { DashboardWidget, DashboardWidgetType } from "@/lib/types";
+import type { DashboardWidget, DashboardWidgetType, Dashboard } from "@/lib/types";
 import {
   getAllWidgetDefs,
   type BuiltinWidgetDef,
@@ -21,7 +24,7 @@ import {
 } from "@/components/widgets/registry";
 import styles from "./dashboard.module.css";
 
-// ── Icon lookup (keeps imports static, avoids dynamic require) ──────────────
+// ── Icon lookup ──────────────────────────────────────────────────────────────
 
 const ICONS: Record<string, React.ReactNode> = {
   Clock: <Clock size={16} />,
@@ -54,12 +57,13 @@ interface AvailableWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DashboardSettingsPage() {
-  // ── Dashboard Widgets state (persisted array) ──────────────────────────────
-  const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
-  const [widgetLoading, setWidgetLoading] = useState(true);
-  const [widgetSaving, setWidgetSaving] = useState(false);
-  const [widgetSaved, setWidgetSaved] = useState(false);
-  const [widgetError, setWidgetError] = useState<string | null>(null);
+  // ── Dashboards state ───────────────────────────────────────────────────────
+  const [dashboards, setDashboards] = useState<Dashboard[]>([]);
+  const [activeDashId, setActiveDashId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // ── Available widgets from plugins/automations ─────────────────────────────
   const [availableWidgets, setAvailableWidgets] = useState<AvailableWidget[]>(
@@ -73,18 +77,32 @@ export default function DashboardSettingsPage() {
   // ── Expanded config panels ─────────────────────────────────────────────────
   const [expandedConfig, setExpandedConfig] = useState<string | null>(null);
 
+  // ── Rename editing ─────────────────────────────────────────────────────────
+  const [editingName, setEditingName] = useState(false);
+
   // ── Built-in widget definitions ────────────────────────────────────────────
   const builtinDefs = getAllWidgetDefs();
 
+  // ── Active dashboard ───────────────────────────────────────────────────────
+  const activeDash =
+    dashboards.find((d) => d.id === activeDashId) ??
+    dashboards.find((d) => d.isDefault) ??
+    dashboards[0];
+  const widgets = activeDash?.widgets ?? [];
+
   // ── Load data ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    fetch("/api/settings/dashboard-widgets")
+    fetch("/api/settings/dashboards")
       .then(async (r) => {
         const data = await r.json();
-        if (Array.isArray(data)) setWidgets(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setDashboards(data);
+          const def = data.find((d: Dashboard) => d.isDefault) ?? data[0];
+          setActiveDashId(def.id);
+        }
       })
-      .catch(() => setWidgetError("Failed to load dashboard widgets."))
-      .finally(() => setWidgetLoading(false));
+      .catch(() => setError("Failed to load dashboards."))
+      .finally(() => setLoading(false));
 
     fetch("/api/settings/available-widgets")
       .then(async (r) => {
@@ -95,33 +113,93 @@ export default function DashboardSettingsPage() {
   }, []);
 
   // ── Save helpers ───────────────────────────────────────────────────────────
-  const saveWidgets = async (widgetsToSave?: DashboardWidget[]) => {
-    const data = widgetsToSave ?? widgets;
-    setWidgetSaving(true);
-    setWidgetError(null);
-    setWidgetSaved(false);
+  const saveDashboards = async (toSave?: Dashboard[]) => {
+    const data = toSave ?? dashboards;
+    setSaving(true);
+    setError(null);
+    setSaved(false);
     try {
-      const res = await fetch("/api/settings/dashboard-widgets", {
+      const res = await fetch("/api/settings/dashboards", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        setWidgetError(d.error ?? "Failed to save.");
+        setError(d.error ?? "Failed to save.");
       } else {
-        const saved: DashboardWidget[] = await res.json();
-        setWidgets(saved);
-        setWidgetSaved(true);
+        const saved: Dashboard[] = await res.json();
+        setDashboards(saved);
+        setSaved(true);
       }
     } catch {
-      setWidgetError("Failed to save.");
+      setError("Failed to save.");
     } finally {
-      setWidgetSaving(false);
+      setSaving(false);
     }
   };
 
-  // ── Built-in widget helpers ────────────────────────────────────────────────
+  // ── Dashboard CRUD ─────────────────────────────────────────────────────────
+
+  const addDashboard = () => {
+    const newDash: Dashboard = {
+      id: crypto.randomUUID(),
+      name: "New Dashboard",
+      isDefault: false,
+      widgets: [],
+    };
+    const next = [...dashboards, newDash];
+    setDashboards(next);
+    setActiveDashId(newDash.id);
+    setEditingName(true);
+    saveDashboards(next);
+  };
+
+  const deleteDashboard = (id: string) => {
+    const dash = dashboards.find((d) => d.id === id);
+    if (!dash || dash.isDefault) return; // cannot delete default
+    const next = dashboards.filter((d) => d.id !== id);
+    setDashboards(next);
+    if (activeDashId === id) {
+      const def = next.find((d) => d.isDefault) ?? next[0];
+      setActiveDashId(def?.id ?? null);
+    }
+    saveDashboards(next);
+  };
+
+  const renameDashboard = (name: string) => {
+    if (!activeDash) return;
+    const next = dashboards.map((d) =>
+      d.id === activeDash.id ? { ...d, name: name.trim() || d.name } : d,
+    );
+    setDashboards(next);
+    setEditingName(false);
+    setSaved(false);
+  };
+
+  const makeDefault = () => {
+    if (!activeDash || activeDash.isDefault) return;
+    const next = dashboards.map((d) => ({
+      ...d,
+      isDefault: d.id === activeDash.id,
+    }));
+    setDashboards(next);
+    saveDashboards(next);
+  };
+
+  // ── Widget helpers (scoped to active dashboard) ────────────────────────────
+
+  const updateWidgets = useCallback(
+    (updater: (ws: DashboardWidget[]) => DashboardWidget[]) => {
+      setDashboards((prev) =>
+        prev.map((d) =>
+          d.id === activeDashId ? { ...d, widgets: updater(d.widgets) } : d,
+        ),
+      );
+      setSaved(false);
+    },
+    [activeDashId],
+  );
 
   const findBuiltin = useCallback(
     (type: DashboardWidgetType) => widgets.find((w) => w.type === type),
@@ -131,9 +209,8 @@ export default function DashboardSettingsPage() {
   const toggleBuiltin = useCallback(
     (def: BuiltinWidgetDef) => {
       const existing = widgets.find((w) => w.type === def.type);
-      let next: DashboardWidget[];
       if (existing) {
-        next = widgets.filter((w) => w.type !== def.type);
+        updateWidgets((ws) => ws.filter((w) => w.type !== def.type));
       } else {
         const offset = widgets.length * 24;
         const w: DashboardWidget = {
@@ -148,35 +225,30 @@ export default function DashboardSettingsPage() {
           collapsed: false,
           config: { ...def.defaultConfig },
         };
-        next = [...widgets, w];
+        updateWidgets((ws) => [...ws, w]);
       }
-      setWidgets(next);
-      saveWidgets(next);
     },
-    [widgets],
+    [widgets, updateWidgets],
   );
 
   const updateBuiltinConfig = useCallback(
     (type: DashboardWidgetType, key: string, value: string) => {
-      setWidgets((prev) =>
-        prev.map((w) =>
+      updateWidgets((ws) =>
+        ws.map((w) =>
           w.type === type
             ? { ...w, config: { ...(w.config ?? {}), [key]: value } }
             : w,
         ),
       );
-      setWidgetSaved(false);
     },
-    [],
+    [updateWidgets],
   );
 
   // ── Available (plugin/automation) widget helpers ───────────────────────────
 
-  /** Unique key for an available widget (type + optional automationId). */
   const availKey = (aw: AvailableWidget) =>
     aw.automationId ? `automation:${aw.automationId}` : aw.widgetType;
 
-  /** Check if an available widget is currently enabled (in the widgets array). */
   const isAvailEnabled = useCallback(
     (aw: AvailableWidget) => {
       if (aw.automationId) {
@@ -208,9 +280,8 @@ export default function DashboardSettingsPage() {
   const toggleAvailable = useCallback(
     (aw: AvailableWidget) => {
       const existing = findAvailInstance(aw);
-      let next: DashboardWidget[];
       if (existing) {
-        next = widgets.filter((w) => w.id !== existing.id);
+        updateWidgets((ws) => ws.filter((w) => w.id !== existing.id));
       } else {
         const offset = widgets.length * 24;
         const w: DashboardWidget = {
@@ -225,36 +296,35 @@ export default function DashboardSettingsPage() {
           collapsed: false,
           config: { ...aw.defaultConfig },
         };
-        next = [...widgets, w];
+        updateWidgets((ws) => [...ws, w]);
       }
-      setWidgets(next);
-      saveWidgets(next);
     },
-    [widgets, findAvailInstance],
+    [widgets, findAvailInstance, updateWidgets],
   );
 
   const updateAvailConfig = useCallback(
     (aw: AvailableWidget, key: string, value: string) => {
       const instance = findAvailInstance(aw);
       if (!instance) return;
-      setWidgets((prev) =>
-        prev.map((w) =>
+      updateWidgets((ws) =>
+        ws.map((w) =>
           w.id === instance.id
             ? { ...w, config: { ...(w.config ?? {}), [key]: value } }
             : w,
         ),
       );
-      setWidgetSaved(false);
     },
-    [findAvailInstance],
+    [findAvailInstance, updateWidgets],
   );
 
   // ── Custom widget handlers ─────────────────────────────────────────────────
 
-  const deleteWidget = useCallback((id: string) => {
-    setWidgets((prev) => prev.filter((w) => w.id !== id));
-    setWidgetSaved(false);
-  }, []);
+  const deleteWidget = useCallback(
+    (id: string) => {
+      updateWidgets((ws) => ws.filter((w) => w.id !== id));
+    },
+    [updateWidgets],
+  );
 
   const addBlankWidget = () => {
     const w: DashboardWidget = {
@@ -268,16 +338,14 @@ export default function DashboardSettingsPage() {
       height: 200,
       collapsed: false,
     };
-    const next = [...widgets, w];
-    setWidgets(next);
-    saveWidgets(next);
+    updateWidgets((ws) => [...ws, w]);
   };
 
   // ── AI-assisted widget creation ────────────────────────────────────────────
   const generateWidget = async () => {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
-    setWidgetError(null);
+    setError(null);
 
     try {
       const res = await fetch("/api/ai", {
@@ -319,12 +387,10 @@ export default function DashboardSettingsPage() {
         height: 240,
         collapsed: false,
       };
-      const next = [...widgets, w];
-      setWidgets(next);
+      updateWidgets((ws) => [...ws, w]);
       setAiPrompt("");
-      saveWidgets(next);
     } catch {
-      setWidgetError("Failed to generate widget. Please try again.");
+      setError("Failed to generate widget. Please try again.");
     } finally {
       setAiGenerating(false);
     }
@@ -341,337 +407,417 @@ export default function DashboardSettingsPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.heading}>Dashboard</h1>
-        <p className={styles.subheading}>
-          Enable built-in widgets, service widgets, and automation tiles.
-        </p>
-      </div>
-
-      {/* ── Section 1: Built-in Widgets ── */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Built-in Widgets</h2>
-        <p className={styles.sectionDesc}>
-          Toggle widgets on or off. Enabled widgets appear as tiles in the
-          dashboard center area.
-        </p>
-
-        {widgetLoading ? (
-          <div className={styles.loadingMsg}>Loading…</div>
-        ) : (
-          <ul className={styles.list} aria-label="Built-in widget toggles">
-            {builtinDefs.map((def) => {
-              const instance = findBuiltin(def.type);
-              const enabled = !!instance;
-              const configOpen = expandedConfig === def.type;
-
-              return (
-                <li key={def.type} className={styles.builtinItem}>
-                  <div
-                    className={`${styles.item} ${!enabled ? styles.itemDisabled : ""}`}
-                  >
-                    <span className={styles.itemIcon} aria-hidden="true">
-                      {iconFor(def.icon)}
-                    </span>
-                    <div className={styles.itemBody}>
-                      <span className={styles.itemLabel}>
-                        {def.displayName}
-                      </span>
-                      <span className={styles.itemDesc}>
-                        {def.description}
-                      </span>
-                    </div>
-                    <div className={styles.itemActions}>
-                      {enabled && def.configFields.length > 0 && (
-                        <button
-                          className={styles.configToggle}
-                          onClick={() =>
-                            setExpandedConfig(configOpen ? null : def.type)
-                          }
-                          aria-label={`${configOpen ? "Hide" : "Show"} ${def.displayName} settings`}
-                          title="Widget settings"
-                        >
-                          {configOpen ? (
-                            <ChevronUp size={14} />
-                          ) : (
-                            <ChevronDown size={14} />
-                          )}
-                        </button>
-                      )}
-                      <button
-                        className={`${styles.toggleBtn} ${enabled ? styles.toggleOn : styles.toggleOff}`}
-                        onClick={() => toggleBuiltin(def)}
-                        role="switch"
-                        aria-checked={enabled}
-                        aria-label={`${enabled ? "Disable" : "Enable"} ${def.displayName}`}
-                      >
-                        <span className={styles.toggleKnob} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {enabled && configOpen && instance && (
-                    <div className={styles.configPanel}>
-                      {def.configFields.map((field) => (
-                        <ConfigFieldInput
-                          key={field.key}
-                          field={field}
-                          value={
-                            (instance.config?.[field.key] as string) ?? ""
-                          }
-                          onChange={(v) =>
-                            updateBuiltinConfig(def.type, field.key, v)
-                          }
-                        />
-                      ))}
-                      <div className={styles.configSaveRow}>
-                        <button
-                          className={styles.saveBtn}
-                          onClick={() => saveWidgets()}
-                          disabled={widgetSaving}
-                        >
-                          {widgetSaving ? "Saving…" : "Save"}
-                        </button>
-                      </div>
-                    </div>
+    <div className={styles.pageLayout}>
+      {/* ── Card-file dashboard selector (left) ── */}
+      <aside className={styles.dashSelector}>
+        <p className={styles.dashSelectorLabel}>Dashboards</p>
+        <ul className={styles.dashList}>
+          {dashboards.map((d) => (
+            <li key={d.id}>
+              <button
+                className={`${styles.dashCard} ${d.id === activeDash?.id ? styles.dashCardActive : ""}`}
+                onClick={() => {
+                  setActiveDashId(d.id);
+                  setEditingName(false);
+                }}
+              >
+                <span className={styles.dashCardName}>
+                  {d.name}
+                  {d.isDefault && (
+                    <Star
+                      size={10}
+                      className={styles.dashDefaultIcon}
+                      aria-label="Default"
+                    />
                   )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button className={styles.dashAddBtn} onClick={addDashboard}>
+          <Plus size={14} /> New
+        </button>
+      </aside>
 
-      {/* ── Section 2: Service Plugin Widgets ── */}
-      {pluginWidgets.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Service Widgets</h2>
-          <p className={styles.sectionDesc}>
-            Widgets detected from your connected services. Toggle to display in
-            the dashboard.
-          </p>
-
-          <ul className={styles.list} aria-label="Service plugin widgets">
-            {pluginWidgets.map((aw) => {
-              const key = availKey(aw);
-              const enabled = isAvailEnabled(aw);
-              const instance = findAvailInstance(aw);
-              const configOpen = expandedConfig === key;
-
-              return (
-                <li key={key} className={styles.builtinItem}>
-                  <div
-                    className={`${styles.item} ${!enabled ? styles.itemDisabled : ""}`}
-                  >
-                    <span className={styles.itemIcon} aria-hidden="true">
-                      {iconFor(aw.icon)}
-                    </span>
-                    <div className={styles.itemBody}>
-                      <span className={styles.itemLabel}>
-                        {aw.displayName}
-                      </span>
-                      <span className={styles.itemDesc}>
-                        {aw.description}
-                      </span>
-                    </div>
-                    <div className={styles.itemActions}>
-                      {enabled && aw.configFields.length > 0 && (
-                        <button
-                          className={styles.configToggle}
-                          onClick={() =>
-                            setExpandedConfig(configOpen ? null : key)
-                          }
-                          aria-label={`${configOpen ? "Hide" : "Show"} ${aw.displayName} settings`}
-                          title="Widget settings"
-                        >
-                          {configOpen ? (
-                            <ChevronUp size={14} />
-                          ) : (
-                            <ChevronDown size={14} />
-                          )}
-                        </button>
-                      )}
-                      <button
-                        className={`${styles.toggleBtn} ${enabled ? styles.toggleOn : styles.toggleOff}`}
-                        onClick={() => toggleAvailable(aw)}
-                        role="switch"
-                        aria-checked={enabled}
-                        aria-label={`${enabled ? "Disable" : "Enable"} ${aw.displayName}`}
-                      >
-                        <span className={styles.toggleKnob} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {enabled && configOpen && instance && (
-                    <div className={styles.configPanel}>
-                      {aw.configFields.map((field) => (
-                        <ConfigFieldInput
-                          key={field.key}
-                          field={field}
-                          value={
-                            (instance.config?.[field.key] as string) ?? ""
-                          }
-                          onChange={(v) => updateAvailConfig(aw, field.key, v)}
-                        />
-                      ))}
-                      <div className={styles.configSaveRow}>
-                        <button
-                          className={styles.saveBtn}
-                          onClick={() => saveWidgets()}
-                          disabled={widgetSaving}
-                        >
-                          {widgetSaving ? "Saving…" : "Save"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-      {/* ── Section 3: Automation Widgets ── */}
-      {automationWidgets.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Automation Widgets</h2>
-          <p className={styles.sectionDesc}>
-            Each automation can be displayed as a dashboard tile with a Run
-            button. Toggle to enable.
-          </p>
-
-          <ul className={styles.list} aria-label="Automation widgets">
-            {automationWidgets.map((aw) => {
-              const key = availKey(aw);
-              const enabled = isAvailEnabled(aw);
-
-              return (
-                <li key={key}>
-                  <div
-                    className={`${styles.item} ${!enabled ? styles.itemDisabled : ""}`}
-                  >
-                    <span className={styles.itemIcon} aria-hidden="true">
-                      {iconFor(aw.icon)}
-                    </span>
-                    <div className={styles.itemBody}>
-                      <span className={styles.itemLabel}>
-                        {aw.displayName}
-                      </span>
-                      <span className={styles.itemDesc}>
-                        {aw.description}
-                      </span>
-                    </div>
-                    <div className={styles.itemActions}>
-                      <button
-                        className={`${styles.toggleBtn} ${enabled ? styles.toggleOn : styles.toggleOff}`}
-                        onClick={() => toggleAvailable(aw)}
-                        role="switch"
-                        aria-checked={enabled}
-                        aria-label={`${enabled ? "Disable" : "Enable"} ${aw.displayName}`}
-                      >
-                        <span className={styles.toggleKnob} />
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-      {/* ── Section 4: Custom Widgets ── */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Custom Widgets</h2>
-          <button className={styles.newBtn} onClick={addBlankWidget}>
-            + New Widget
-          </button>
-        </div>
-        <p className={styles.sectionDesc}>
-          Free-form tiles displayed in the dashboard center area. Drag to move,
-          resize from the corner, and collapse or close as needed.
-        </p>
-
-        {/* AI widget creation */}
-        <div className={styles.promptRow}>
-          <Bot
-            size={16}
-            style={{
-              flexShrink: 0,
-              marginTop: 10,
-              color: "var(--color-accent-brand)",
-            }}
-          />
-          <input
-            className={styles.promptInput}
-            type="text"
-            placeholder="Describe a widget for AI to create…"
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !aiGenerating) generateWidget();
-            }}
-          />
-          <button
-            className={styles.promptSubmit}
-            onClick={generateWidget}
-            disabled={aiGenerating || !aiPrompt.trim()}
-          >
-            {aiGenerating ? "Generating…" : "Create with AI"}
-          </button>
-        </div>
-
-        {widgetLoading ? (
+      {/* ── Dashboard settings (right) ── */}
+      <div className={styles.page}>
+        {loading ? (
           <div className={styles.loadingMsg}>Loading…</div>
-        ) : customWidgets.length === 0 ? (
-          <div className={styles.empty}>
-            No custom widgets yet. Add one above.
-          </div>
+        ) : !activeDash ? (
+          <div className={styles.empty}>No dashboards found.</div>
         ) : (
-          <ul className={styles.list} aria-label="Custom widgets">
-            {customWidgets.map((w) => (
-              <li key={w.id} className={styles.item}>
-                <div className={styles.itemBody}>
-                  <span className={styles.itemLabel}>{w.title}</span>
-                  <span className={styles.itemDesc}>
-                    {w.content
-                      ? w.content.slice(0, 80) +
-                        (w.content.length > 80 ? "…" : "")
-                      : "Empty widget"}
-                  </span>
-                </div>
-                <div className={styles.itemActions}>
+          <>
+            {/* Dashboard name + rename */}
+            <div className={styles.header}>
+              {editingName ? (
+                <input
+                  className={styles.renameInput}
+                  autoFocus
+                  defaultValue={activeDash.name}
+                  onBlur={(e) => renameDashboard(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter")
+                      renameDashboard((e.target as HTMLInputElement).value);
+                    if (e.key === "Escape") setEditingName(false);
+                  }}
+                />
+              ) : (
+                <h1 className={styles.heading}>
+                  {activeDash.name}
                   <button
-                    className={styles.deleteBtn}
-                    onClick={() => deleteWidget(w.id)}
-                    aria-label={`Delete ${w.title}`}
-                    title="Delete widget"
+                    className={styles.renameBtn}
+                    onClick={() => setEditingName(true)}
+                    aria-label="Rename dashboard"
+                    title="Rename"
                   >
-                    <Trash2 size={14} />
+                    <Pencil size={12} />
                   </button>
+                </h1>
+              )}
+              <p className={styles.subheading}>
+                Configure widgets for this dashboard.
+                {activeDash.isDefault && " This is the default dashboard."}
+              </p>
+            </div>
+
+            {/* ── Section 1: Built-in Widgets ── */}
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>Built-in Widgets</h2>
+              <p className={styles.sectionDesc}>
+                Toggle widgets on or off for this dashboard.
+              </p>
+
+              <ul className={styles.list} aria-label="Built-in widget toggles">
+                {builtinDefs.map((def) => {
+                  const instance = findBuiltin(def.type);
+                  const enabled = !!instance;
+                  const configOpen = expandedConfig === def.type;
+
+                  return (
+                    <li key={def.type} className={styles.builtinItem}>
+                      <div
+                        className={`${styles.item} ${!enabled ? styles.itemDisabled : ""}`}
+                      >
+                        <span className={styles.itemIcon} aria-hidden="true">
+                          {iconFor(def.icon)}
+                        </span>
+                        <div className={styles.itemBody}>
+                          <span className={styles.itemLabel}>
+                            {def.displayName}
+                          </span>
+                          <span className={styles.itemDesc}>
+                            {def.description}
+                          </span>
+                        </div>
+                        <div className={styles.itemActions}>
+                          {enabled && def.configFields.length > 0 && (
+                            <button
+                              className={styles.configToggle}
+                              onClick={() =>
+                                setExpandedConfig(
+                                  configOpen ? null : def.type,
+                                )
+                              }
+                              aria-label={`${configOpen ? "Hide" : "Show"} ${def.displayName} settings`}
+                              title="Widget settings"
+                            >
+                              {configOpen ? (
+                                <ChevronUp size={14} />
+                              ) : (
+                                <ChevronDown size={14} />
+                              )}
+                            </button>
+                          )}
+                          <button
+                            className={`${styles.toggleBtn} ${enabled ? styles.toggleOn : styles.toggleOff}`}
+                            onClick={() => toggleBuiltin(def)}
+                            role="switch"
+                            aria-checked={enabled}
+                            aria-label={`${enabled ? "Disable" : "Enable"} ${def.displayName}`}
+                          >
+                            <span className={styles.toggleKnob} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {enabled && configOpen && instance && (
+                        <div className={styles.configPanel}>
+                          {def.configFields.map((field) => (
+                            <ConfigFieldInput
+                              key={field.key}
+                              field={field}
+                              value={
+                                (instance.config?.[field.key] as string) ?? ""
+                              }
+                              onChange={(v) =>
+                                updateBuiltinConfig(def.type, field.key, v)
+                              }
+                            />
+                          ))}
+                          <div className={styles.configSaveRow}>
+                            <button
+                              className={styles.saveBtn}
+                              onClick={() => saveDashboards()}
+                              disabled={saving}
+                            >
+                              {saving ? "Saving…" : "Save"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+
+            {/* ── Section 2: Service Plugin Widgets ── */}
+            {pluginWidgets.length > 0 && (
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Service Widgets</h2>
+                <p className={styles.sectionDesc}>
+                  Widgets detected from your connected services.
+                </p>
+                <ul className={styles.list} aria-label="Service plugin widgets">
+                  {pluginWidgets.map((aw) => {
+                    const key = availKey(aw);
+                    const enabled = isAvailEnabled(aw);
+                    const instance = findAvailInstance(aw);
+                    const configOpen = expandedConfig === key;
+
+                    return (
+                      <li key={key} className={styles.builtinItem}>
+                        <div
+                          className={`${styles.item} ${!enabled ? styles.itemDisabled : ""}`}
+                        >
+                          <span className={styles.itemIcon} aria-hidden="true">
+                            {iconFor(aw.icon)}
+                          </span>
+                          <div className={styles.itemBody}>
+                            <span className={styles.itemLabel}>
+                              {aw.displayName}
+                            </span>
+                            <span className={styles.itemDesc}>
+                              {aw.description}
+                            </span>
+                          </div>
+                          <div className={styles.itemActions}>
+                            {enabled && aw.configFields.length > 0 && (
+                              <button
+                                className={styles.configToggle}
+                                onClick={() =>
+                                  setExpandedConfig(
+                                    configOpen ? null : key,
+                                  )
+                                }
+                                title="Widget settings"
+                              >
+                                {configOpen ? (
+                                  <ChevronUp size={14} />
+                                ) : (
+                                  <ChevronDown size={14} />
+                                )}
+                              </button>
+                            )}
+                            <button
+                              className={`${styles.toggleBtn} ${enabled ? styles.toggleOn : styles.toggleOff}`}
+                              onClick={() => toggleAvailable(aw)}
+                              role="switch"
+                              aria-checked={enabled}
+                            >
+                              <span className={styles.toggleKnob} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {enabled && configOpen && instance && (
+                          <div className={styles.configPanel}>
+                            {aw.configFields.map((field) => (
+                              <ConfigFieldInput
+                                key={field.key}
+                                field={field}
+                                value={
+                                  (instance.config?.[field.key] as string) ?? ""
+                                }
+                                onChange={(v) =>
+                                  updateAvailConfig(aw, field.key, v)
+                                }
+                              />
+                            ))}
+                            <div className={styles.configSaveRow}>
+                              <button
+                                className={styles.saveBtn}
+                                onClick={() => saveDashboards()}
+                                disabled={saving}
+                              >
+                                {saving ? "Saving…" : "Save"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
+            {/* ── Section 3: Automation Widgets ── */}
+            {automationWidgets.length > 0 && (
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Automation Widgets</h2>
+                <p className={styles.sectionDesc}>
+                  Each automation can be displayed as a dashboard tile with a Run
+                  button.
+                </p>
+                <ul className={styles.list} aria-label="Automation widgets">
+                  {automationWidgets.map((aw) => {
+                    const key = availKey(aw);
+                    const enabled = isAvailEnabled(aw);
+                    return (
+                      <li key={key}>
+                        <div
+                          className={`${styles.item} ${!enabled ? styles.itemDisabled : ""}`}
+                        >
+                          <span className={styles.itemIcon} aria-hidden="true">
+                            {iconFor(aw.icon)}
+                          </span>
+                          <div className={styles.itemBody}>
+                            <span className={styles.itemLabel}>
+                              {aw.displayName}
+                            </span>
+                            <span className={styles.itemDesc}>
+                              {aw.description}
+                            </span>
+                          </div>
+                          <div className={styles.itemActions}>
+                            <button
+                              className={`${styles.toggleBtn} ${enabled ? styles.toggleOn : styles.toggleOff}`}
+                              onClick={() => toggleAvailable(aw)}
+                              role="switch"
+                              aria-checked={enabled}
+                            >
+                              <span className={styles.toggleKnob} />
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
+            {/* ── Section 4: Custom Widgets ── */}
+            <section className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Custom Widgets</h2>
+                <button className={styles.newBtn} onClick={addBlankWidget}>
+                  + New Widget
+                </button>
+              </div>
+              <p className={styles.sectionDesc}>
+                Free-form tiles. Drag to move, resize from the corner.
+              </p>
+
+              <div className={styles.promptRow}>
+                <Bot
+                  size={16}
+                  style={{
+                    flexShrink: 0,
+                    marginTop: 10,
+                    color: "var(--color-accent-brand)",
+                  }}
+                />
+                <input
+                  className={styles.promptInput}
+                  type="text"
+                  placeholder="Describe a widget for AI to create…"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !aiGenerating) generateWidget();
+                  }}
+                />
+                <button
+                  className={styles.promptSubmit}
+                  onClick={generateWidget}
+                  disabled={aiGenerating || !aiPrompt.trim()}
+                >
+                  {aiGenerating ? "Generating…" : "Create with AI"}
+                </button>
+              </div>
+
+              {customWidgets.length === 0 ? (
+                <div className={styles.empty}>
+                  No custom widgets yet. Add one above.
                 </div>
-              </li>
-            ))}
-          </ul>
+              ) : (
+                <ul className={styles.list} aria-label="Custom widgets">
+                  {customWidgets.map((w) => (
+                    <li key={w.id} className={styles.item}>
+                      <div className={styles.itemBody}>
+                        <span className={styles.itemLabel}>{w.title}</span>
+                        <span className={styles.itemDesc}>
+                          {w.content
+                            ? w.content.slice(0, 80) +
+                              (w.content.length > 80 ? "…" : "")
+                            : "Empty widget"}
+                        </span>
+                      </div>
+                      <div className={styles.itemActions}>
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={() => deleteWidget(w.id)}
+                          aria-label={`Delete ${w.title}`}
+                          title="Delete widget"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {error && <p className={styles.errorMsg}>{error}</p>}
+            {saved && <p className={styles.successMsg}>Saved.</p>}
+
+            {/* ── Footer buttons ── */}
+            <div className={styles.saveRow}>
+              <button
+                className={styles.saveBtn}
+                onClick={() => saveDashboards()}
+                disabled={saving || loading}
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+              {!activeDash.isDefault && (
+                <button
+                  className={styles.makeDefaultBtn}
+                  onClick={makeDefault}
+                  disabled={saving}
+                >
+                  <Star size={12} /> Make Default
+                </button>
+              )}
+              {!activeDash.isDefault && (
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => deleteDashboard(activeDash.id)}
+                  aria-label="Delete this dashboard"
+                  title="Delete dashboard"
+                  style={{ marginLeft: "auto" }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
+          </>
         )}
-
-        {widgetError && <p className={styles.errorMsg}>{widgetError}</p>}
-        {widgetSaved && <p className={styles.successMsg}>Widgets saved.</p>}
-
-        <div className={styles.saveRow}>
-          <button
-            className={styles.saveBtn}
-            onClick={() => saveWidgets()}
-            disabled={widgetSaving || widgetLoading}
-          >
-            {widgetSaving ? "Saving…" : "Save widgets"}
-          </button>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

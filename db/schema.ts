@@ -80,7 +80,10 @@ export const userSettings = pgTable("user_settings", {
   // UiPreferences shape — background and panel appearance. Null = use DEFAULT_UI_PREFERENCES.
   uiPreferences: jsonb("ui_preferences"),
   // DashboardWidget[] — free-form tiles on the home page center area. Null = empty.
+  // Deprecated: use `dashboards` for multi-dashboard support.
   dashboardWidgets: jsonb("dashboard_widgets"),
+  // Dashboard[] — array of named dashboards, each with its own widget set. Null = legacy single.
+  dashboards: jsonb("dashboards"),
 });
 
 // ── Plugin system tables ──────────────────────────────────────────────────────

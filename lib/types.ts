@@ -83,6 +83,15 @@ export interface DashboardWidget {
   config?: Record<string, unknown>; // widget-type-specific settings
 }
 
+// ── Multi-dashboard ──────────────────────────────────────────────────────────
+
+export interface Dashboard {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  widgets: DashboardWidget[];
+}
+
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 
 /**

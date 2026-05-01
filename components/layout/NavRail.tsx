@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  Home,
+  LayoutDashboard,
   Mail,
   Calendar,
   MessageSquare,
@@ -63,8 +63,13 @@ export interface EmbedItem {
   openMode?: "embed" | "new_tab";
 }
 
+export interface DashboardSubItem {
+  id: string;
+  label: string;
+}
+
 const topItems: NavItem[] = [
-  { id: "home", label: "Home", icon: <Home size={20} aria-hidden="true" /> },
+  { id: "dashboards", label: "Dashboards", icon: <LayoutDashboard size={20} aria-hidden="true" /> },
   { id: "mail", label: "Mail", icon: <Mail size={20} aria-hidden="true" /> },
   { id: "calendar", label: "Calendar", icon: <Calendar size={20} aria-hidden="true" /> },
   { id: "messaging", label: "Messaging", icon: <MessageSquare size={20} aria-hidden="true" /> },
@@ -79,6 +84,8 @@ const bottomItems: NavItem[] = [
 
 interface NavRailProps {
   activeItemId?: string;
+  activeDashboardId?: string;
+  dashboardSubItems?: DashboardSubItem[];
   activeCrmSubItemId?: string;
   crmSubItems?: CrmSubItem[];
   embedItems?: EmbedItem[];
@@ -88,6 +95,8 @@ interface NavRailProps {
 
 export default function NavRail({
   activeItemId = "code",
+  activeDashboardId,
+  dashboardSubItems,
   activeCrmSubItemId,
   crmSubItems,
   embedItems,
@@ -108,6 +117,25 @@ export default function NavRail({
               <span className={styles.navIcon}>{item.icon}</span>
               <span className={styles.navLabel}>{item.label}</span>
             </button>
+
+            {item.id === "dashboards" && dashboardSubItems && dashboardSubItems.length > 0 && (
+              <div className={styles.navSubList} role="group" aria-label="Dashboards">
+                {dashboardSubItems.map((sub) => (
+                  <button
+                    key={sub.id}
+                    className={`${styles.navSubItem}${sub.id === activeDashboardId ? ` ${styles.active}` : ""}`}
+                    onClick={() => onNavigate?.(`dashboard:${sub.id}`)}
+                    aria-label={sub.label}
+                    aria-current={sub.id === activeDashboardId ? "page" : undefined}
+                  >
+                    <span className={styles.navSubIcon}>
+                      <LayoutDashboard size={16} aria-hidden="true" />
+                    </span>
+                    <span className={styles.navLabel}>{sub.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             {item.id === "crm" && crmSubItems && crmSubItems.length > 0 && (
               <div className={styles.navSubList} role="group" aria-label="CRM record types">
