@@ -45,6 +45,7 @@ import { useEventStream } from "@/lib/hooks/useEventStream";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import type { WidgetMetrics, WidgetPreference, WidgetServiceKey, KeybindingOverrides, DashboardWidget } from "@/lib/types";
 import { DEFAULT_WIDGET_PREFS } from "@/lib/types";
+import { getAllWidgetDefs } from "@/components/widgets/registry";
 import { netsuiteKeyLabel } from "@/lib/metrics";
 
 import styles from "./dashboard.module.css";
@@ -217,7 +218,31 @@ export default function DashboardClient({
     fetch("/api/settings/dashboard-widgets")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setDashboardWidgets(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setDashboardWidgets(data);
+        } else {
+          // Seed built-in widgets (Clock + Weather) on first visit
+          const defs = getAllWidgetDefs();
+          const defaults: DashboardWidget[] = defs.map((def, i) => ({
+            id: crypto.randomUUID(),
+            title: def.displayName,
+            content: "",
+            type: def.type,
+            x: 16 + i * 240,
+            y: 16,
+            width: def.defaultWidth,
+            height: def.defaultHeight,
+            collapsed: false,
+            config: { ...def.defaultConfig },
+          }));
+          setDashboardWidgets(defaults);
+          // Persist the defaults
+          fetch("/api/settings/dashboard-widgets", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(defaults),
+          }).catch(() => {});
+        }
       })
       .catch(() => {});
   }, []);

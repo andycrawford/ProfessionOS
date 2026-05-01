@@ -51,6 +51,8 @@ export async function PATCH(req: Request) {
   }
 
   // Light validation — ensure each item has required fields
+  const VALID_TYPES = new Set(["ai_custom", "clock", "weather"]);
+
   let widgets: DashboardWidget[];
   try {
     widgets = body.map((item: unknown) => {
@@ -59,6 +61,7 @@ export async function PATCH(req: Request) {
         typeof w.id !== "string" ||
         typeof w.title !== "string" ||
         typeof w.type !== "string" ||
+        !VALID_TYPES.has(w.type) ||
         typeof w.x !== "number" ||
         typeof w.y !== "number" ||
         typeof w.width !== "number" ||
@@ -76,6 +79,9 @@ export async function PATCH(req: Request) {
         width: w.width,
         height: w.height,
         collapsed: Boolean(w.collapsed),
+        ...(w.config && typeof w.config === "object"
+          ? { config: w.config as Record<string, unknown> }
+          : {}),
       };
     });
   } catch (err) {

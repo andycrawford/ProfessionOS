@@ -3,6 +3,8 @@
 import { useRef, useCallback } from "react";
 import { X, Minus, Plus } from "lucide-react";
 import type { DashboardWidget } from "@/lib/types";
+import ClockWidget from "./ClockWidget";
+import WeatherWidget from "./WeatherWidget";
 import styles from "./DashboardTile.module.css";
 
 interface DashboardTileProps {
@@ -140,9 +142,15 @@ export default function DashboardTile({
       {!widget.collapsed && (
         <>
           <div className={styles.body}>
-            <div className={styles.content}>
-              {widget.content || "No content"}
-            </div>
+            {widget.type === "clock" ? (
+              <ClockWidget config={widget.config} />
+            ) : widget.type === "weather" ? (
+              <WeatherWidget config={widget.config} />
+            ) : (
+              <div className={styles.content}>
+                {widget.content || "No content"}
+              </div>
+            )}
           </div>
           {/* Resize handle — bottom-right corner */}
           <div

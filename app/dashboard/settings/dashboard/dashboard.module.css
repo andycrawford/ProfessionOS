@@ -292,6 +292,90 @@
   cursor: not-allowed;
 }
 
+/* ── Built-in widget item (wraps item + config panel) ──────────── */
+
+.builtinItem {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Config expand toggle ────────────────────────────────────────── */
+
+.configToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: none;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--duration-fast), color var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.configToggle:hover {
+  background: var(--color-bg-raised);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-focus);
+}
+
+/* ── Inline config panel ─────────────────────────────────────────── */
+
+.configPanel {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-default);
+  border-top: none;
+  border-radius: 0 0 var(--radius-default) var(--radius-default);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.configField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.configLabel {
+  font-size: var(--text-body-sm-size);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.configInput,
+.configSelect {
+  height: 32px;
+  padding: 0 var(--space-3);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--text-body-sm-size);
+  font-family: var(--font-ui);
+  transition: border-color var(--duration-fast);
+}
+
+.configInput:focus,
+.configSelect:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.configInput::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.configSaveRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* ── Empty state ─────────────────────────────────────────────────── */
 
 .empty {
