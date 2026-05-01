@@ -63,6 +63,20 @@ export const DEFAULT_WIDGET_PREFS: WidgetPreference[] = [
   { key: "crm", enabled: true },
 ];
 
+// ── Dashboard widgets (free-form tiles in the home page center area) ──────────
+
+export interface DashboardWidget {
+  id: string;
+  title: string;
+  content: string;      // plain text / markdown content
+  type: 'ai_custom';    // extensible for future plugin types
+  x: number;            // left offset in px within center area
+  y: number;            // top offset in px within center area
+  width: number;        // px
+  height: number;       // px
+  collapsed: boolean;
+}
+
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 
 /**

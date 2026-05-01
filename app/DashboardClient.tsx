@@ -37,12 +37,13 @@ import AiPanel, {
 import WidgetCard, { type WidgetState } from "@/components/widgets/WidgetCard";
 import WidgetRow from "@/components/widgets/WidgetRow";
 import WidgetSettingsDialog from "@/components/widgets/WidgetSettingsDialog";
+import DashboardTile from "@/components/widgets/DashboardTile";
 import CommandPalette, { type Command } from "@/components/CommandPalette";
 import KeyboardHelpDialog, { type PluginBinding } from "@/components/KeyboardHelpDialog";
 
 import { useEventStream } from "@/lib/hooks/useEventStream";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
-import type { WidgetMetrics, WidgetPreference, WidgetServiceKey, KeybindingOverrides } from "@/lib/types";
+import type { WidgetMetrics, WidgetPreference, WidgetServiceKey, KeybindingOverrides, DashboardWidget } from "@/lib/types";
 import { DEFAULT_WIDGET_PREFS } from "@/lib/types";
 import { netsuiteKeyLabel } from "@/lib/metrics";
 
@@ -188,6 +189,10 @@ export default function DashboardClient({
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
   const [pluginBindings, setPluginBindings] = useState<PluginBinding[]>([]);
 
+  // ── Dashboard widgets (free-form tiles in center area) ──────────────────────
+  const [dashboardWidgets, setDashboardWidgets] = useState<DashboardWidget[]>([]);
+  const widgetSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Sidebar nav items from connected services ────────────────────────────────
   const [crmSubItems, setCrmSubItems] = useState<CrmSubItem[]>([]);
   const [embedItems, setEmbedItems] = useState<EmbedItem[]>([]);
@@ -206,6 +211,13 @@ export default function DashboardClient({
       .then((data) => {
         setKeybindingOverrides(data.overrides ?? {});
         setPluginBindings(data.pluginBindings ?? []);
+      })
+      .catch(() => {});
+
+    fetch("/api/settings/dashboard-widgets")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setDashboardWidgets(data);
       })
       .catch(() => {});
   }, []);
@@ -287,6 +299,53 @@ export default function DashboardClient({
   const handleDismissAlerts = useCallback(() => {
     setAlerts((prev) => prev.filter((a) => a.severity === "critical"));
   }, []);
+
+  // ── Dashboard widget handlers ────────────────────────────────────────────────
+  const saveDashboardWidgets = useCallback((next: DashboardWidget[]) => {
+    if (widgetSaveTimer.current) clearTimeout(widgetSaveTimer.current);
+    widgetSaveTimer.current = setTimeout(() => {
+      fetch("/api/settings/dashboard-widgets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      }).catch(() => {});
+    }, 800);
+  }, []);
+
+  const handleWidgetChange = useCallback(
+    (id: string, changes: Partial<DashboardWidget>) => {
+      setDashboardWidgets((prev) => {
+        const next = prev.map((w) => (w.id === id ? { ...w, ...changes } : w));
+        saveDashboardWidgets(next);
+        return next;
+      });
+    },
+    [saveDashboardWidgets],
+  );
+
+  const handleWidgetClose = useCallback(
+    (id: string) => {
+      setDashboardWidgets((prev) => {
+        const next = prev.filter((w) => w.id !== id);
+        saveDashboardWidgets(next);
+        return next;
+      });
+    },
+    [saveDashboardWidgets],
+  );
+
+  const handleWidgetToggleCollapse = useCallback(
+    (id: string) => {
+      setDashboardWidgets((prev) => {
+        const next = prev.map((w) =>
+          w.id === id ? { ...w, collapsed: !w.collapsed } : w,
+        );
+        saveDashboardWidgets(next);
+        return next;
+      });
+    },
+    [saveDashboardWidgets],
+  );
 
   // ── Conversation history ─────────────────────────────────────────────────────
   const fetchConversations = useCallback(async () => {
@@ -635,7 +694,18 @@ export default function DashboardClient({
               </div>
 
               <div className={styles.bottomRow}>
-                {/* Center area — available for future widget tiles when timeline is collapsed */}
+                {/* Center area — widget canvas for dashboard tiles */}
+                <div className={styles.widgetCanvas}>
+                  {dashboardWidgets.map((w) => (
+                    <DashboardTile
+                      key={w.id}
+                      widget={w}
+                      onClose={handleWidgetClose}
+                      onToggleCollapse={handleWidgetToggleCollapse}
+                      onChange={handleWidgetChange}
+                    />
+                  ))}
+                </div>
                 <AiPanel
                   suggestion={suggestion}
                   messages={messages}

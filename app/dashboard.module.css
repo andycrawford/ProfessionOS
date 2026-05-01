@@ -97,6 +97,14 @@
   min-height: 0;
 }
 
+/* Canvas for free-form dashboard tiles — fills left of AiPanel */
+.widgetCanvas {
+  flex:     1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
 /* Activity Timeline wrappers — sits below bottomRow in mainPanel */
 .timelineCollapsedWrapper {
   flex: 0 0 var(--topbar-height);

@@ -1,0 +1,142 @@
+/* Dashboard tile — free-form draggable/resizable widget in the center area */
+
+.tile {
+  position: absolute;
+  background: var(--panel-bg);
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  backdrop-filter: blur(var(--panel-blur));
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  min-width: 180px;
+  z-index: 10;
+}
+
+/* ── Title bar (drag handle) ── */
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  height: 28px;
+  background: var(--color-bg-raised);
+  border-bottom: 1px solid var(--color-border-default);
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+  touch-action: none;
+}
+
+.titleBar:active {
+  cursor: grabbing;
+}
+
+.title {
+  flex: 1;
+  font-size: var(--text-body-sm-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* ── Close button (top-left) ── */
+
+.closeBtn {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition:
+    background var(--duration-fast) var(--easing-default),
+    color var(--duration-fast) var(--easing-default);
+}
+
+.closeBtn:hover {
+  background: var(--color-alert-critical);
+  color: #fff;
+}
+
+/* ── Collapse button (top-right) ── */
+
+.collapseBtn {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: 2px;
+  flex-shrink: 0;
+  transition:
+    background var(--duration-fast) var(--easing-default),
+    color var(--duration-fast) var(--easing-default);
+}
+
+.collapseBtn:hover {
+  background: var(--color-bg-overlay);
+  color: var(--color-text-primary);
+}
+
+/* ── Body ── */
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  min-height: 0;
+}
+
+.content {
+  font-size: var(--text-body-sm-size);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Resize handle (bottom-right corner) ── */
+
+.resizeHandle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+/* Three-line grip in the corner */
+.resizeHandle::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--color-border-default);
+  border-bottom: 2px solid var(--color-border-default);
+  opacity: 0.6;
+  transition: opacity var(--duration-fast) var(--easing-default);
+}
+
+.resizeHandle:hover::before {
+  opacity: 1;
+}

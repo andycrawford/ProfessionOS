@@ -79,6 +79,8 @@ export const userSettings = pgTable("user_settings", {
   keybindings: jsonb("keybindings"),
   // UiPreferences shape — background and panel appearance. Null = use DEFAULT_UI_PREFERENCES.
   uiPreferences: jsonb("ui_preferences"),
+  // DashboardWidget[] — free-form tiles on the home page center area. Null = empty.
+  dashboardWidgets: jsonb("dashboard_widgets"),
 });
 
 // ── Plugin system tables ──────────────────────────────────────────────────────
