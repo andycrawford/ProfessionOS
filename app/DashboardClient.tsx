@@ -152,6 +152,7 @@ export default function DashboardClient({
   const [activeNav, setActiveNav] = useState("home");
   const [aiOpen, setAiOpen] = useState(false);
   const [feedFilter, setFeedFilter] = useState<FeedService | "all">("all");
+  const [timelineCollapsed, setTimelineCollapsed] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [aiStreaming, setAiStreaming] = useState(false);
@@ -608,11 +609,7 @@ export default function DashboardClient({
               </div>
 
               <div className={styles.bottomRow}>
-                <ActivityTimeline
-                  items={feed}
-                  activeFilter={feedFilter}
-                  onFilterChange={setFeedFilter}
-                />
+                {/* Center area — available for future widget tiles when timeline is collapsed */}
                 <AiPanel
                   suggestion={suggestion}
                   messages={messages}
@@ -628,6 +625,16 @@ export default function DashboardClient({
                       setSuggestion(undefined);
                     }
                   }}
+                />
+              </div>
+
+              <div className={timelineCollapsed ? styles.timelineCollapsedWrapper : styles.timelineExpandedWrapper}>
+                <ActivityTimeline
+                  items={feed}
+                  activeFilter={feedFilter}
+                  onFilterChange={setFeedFilter}
+                  collapsed={timelineCollapsed}
+                  onToggle={() => setTimelineCollapsed((v) => !v)}
                 />
               </div>
             </div>

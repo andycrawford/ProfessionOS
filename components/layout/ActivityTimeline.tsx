@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Mail, Calendar, MessageSquare, Code2, Users, Video, X, Monitor } from "lucide-react";
+import { Mail, Calendar, MessageSquare, Code2, Users, Video, X, Monitor, ChevronUp, ChevronDown } from "lucide-react";
 import styles from "./ActivityTimeline.module.css";
 
 export type FeedItemSeverity = "critical" | "warning" | "info" | "neutral";
@@ -29,6 +29,8 @@ interface ActivityTimelineProps {
   items?: FeedItem[];
   activeFilter?: FeedService | "all";
   onFilterChange?: (filter: FeedService | "all") => void;
+  collapsed?: boolean;
+  onToggle?: () => void;
 }
 
 const SERVICE_FILTERS: { id: FeedService | "all"; label: string }[] = [
@@ -143,6 +145,8 @@ export default function ActivityTimeline({
   items = [],
   activeFilter = "all",
   onFilterChange,
+  collapsed = false,
+  onToggle,
 }: ActivityTimelineProps) {
   const router = useRouter();
   const [popupItem, setPopupItem] = useState<FeedItem | null>(null);
@@ -168,10 +172,52 @@ export default function ActivityTimeline({
     }
   }
 
+  // Collapsed: render a bottom bar mirroring the topbar style
+  if (collapsed) {
+    return (
+      <div className={styles.bottomBar} role="region" aria-label="Activity timeline (collapsed)">
+        <button
+          className={styles.toggleBtn}
+          onClick={onToggle}
+          aria-label="Expand activity timeline"
+          aria-expanded={false}
+        >
+          <ChevronUp size={14} aria-hidden="true" />
+        </button>
+        <span className={styles.barLabel}>Activity</span>
+        <div className={styles.barFilterRow} role="toolbar" aria-label="Filter by service">
+          {SERVICE_FILTERS.map((f) => (
+            <button
+              key={f.id}
+              className={`${styles.filterChip}${activeFilter === f.id ? ` ${styles.active}` : ""}`}
+              onClick={() => onFilterChange?.(f.id)}
+              aria-pressed={activeFilter === f.id}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        {items.length > 0 && (
+          <span className={styles.barCount} aria-label={`${items.length} activity items`}>
+            {items.length}
+          </span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <main className={styles.panel} aria-label="Activity timeline">
       {/* Header: section label + filter chips */}
       <div className={styles.header}>
+        <button
+          className={styles.toggleBtn}
+          onClick={onToggle}
+          aria-label="Collapse activity timeline"
+          aria-expanded={true}
+        >
+          <ChevronDown size={14} aria-hidden="true" />
+        </button>
         <span className={styles.sectionLabel}>Activity</span>
       </div>
       <div className={styles.filterBar} role="toolbar" aria-label="Filter by service">

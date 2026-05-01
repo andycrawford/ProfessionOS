@@ -4,10 +4,89 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  border-right: 1px solid var(--color-border-default);
   background: var(--panel-bg);
   -webkit-backdrop-filter: blur(var(--panel-blur));
   backdrop-filter: blur(var(--panel-blur));
+}
+
+/* ── Bottom bar (collapsed state) — mirrors topbar styling ── */
+
+.bottomBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: var(--topbar-height);
+  padding: 0 var(--space-4);
+  background-color: var(--color-bg-base);
+  background-image:
+    linear-gradient(var(--chrome-bg), var(--chrome-bg)),
+    var(--bg-image, none);
+  background-size: 100% 100%, cover;
+  background-position: 0 0, center;
+  background-attachment: scroll, fixed;
+  border-top: 1px solid var(--color-border-default);
+  overflow: hidden;
+}
+
+.barLabel {
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps-size);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.barFilterRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  overflow: hidden;
+  /* hide scrollbar */
+  scrollbar-width: none;
+}
+
+.barFilterRow::-webkit-scrollbar {
+  display: none;
+}
+
+.barCount {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label-caps-size);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  padding: 1px 6px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Toggle button — used in both collapsed bar and expanded header */
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition:
+    background var(--duration-fast) var(--easing-default),
+    color var(--duration-fast) var(--easing-default);
+}
+
+.toggleBtn:hover {
+  background: var(--color-bg-raised);
+  color: var(--color-text-primary);
 }
 
 /* ── Section header ── */
@@ -15,7 +94,8 @@
 .header {
   display: flex;
   align-items: center;
-  padding: var(--space-2) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }

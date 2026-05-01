@@ -89,12 +89,24 @@
   border-color:  var(--color-text-secondary);
 }
 
-/* Timeline + AI panel side by side */
+/* Center area + AI panel side by side (timeline moved to its own row below) */
 .bottomRow {
   flex:     1;
   display:  flex;
   overflow: hidden;
   min-height: 0;
+}
+
+/* Activity Timeline wrappers — sits below bottomRow in mainPanel */
+.timelineCollapsedWrapper {
+  flex: 0 0 var(--topbar-height);
+  overflow: hidden;
+}
+
+.timelineExpandedWrapper {
+  flex: 2;
+  min-height: 200px;
+  overflow: hidden;
 }
 
 /* ── Topbar ───────────────────────────────────────────────────────── */
