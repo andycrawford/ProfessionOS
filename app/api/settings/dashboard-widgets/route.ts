@@ -51,31 +51,39 @@ export async function PATCH(req: Request) {
   }
 
   // Light validation — ensure each item has required fields
-  const widgets: DashboardWidget[] = body.map((item: unknown) => {
-    const w = item as Record<string, unknown>;
-    if (
-      typeof w.id !== "string" ||
-      typeof w.title !== "string" ||
-      typeof w.type !== "string" ||
-      typeof w.x !== "number" ||
-      typeof w.y !== "number" ||
-      typeof w.width !== "number" ||
-      typeof w.height !== "number"
-    ) {
-      throw new Error("Invalid widget shape");
-    }
-    return {
-      id: w.id,
-      title: w.title,
-      content: typeof w.content === "string" ? w.content : "",
-      type: w.type as DashboardWidget["type"],
-      x: w.x,
-      y: w.y,
-      width: w.width,
-      height: w.height,
-      collapsed: Boolean(w.collapsed),
-    };
-  });
+  let widgets: DashboardWidget[];
+  try {
+    widgets = body.map((item: unknown) => {
+      const w = item as Record<string, unknown>;
+      if (
+        typeof w.id !== "string" ||
+        typeof w.title !== "string" ||
+        typeof w.type !== "string" ||
+        typeof w.x !== "number" ||
+        typeof w.y !== "number" ||
+        typeof w.width !== "number" ||
+        typeof w.height !== "number"
+      ) {
+        throw new Error("Invalid widget shape");
+      }
+      return {
+        id: w.id,
+        title: w.title,
+        content: typeof w.content === "string" ? w.content : "",
+        type: w.type as DashboardWidget["type"],
+        x: w.x,
+        y: w.y,
+        width: w.width,
+        height: w.height,
+        collapsed: Boolean(w.collapsed),
+      };
+    });
+  } catch (err) {
+    return Response.json(
+      { error: err instanceof Error ? err.message : "Invalid widget data" },
+      { status: 400 },
+    );
+  }
 
   const db = getDb();
   try {
