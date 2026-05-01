@@ -103,10 +103,44 @@
   overflow: hidden;
 }
 
+/* Height is set via inline style when expanded; wrapper just clips and sizes to that height */
 .timelineExpandedWrapper {
-  flex: 2;
-  min-height: 200px;
+  flex: 0 0 auto;
   overflow: hidden;
+}
+
+/* Resize handle between center area and expanded timeline */
+.timelineResizeHandle {
+  flex: 0 0 5px;
+  cursor: ns-resize;
+  background: transparent;
+  border-top: 1px solid var(--color-border-default);
+  position: relative;
+  transition: background var(--duration-fast) var(--easing-default);
+  user-select: none;
+  touch-action: none;
+}
+
+/* Grip pip — centered horizontal bar */
+.timelineResizeHandle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 2px;
+  background: var(--color-border-default);
+  border-radius: 1px;
+  transition: background var(--duration-fast) var(--easing-default);
+}
+
+.timelineResizeHandle:hover {
+  background: var(--color-bg-surface);
+}
+
+.timelineResizeHandle:hover::after {
+  background: var(--color-text-secondary);
 }
 
 /* ── Topbar ───────────────────────────────────────────────────────── */

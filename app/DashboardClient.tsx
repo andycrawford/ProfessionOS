@@ -153,10 +153,36 @@ export default function DashboardClient({
   const [aiOpen, setAiOpen] = useState(false);
   const [feedFilter, setFeedFilter] = useState<FeedService | "all">("all");
   const [timelineCollapsed, setTimelineCollapsed] = useState(true);
+  const [timelineHeight, setTimelineHeight] = useState(340);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [aiStreaming, setAiStreaming] = useState(false);
   const streamAbortRef = useRef<AbortController | null>(null);
+
+  // ── Timeline drag-to-resize ──────────────────────────────────────────────────
+  const dragRef = useRef<{ startY: number; startHeight: number } | null>(null);
+
+  const handleResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    dragRef.current = { startY: e.clientY, startHeight: timelineHeight };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+    function onMove(ev: PointerEvent) {
+      if (!dragRef.current) return;
+      const delta = dragRef.current.startY - ev.clientY; // drag up → taller
+      const next = Math.max(120, Math.min(dragRef.current.startHeight + delta, window.innerHeight * 0.8));
+      setTimelineHeight(Math.round(next));
+    }
+
+    function onUp() {
+      dragRef.current = null;
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }, [timelineHeight]);
 
   // ── Keybinding overrides & plugin bindings ───────────────────────────────────
   const [keybindingOverrides, setKeybindingOverrides] = useState<KeybindingOverrides>({});
@@ -628,7 +654,20 @@ export default function DashboardClient({
                 />
               </div>
 
-              <div className={timelineCollapsed ? styles.timelineCollapsedWrapper : styles.timelineExpandedWrapper}>
+              {!timelineCollapsed && (
+                <div
+                  className={styles.timelineResizeHandle}
+                  onPointerDown={handleResizeStart}
+                  role="separator"
+                  aria-orientation="horizontal"
+                  aria-label="Drag to resize activity timeline"
+                  title="Drag to resize"
+                />
+              )}
+              <div
+                className={timelineCollapsed ? styles.timelineCollapsedWrapper : styles.timelineExpandedWrapper}
+                style={!timelineCollapsed ? { height: `${timelineHeight}px` } : undefined}
+              >
                 <ActivityTimeline
                   items={feed}
                   activeFilter={feedFilter}
