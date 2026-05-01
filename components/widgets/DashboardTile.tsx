@@ -5,6 +5,8 @@ import { X, Minus, Plus } from "lucide-react";
 import type { DashboardWidget } from "@/lib/types";
 import ClockWidget from "./ClockWidget";
 import WeatherWidget from "./WeatherWidget";
+import ServiceWidget from "./ServiceWidget";
+import AutomationWidget from "./AutomationWidget";
 import styles from "./DashboardTile.module.css";
 
 interface DashboardTileProps {
@@ -146,6 +148,10 @@ export default function DashboardTile({
               <ClockWidget config={widget.config} />
             ) : widget.type === "weather" ? (
               <WeatherWidget config={widget.config} />
+            ) : widget.type.startsWith("plugin:") ? (
+              <ServiceWidget config={widget.config} widgetType={widget.type} />
+            ) : widget.type === "automation" ? (
+              <AutomationWidget config={widget.config} title={widget.title} />
             ) : (
               <div className={styles.content}>
                 {widget.content || "No content"}

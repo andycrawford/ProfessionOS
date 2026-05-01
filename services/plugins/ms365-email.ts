@@ -256,6 +256,16 @@ const ms365EmailPlugin: ServicePlugin = {
       scope,
     };
   },
+
+  widget: {
+    displayName: "Email",
+    description: "Recent email summary from your connected Microsoft 365 mailbox.",
+    icon: "Mail",
+    defaultWidth: 260,
+    defaultHeight: 180,
+    defaultConfig: {},
+    configFields: [],
+  },
 };
 
 registerPlugin(ms365EmailPlugin);

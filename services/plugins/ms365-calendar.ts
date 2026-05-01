@@ -267,6 +267,16 @@ const ms365CalendarPlugin: ServicePlugin = {
       scope,
     };
   },
+
+  widget: {
+    displayName: "Calendar",
+    description: "Upcoming events from your connected Microsoft 365 calendar.",
+    icon: "Calendar",
+    defaultWidth: 280,
+    defaultHeight: 200,
+    defaultConfig: {},
+    configFields: [],
+  },
 };
 
 registerPlugin(ms365CalendarPlugin);

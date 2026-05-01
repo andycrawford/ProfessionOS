@@ -71,6 +71,24 @@ export interface PluginKeybinding {
   description: string;
 }
 
+/**
+ * Optional dashboard widget a plugin can expose.
+ * When declared, the widget appears in Dashboard settings for any user
+ * who has connected the service. Config fields let the user tune it.
+ */
+export interface PluginWidgetDef {
+  /** Human-readable name shown in Dashboard settings. */
+  displayName: string;
+  /** Short description shown below the name. */
+  description: string;
+  /** lucide-react icon name. */
+  icon: string;
+  defaultWidth: number;
+  defaultHeight: number;
+  defaultConfig: Record<string, unknown>;
+  configFields: ConfigField[];
+}
+
 export interface ServicePlugin {
   type: ServiceType;
   displayName: string;
@@ -100,4 +118,6 @@ export interface ServicePlugin {
   approveItem?(config: ServiceConfig, externalId: string, action: string): Promise<boolean>;
   /** Optional: keyboard shortcut this plugin wants to register. */
   keybinding?: PluginKeybinding;
+  /** Optional: dashboard widget this plugin contributes. */
+  widget?: PluginWidgetDef;
 }

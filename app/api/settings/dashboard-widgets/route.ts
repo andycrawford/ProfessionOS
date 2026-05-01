@@ -50,8 +50,8 @@ export async function PATCH(req: Request) {
     );
   }
 
-  // Light validation — ensure each item has required fields
-  const VALID_TYPES = new Set(["ai_custom", "clock", "weather"]);
+  // Light validation — ensure each item has required fields.
+  // Type is any non-empty string to support built-in, plugin:*, and automation types.
 
   let widgets: DashboardWidget[];
   try {
@@ -61,7 +61,7 @@ export async function PATCH(req: Request) {
         typeof w.id !== "string" ||
         typeof w.title !== "string" ||
         typeof w.type !== "string" ||
-        !VALID_TYPES.has(w.type) ||
+        w.type.length === 0 ||
         typeof w.x !== "number" ||
         typeof w.y !== "number" ||
         typeof w.width !== "number" ||

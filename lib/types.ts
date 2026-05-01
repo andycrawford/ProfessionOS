@@ -65,7 +65,10 @@ export const DEFAULT_WIDGET_PREFS: WidgetPreference[] = [
 
 // ── Dashboard widgets (free-form tiles in the home page center area) ──────────
 
-export type DashboardWidgetType = 'ai_custom' | 'clock' | 'weather';
+// Built-in: 'ai_custom' | 'clock' | 'weather'
+// Plugin:   'plugin:<service_type>' e.g. 'plugin:ms365_email'
+// Automation: 'automation'
+export type DashboardWidgetType = string;
 
 export interface DashboardWidget {
   id: string;

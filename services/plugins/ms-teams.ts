@@ -189,6 +189,16 @@ const msTeamsPlugin: ServicePlugin = {
       return false;
     }
   },
+
+  widget: {
+    displayName: "Teams",
+    description: "Recent messages and @mentions from Microsoft Teams.",
+    icon: "MessageSquare",
+    defaultWidth: 280,
+    defaultHeight: 200,
+    defaultConfig: {},
+    configFields: [],
+  },
 };
 
 registerPlugin(msTeamsPlugin);
